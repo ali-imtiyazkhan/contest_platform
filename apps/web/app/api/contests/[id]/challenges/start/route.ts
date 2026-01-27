@@ -2,8 +2,13 @@ import { NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/auth";
 import { startChallenge } from "@/lib/data";
 
+type User = {
+  id: string;
+  email: string;
+};
+
 export async function POST(request: Request) {
-  const user = getSessionUser();
+  const user = await getSessionUser();
   if (!user)
     return NextResponse.json(
       { ok: false, error: "Unauthorized" },
@@ -15,7 +20,7 @@ export async function POST(request: Request) {
       { ok: false, error: "challengeId required" },
       { status: 400 },
     );
-  const result = startChallenge(user, challengeId);
+  const result = startChallenge(user as User, challengeId);
   if (!result.ok)
     return NextResponse.json(
       { ok: false, error: "Invalid challenge" },
