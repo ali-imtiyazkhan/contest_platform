@@ -1,5 +1,5 @@
 // import { NextResponse } from "next/server"
-// import { SESSION_COOKIE, destroySession } from "@/lib/auth"
+// import { SESSION_COOKIE, destroySession } from "../../../../lib/auth"
 
 // export async function POST() {
 //   destroySession()
