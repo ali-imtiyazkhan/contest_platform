@@ -2,6 +2,11 @@
   "name": "backend",
   "module": "index.ts",
   "type": "module",
+  "scripts": {
+    "dev": "bun index.ts",
+    "build": "bun build index.ts --outdir dist",
+    "start": "bun dist/index.js"
+  },
   "devDependencies": {
     "@types/bun": "latest"
   },

@@ -38,7 +38,7 @@ router.post("/signin", async (req, res) => {
     await sendEmail(
       data.email,
       `Login to Contest platform`,
-      `Click this link to login ${process.env.FRONTEND_URL!}/user/login/post/?token=${token}`,
+      `Click this link to login ${process.env.FRONTEND_URL! || 5000}/user/signin/post/?token=${token}`,
     );
   } else {
     console.log(

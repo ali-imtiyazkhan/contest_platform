@@ -13,4 +13,4 @@ app.use("/user", userRouter);
 app.use("/admin", adminRouter);
 app.use("/contest", contestRouter);
 
-app.listen(process.env.PORT ?? 4000);
+app.listen(process.env.PORT ?? 5000);
