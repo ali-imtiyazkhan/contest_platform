@@ -1,98 +1,221 @@
-import { Router } from "express";
+
 import { client } from "db/client";
-import { SignupSchema } from "../types";
-import jwt, { type JwtPayload } from "jsonwebtoken";
-import { sendEmail } from "../mail";
+
+import { Router } from "express";
+import {
+  generateAccessToken,
+  generateOtp,
+  generateRefreshToken,
+  refreshAccessToken,
+  sendOtp,
+  resendOtp,
+} from "../helpers/auth";
+import { hash, compare } from "../helpers/bcrypt";
 
 const router = Router();
 
-router.post("/signin", async (req, res) => {
-  const { success, data } = SignupSchema.safeParse(req.body);
+/**
+ * SIGN UP - Send OTP
+ */
+router.post("/signup", async (req, res) => {
+  try {
+    const { email, password } = req.body;
 
-  if (!success) {
-    res.status(411).json({
-      message: "Incorrect email format",
+    if (!email || !password) {
+      return res
+        .status(400)
+        .json({ message: "Email and password are required!" });
+    }
+
+    const exists = await client.user.findFirst({
+      where: { email: email.toLowerCase() },
     });
-    return;
+
+    if (exists) {
+      return res.status(409).json({ message: "User already exists!" });
+    }
+
+    const otp = generateOtp().toString();
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+
+    await client.otpVerification.upsert({
+      where: { email },
+      update: { otp, expiresAt, attempts: 0 },
+      create: { email, otp, expiresAt, attempts: 0 },
+    });
+
+    await sendOtp(email, otp);
+
+    res.status(200).json({
+      message: "OTP sent successfully",
+      email,
+      nextStep: "/verify-otp",
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
   }
-
-  const user = await client.user.upsert({
-    create: {
-      email: data.email,
-      role: "User",
-    },
-    update: {},
-    where: {
-      email: data.email,
-    },
-  });
-
-  const token = jwt.sign(
-    {
-      userId: user.id,
-    },
-    process.env.EMAIL_JWT_PASSWORD!,
-  );
-
-  if (process.env.NODE_ENV === "production") {
-    await sendEmail(
-      data.email,
-      `Login to Contest platform`,
-      `Click this link to login ${process.env.FRONTEND_URL! || 5000}/user/signin/post/?token=${token}`,
-    );
-  } else {
-    console.log(
-      `The link for ${data.email} to login is http://localhost:3000/user/login/post?token=${token}`,
-    );
-  }
-
-  res.json({
-    message:
-      "We have emailed the one time login link to you, please check your email",
-  });
 });
 
-router.get("/signin/post", async (req, res) => {
+/**
+ * VERIFY OTP
+ */
+router.post("/verify-otp", async (req, res) => {
   try {
-    const token = req.query.token as string;
-    const decoded = jwt.verify(
-      token,
-      process.env.EMAIL_JWT_PASSWORD!,
-    ) as JwtPayload;
-    if (decoded.userId) {
-      const user = await client.user.findFirst({
-        where: {
-          id: decoded.userId,
-        },
-      });
+    const { email, otp, password } = req.body;
 
-      if (!user) {
-        res.status(411).json({
-          message: "Incorrect token",
-        });
-        return;
-      }
-
-      const token = jwt.sign(
-        {
-          userId: decoded.userId,
-          role: user.role,
-        },
-        process.env.USER_JWT_PASSWORD!,
-      );
-
-      res.json({
-        token,
-      });
-    } else {
-      res.status(411).json({
-        message: "Incorrect token",
+    if (!email || !otp || !password) {
+      return res.status(400).json({
+        message: "Email, OTP and password are required!",
       });
     }
-  } catch (e) {
-    res.status(411).json({
-      message: "Incorrect token",
+
+    const otpRecord = await client.otpVerification.findUnique({
+      where: { email },
     });
+
+    if (!otpRecord) {
+      return res.status(404).json({ message: "OTP not found or expired" });
+    }
+
+    if (otpRecord.expiresAt < new Date()) {
+      await client.otpVerification.delete({ where: { email } });
+      return res.status(410).json({ message: "OTP expired" });
+    }
+
+    if (otpRecord.attempts >= 5) {
+      await client.otpVerification.delete({ where: { email } });
+      return res.status(429).json({ message: "Too many failed attempts" });
+    }
+
+    if (otpRecord.otp !== otp) {
+      await client.otpVerification.update({
+        where: { email },
+        data: { attempts: { increment: 1 } },
+      });
+
+      const remainingAttempts = 5 - (otpRecord.attempts + 1);
+      return res.status(401).json({
+        message: `Invalid OTP. ${remainingAttempts} attempts remaining.`,
+      });
+    }
+
+    const hashedPassword = await hash(password);
+
+    const user = await client.user.create({
+      data: {
+        email: email.toLowerCase(),
+        password: hashedPassword,
+        role: "User",
+      },
+    });
+
+    await client.otpVerification.delete({ where: { email } });
+
+    const accessToken = generateAccessToken(user);
+    const refreshToken = generateRefreshToken(user);
+
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 30 * 24 * 60 * 60 * 1000,
+    });
+
+    res.status(201).json({
+      message: "User created successfully",
+      accessToken,
+      user: {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+/**
+ * SIGN IN
+ */
+router.post("/signin", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res
+        .status(400)
+        .json({ message: "Email and password are required!" });
+    }
+
+    const user = await client.user.findFirst({
+      where: { email: email.toLowerCase(), role: "User" },
+    });
+
+    if (!user || !user.password) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
+
+    const isValidPassword = await compare(password, user.password);
+    if (!isValidPassword) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
+
+    const accessToken = generateAccessToken(user);
+    const refreshToken = generateRefreshToken(user);
+
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 30 * 24 * 60 * 60 * 1000,
+    });
+
+    res.json({
+      accessToken,
+      user: {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+/**
+ * SIGN OUT
+ */
+router.post("/signout", async (_req, res) => {
+  res.clearCookie("refreshToken", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+    path: "/",
+  });
+
+  res.status(200).json({ message: "Logged out successfully" });
+});
+
+/**
+ * REFRESH TOKEN
+ */
+router.post("/refresh", async (req, res) => {
+  const refreshToken = req.cookies?.refreshToken;
+
+  if (!refreshToken) {
+    return res.status(401).json({ message: "Refresh token missing" });
+  }
+
+  try {
+    const newAccessToken = refreshAccessToken(refreshToken);
+    res.status(200).json({ accessToken: newAccessToken });
+  } catch {
+    return res.status(403).json({ message: "Invalid refresh token" });
   }
 });
 
