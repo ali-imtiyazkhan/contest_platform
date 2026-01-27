@@ -1,21 +1,18 @@
 import { Router } from "express";
 import { client } from "db/client";
 import { generateAccessToken, generateRefreshToken } from "../helpers/auth";
+// import { compare } from "../helpers/bcrypt";
 
 const router = Router();
 
-router.post("/signup", (req, res) => {
-// Note for bhayia - no signup needed for admin, seed an email- pass for admin, just login
-// router.post("/signup", (req, res) => {
-
-// })
-
-})
+/**
+ * ADMIN SIGNIN
+ * Note: Admin signup is not allowed. Seed admin manually.
+ */
 router.post("/signin", async (req, res) => {
   try {
     const { email, password } = req.body;
 
-router.post("/signin", (req, res) => {
     if (!email || !password) {
       return res.status(400).json({
         success: false,
@@ -25,12 +22,11 @@ router.post("/signin", (req, res) => {
 
     const admin = await client.user.findFirst({
       where: {
-        email,
+        email: email.toLowerCase(),
         role: "Admin",
       },
     });
 
-})
     if (!admin) {
       return res.status(401).json({
         success: false,
@@ -38,13 +34,14 @@ router.post("/signin", (req, res) => {
       });
     }
 
-export default router;
-    if (admin.password !== password) {
-      return res.status(401).json({
-        success: false,
-        message: "Invalid credentials",
-      });
-    }
+    // const isValidPassword = await compare(password, admin.password);
+
+    // if (!isValidPassword) {
+    //   return res.status(401).json({
+    //     success: false,
+    //     message: "Invalid credentials",
+    //   });
+    // }
 
     const accessToken = generateAccessToken(admin);
     const refreshToken = generateRefreshToken(admin);

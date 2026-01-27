@@ -1,4 +1,3 @@
-
 import { client } from "db/client";
 
 import { Router } from "express";
@@ -8,7 +7,7 @@ import {
   generateRefreshToken,
   refreshAccessToken,
   sendOtp,
-  resendOtp,
+  // resendOtp,
 } from "../helpers/auth";
 import { hash, compare } from "../helpers/bcrypt";
 
@@ -38,11 +37,11 @@ router.post("/signup", async (req, res) => {
     const otp = generateOtp().toString();
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
 
-    await client.otpVerification.upsert({
-      where: { email },
-      update: { otp, expiresAt, attempts: 0 },
-      create: { email, otp, expiresAt, attempts: 0 },
-    });
+    // await client.otpVerification.upsert({
+    //   where: { email },
+    //   update: { otp, expiresAt, attempts: 0 },
+    //   create: { email, otp, expiresAt, attempts: 0 },
+    // });
 
     await sendOtp(email, otp);
 
@@ -60,82 +59,82 @@ router.post("/signup", async (req, res) => {
 /**
  * VERIFY OTP
  */
-router.post("/verify-otp", async (req, res) => {
-  try {
-    const { email, otp, password } = req.body;
+// router.post("/verify-otp", async (req, res) => {
+//   try {
+//     const { email, otp, password } = req.body;
 
-    if (!email || !otp || !password) {
-      return res.status(400).json({
-        message: "Email, OTP and password are required!",
-      });
-    }
+//     if (!email || !otp || !password) {
+//       return res.status(400).json({
+//         message: "Email, OTP and password are required!",
+//       });
+//     }
 
-    const otpRecord = await client.otpVerification.findUnique({
-      where: { email },
-    });
+//     const otpRecord = await client.otpVerification.findUnique({
+//       where: { email },
+//     });
 
-    if (!otpRecord) {
-      return res.status(404).json({ message: "OTP not found or expired" });
-    }
+//     if (!otpRecord) {
+//       return res.status(404).json({ message: "OTP not found or expired" });
+//     }
 
-    if (otpRecord.expiresAt < new Date()) {
-      await client.otpVerification.delete({ where: { email } });
-      return res.status(410).json({ message: "OTP expired" });
-    }
+//     if (otpRecord.expiresAt < new Date()) {
+//       await client.otpVerification.delete({ where: { email } });
+//       return res.status(410).json({ message: "OTP expired" });
+//     }
 
-    if (otpRecord.attempts >= 5) {
-      await client.otpVerification.delete({ where: { email } });
-      return res.status(429).json({ message: "Too many failed attempts" });
-    }
+//     if (otpRecord.attempts >= 5) {
+//       await client.otpVerification.delete({ where: { email } });
+//       return res.status(429).json({ message: "Too many failed attempts" });
+//     }
 
-    if (otpRecord.otp !== otp) {
-      await client.otpVerification.update({
-        where: { email },
-        data: { attempts: { increment: 1 } },
-      });
+//     if (otpRecord.otp !== otp) {
+//       await client.otpVerification.update({
+//         where: { email },
+//         data: { attempts: { increment: 1 } },
+//       });
 
-      const remainingAttempts = 5 - (otpRecord.attempts + 1);
-      return res.status(401).json({
-        message: `Invalid OTP. ${remainingAttempts} attempts remaining.`,
-      });
-    }
+//       const remainingAttempts = 5 - (otpRecord.attempts + 1);
+//       return res.status(401).json({
+//         message: `Invalid OTP. ${remainingAttempts} attempts remaining.`,
+//       });
+//     }
 
-    const hashedPassword = await hash(password);
+//     const hashedPassword = await hash(password);
 
-    const user = await client.user.create({
-      data: {
-        email: email.toLowerCase(),
-        password: hashedPassword,
-        role: "User",
-      },
-    });
+//     const user = await client.user.create({
+//       data: {
+//         email: email.toLowerCase(),
+//         password: hashedPassword,
+//         role: "User",
+//       },
+//     });
 
-    await client.otpVerification.delete({ where: { email } });
+//     await client.otpVerification.delete({ where: { email } });
 
-    const accessToken = generateAccessToken(user);
-    const refreshToken = generateRefreshToken(user);
+//     const accessToken = generateAccessToken(user);
+//     const refreshToken = generateRefreshToken(user);
 
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 30 * 24 * 60 * 60 * 1000,
-    });
+//     res.cookie("refreshToken", refreshToken, {
+//       httpOnly: true,
+//       secure: process.env.NODE_ENV === "production",
+//       sameSite: "strict",
+//       maxAge: 30 * 24 * 60 * 60 * 1000,
+//     });
 
-    res.status(201).json({
-      message: "User created successfully",
-      accessToken,
-      user: {
-        id: user.id,
-        email: user.email,
-        role: user.role,
-      },
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Internal server error" });
-  }
-});
+//     res.status(201).json({
+//       message: "User created successfully",
+//       accessToken,
+//       user: {
+//         id: user.id,
+//         email: user.email,
+//         role: user.role,
+//       },
+//     });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: "Internal server error" });
+//   }
+// });
 
 /**
  * SIGN IN
@@ -154,14 +153,14 @@ router.post("/signin", async (req, res) => {
       where: { email: email.toLowerCase(), role: "User" },
     });
 
-    if (!user || !user.password) {
+    if (!user) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    const isValidPassword = await compare(password, user.password);
-    if (!isValidPassword) {
-      return res.status(401).json({ message: "Invalid credentials" });
-    }
+    // const isValidPassword = await compare(password, user.password);
+    // if (!isValidPassword) {
+    //   return res.status(401).json({ message: "Invalid credentials" });
+    // }
 
     const accessToken = generateAccessToken(user);
     const refreshToken = generateRefreshToken(user);
