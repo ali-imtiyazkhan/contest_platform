@@ -10,6 +10,7 @@ import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import { SiteHeader } from "@/components/site-header";
 import { AuthProvider } from "@/context/AuthProvider";
+import { ToastProvider } from "@/hooks/use-toast";
 
 /* ================= FONTS ================= */
 
@@ -58,15 +59,16 @@ export default function RootLayout({
           ${spaceGrotesk.variable}
         `}
       >
-        <AuthProvider>
-          <Suspense fallback={<div>Loading...</div>}>
-            <SiteHeader />
-            <main className="mx-auto w-full max-w-6xl px-4 py-6">
-              {children}
-            </main>
-          </Suspense>
-        </AuthProvider>
-
+        <ToastProvider>
+          <AuthProvider>
+            <Suspense fallback={<div>Loading...</div>}>
+              <SiteHeader />
+              <main className="mx-auto w-full max-w-6xl px-4 py-6">
+                {children}
+              </main>
+            </Suspense>
+          </AuthProvider>
+        </ToastProvider>
         <Analytics />
       </body>
     </html>

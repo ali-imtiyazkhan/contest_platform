@@ -1,14 +1,15 @@
+import dotenv from "dotenv";
+dotenv.config();
+
+import "./lib/redis"; 
 import express from "express";
 import userRouter from "./routes/user";
 import contestRouter from "./routes/contest";
 import adminRouter from "./routes/admin";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import dotenv from "dotenv";
 
 const app = express();
-dotenv.config();
-
 const allowedOrigins = ["http://localhost:3000"];
 const corsOptions = {
   origin: function (origin: any, callback: any) {
@@ -45,7 +46,6 @@ app.use("/api/v1/contest", contestRouter);
 
 const port = process.env.PORT || 4000;
 
-app.listen(process.env.PORT ?? 4000);
 app.listen(port, () => {
   console.log(`Server is running at http://localhost:${port}`);
 });
