@@ -10,15 +10,13 @@ import {
   // resendOtp,
 } from "../helpers/auth";
 import { hash, compare } from "../helpers/bcrypt";
+import { error } from "console";
 
 const router = Router();
 
-/**
- * SIGN UP - Send OTP
- */
 router.post("/signup", async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, role } = req.body;
 
     if (!email || !password) {
       return res
@@ -29,6 +27,8 @@ router.post("/signup", async (req, res) => {
     const exists = await client.user.findFirst({
       where: { email: email.toLowerCase() },
     });
+
+    const Password = await hash(password);
 
     if (exists) {
       return res.status(409).json({ message: "User already exists!" });
@@ -41,6 +41,9 @@ router.post("/signup", async (req, res) => {
     res.status(200).json({
       message: "OTP sent successfully",
       email,
+      otp,
+      Password,
+      role,
       nextStep: "/verify-otp",
     });
   } catch (error) {
@@ -49,89 +52,6 @@ router.post("/signup", async (req, res) => {
   }
 });
 
-/**
- * VERIFY OTP
- */
-// router.post("/verify-otp", async (req, res) => {
-//   try {
-//     const { email, otp, password } = req.body;
-
-//     if (!email || !otp || !password) {
-//       return res.status(400).json({
-//         message: "Email, OTP and password are required!",
-//       });
-//     }
-
-//     const otpRecord = await client.otpVerification.findUnique({
-//       where: { email },
-//     });
-
-//     if (!otpRecord) {
-//       return res.status(404).json({ message: "OTP not found or expired" });
-//     }
-
-//     if (otpRecord.expiresAt < new Date()) {
-//       await client.otpVerification.delete({ where: { email } });
-//       return res.status(410).json({ message: "OTP expired" });
-//     }
-
-//     if (otpRecord.attempts >= 5) {
-//       await client.otpVerification.delete({ where: { email } });
-//       return res.status(429).json({ message: "Too many failed attempts" });
-//     }
-
-//     if (otpRecord.otp !== otp) {
-//       await client.otpVerification.update({
-//         where: { email },
-//         data: { attempts: { increment: 1 } },
-//       });
-
-//       const remainingAttempts = 5 - (otpRecord.attempts + 1);
-//       return res.status(401).json({
-//         message: `Invalid OTP. ${remainingAttempts} attempts remaining.`,
-//       });
-//     }
-
-//     const hashedPassword = await hash(password);
-
-//     const user = await client.user.create({
-//       data: {
-//         email: email.toLowerCase(),
-//         password: hashedPassword,
-//         role: "User",
-//       },
-//     });
-
-//     await client.otpVerification.delete({ where: { email } });
-
-//     const accessToken = generateAccessToken(user);
-//     const refreshToken = generateRefreshToken(user);
-
-//     res.cookie("refreshToken", refreshToken, {
-//       httpOnly: true,
-//       secure: process.env.NODE_ENV === "production",
-//       sameSite: "strict",
-//       maxAge: 30 * 24 * 60 * 60 * 1000,
-//     });
-
-//     res.status(201).json({
-//       message: "User created successfully",
-//       accessToken,
-//       user: {
-//         id: user.id,
-//         email: user.email,
-//         role: user.role,
-//       },
-//     });
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ message: "Internal server error" });
-//   }
-// });
-
-/**
- * SIGN IN
- */
 router.post("/signin", async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -148,6 +68,10 @@ router.post("/signin", async (req, res) => {
 
     if (!user) {
       return res.status(401).json({ message: "Invalid credentials" });
+    }
+
+    if (!user.password) {
+      throw new Error("user password is missing");
     }
 
     const isValidPassword = await compare(password, user.password);
@@ -167,6 +91,7 @@ router.post("/signin", async (req, res) => {
 
     res.json({
       accessToken,
+
       user: {
         id: user.id,
         email: user.email,
@@ -179,9 +104,6 @@ router.post("/signin", async (req, res) => {
   }
 });
 
-/**
- * SIGN OUT
- */
 router.post("/signout", async (_req, res) => {
   res.clearCookie("refreshToken", {
     httpOnly: true,
@@ -193,9 +115,6 @@ router.post("/signout", async (_req, res) => {
   res.status(200).json({ message: "Logged out successfully" });
 });
 
-/**
- * REFRESH TOKEN
- */
 router.post("/refresh", async (req, res) => {
   const refreshToken = req.cookies?.refreshToken;
 

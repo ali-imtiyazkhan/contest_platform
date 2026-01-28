@@ -43,9 +43,6 @@ app.use("/api/v1/user", userRouter);
 app.use("/api/v1/admin", adminRouter);
 app.use("/api/v1/contest", contestRouter);
 
-app.use("/user", userRouter);
-app.use("/admin", adminRouter);
-app.use("/contest", contestRouter);
 const port = process.env.PORT || 4000;
 
 app.listen(process.env.PORT ?? 4000);

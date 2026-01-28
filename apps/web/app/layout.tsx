@@ -35,14 +35,12 @@ const spaceGrotesk = Space_Grotesk({
   variable: "--font-heading",
 });
 
-/* ================= METADATA ================= */
 
 export const metadata: Metadata = {
   title: "100xContest",
   description: "Developer contests platform",
 };
 
-/* ================= ROOT LAYOUT ================= */
 
 export default function RootLayout({
   children,
