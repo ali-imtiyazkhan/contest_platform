@@ -96,10 +96,12 @@ router.get("/leaderboard/:contestId", async (req: Request, res: Response) => {
   try {
     const { contestId } = req.params;
 
-    // TODO: Fetch leaderboard from Redis / DB
+    // Temporary mock leaderboard (replace with DB / Redis later)
     const leaderboard = [
-      { userId: "1", score: 100 },
-      { userId: "2", score: 90 },
+      { rank: 1, name: "Aditi Rao", score: 980 },
+      { rank: 2, name: "Arjun Sharma", score: 930 },
+      { rank: 3, name: "Maya Patel", score: 905 },
+      { rank: 4, name: "Nikhil Nair", score: 880 },
     ];
 
     return res.json({

@@ -114,7 +114,7 @@ export default function ChallengePage() {
                 Language
               </Label>
               <Select value={lang} onValueChange={setLang}>
-                <SelectTrigger id="lang" className="h-8 w-[160px]">
+                <SelectTrigger id="lang" className="h-8 w-40">
                   <SelectValue placeholder="Language" />
                 </SelectTrigger>
                 <SelectContent>
@@ -145,7 +145,7 @@ export default function ChallengePage() {
                   setSubmitting(true)
                   setTimeout(() => setSubmitting(false), 900)
                 }}
-                className="transition-transform duration-150 hover:translate-y-[-1px]"
+                className="transition-transform duration-150 hover:-translate-y-px"
               >
                 {submitting ? "Submitting..." : "Submit"}
               </Button>
