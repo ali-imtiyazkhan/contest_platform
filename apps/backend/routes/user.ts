@@ -35,13 +35,6 @@ router.post("/signup", async (req, res) => {
     }
 
     const otp = generateOtp().toString();
-    const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
-
-    // await client.otpVerification.upsert({
-    //   where: { email },
-    //   update: { otp, expiresAt, attempts: 0 },
-    //   create: { email, otp, expiresAt, attempts: 0 },
-    // });
 
     await sendOtp(email, otp);
 
@@ -157,10 +150,10 @@ router.post("/signin", async (req, res) => {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    // const isValidPassword = await compare(password, user.password);
-    // if (!isValidPassword) {
-    //   return res.status(401).json({ message: "Invalid credentials" });
-    // }
+    const isValidPassword = await compare(password, user.password);
+    if (!isValidPassword) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
 
     const accessToken = generateAccessToken(user);
     const refreshToken = generateRefreshToken(user);

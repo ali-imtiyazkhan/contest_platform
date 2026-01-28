@@ -93,6 +93,5 @@ export {
   generateAccessToken,
   generateRefreshToken,
   sendOtp,
-//   resendOtp,
   refreshAccessToken,
 };

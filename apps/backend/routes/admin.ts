@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { client } from "db/client";
 import { generateAccessToken, generateRefreshToken } from "../helpers/auth";
-// import { compare } from "../helpers/bcrypt";
+import { compare } from "../helpers/bcrypt";
 
 const router = Router();
 
@@ -34,14 +34,14 @@ router.post("/signin", async (req, res) => {
       });
     }
 
-    // const isValidPassword = await compare(password, admin.password);
+    const isValidPassword = await compare(password, admin.password);
 
-    // if (!isValidPassword) {
-    //   return res.status(401).json({
-    //     success: false,
-    //     message: "Invalid credentials",
-    //   });
-    // }
+    if (!isValidPassword) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid credentials",
+      });
+    }
 
     const accessToken = generateAccessToken(admin);
     const refreshToken = generateRefreshToken(admin);

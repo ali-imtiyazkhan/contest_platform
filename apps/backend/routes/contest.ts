@@ -1,32 +1,159 @@
-import { Router } from "express";
+import { Router, Request, Response } from "express";
 import { userMiddleware } from "../middleware/user";
 
 const router = Router();
 
-router.get("/active", (req, res) => {
-  const { offset, page } = req.query;
+/* ================= ACTIVE CONTESTS ================= */
+router.get("/active", async (req: Request, res: Response) => {
+  try {
+    const offset = Number(req.query.offset ?? 0);
+    const limit = Number(req.query.page ?? 10);
+
+    // TODO: Replace with DB query
+    const contests = [];
+
+    return res.json({
+      ok: true,
+      // data: contests,
+      pagination: { offset, limit },
+    });
+  } catch (error) {
+    console.error("Active contests error:", error);
+    return res.status(500).json({ ok: false, error: "Server error" });
+  }
 });
 
-router.get("/finished", (req, res) => {
-  let { offset, page } = req.query;
+/* ================= FINISHED CONTESTS ================= */
+router.get("/finished", async (req: Request, res: Response) => {
+  try {
+    const offset = Number(req.query.offset ?? 0);
+    const limit = Number(req.query.page ?? 10);
+
+    // TODO: Replace with DB query
+    // const contests = [];
+
+    return res.json({
+      ok: true,
+      // data: contests,
+      pagination: { offset, limit },
+    });
+  } catch (error) {
+    console.error("Finished contests error:", error);
+    return res.status(500).json({ ok: false, error: "Server error" });
+  }
 });
 
-// return all the sub challenges and their start times.
-router.get("/:contestId", userMiddleware, (req, res) => {
-  const contestId = req.params.contestId;
+/* ================= CONTEST DETAILS ================= */
+router.get(
+  "/:contestId",
+  userMiddleware,
+  async (req: Request, res: Response) => {
+    try {
+      const { contestId } = req.params;
+
+      // TODO: Fetch contest + sub challenges from DB
+      const contest = {
+        id: contestId,
+        name: "Demo Contest",
+        startTime: new Date(),
+        challenges: [],
+      };
+
+      return res.json({ ok: true, data: contest });
+    } catch (error) {
+      console.error("Contest fetch error:", error);
+      return res.status(500).json({ ok: false, error: "Server error" });
+    }
+  },
+);
+
+/* ================= CHALLENGE DETAILS ================= */
+router.get(
+  "/:contestId/:challengeId",
+  userMiddleware,
+  async (req: Request, res: Response) => {
+    try {
+      const { contestId, challengeId } = req.params;
+
+      // TODO: Fetch challenge from DB
+      const challenge = {
+        id: challengeId,
+        contestId,
+        title: "Sample Challenge",
+        description: "Solve this problem",
+      };
+
+      return res.json({ ok: true, data: challenge });
+    } catch (error) {
+      console.error("Challenge fetch error:", error);
+      return res.status(500).json({ ok: false, error: "Server error" });
+    }
+  },
+);
+
+/* ================= LEADERBOARD ================= */
+router.get("/leaderboard/:contestId", async (req: Request, res: Response) => {
+  try {
+    const { contestId } = req.params;
+
+    // TODO: Fetch leaderboard from Redis / DB
+    const leaderboard = [
+      { userId: "1", score: 100 },
+      { userId: "2", score: 90 },
+    ];
+
+    return res.json({
+      ok: true,
+      contestId,
+      leaderboard,
+    });
+  } catch (error) {
+    console.error("Leaderboard error:", error);
+    return res.status(500).json({ ok: false, error: "Server error" });
+  }
 });
 
-router.get("/:contestId/:challengeId", userMiddleware, (req, res) => {
-  const contestId = req.params.contestId;
-});
+/* ================= SUBMIT SOLUTION ================= */
+router.post(
+  "/submit/:challengeId",
+  userMiddleware,
+  async (req: Request, res: Response) => {
+    try {
+      const { challengeId } = req.params;
+      const { code, language } = req.body;
+      const userId = (req as any).user?.id;
 
-router.get("/leaderboard/:contestId", (req, res) => {});
+      if (!code || !language) {
+        return res.status(400).json({
+          ok: false,
+          error: "Code and language are required",
+        });
+      }
 
-router.post("/submit/:challengeId", userMiddleware, (req, res) => {
-  // have rate limitting
-  // max 20 submissions per problem
-  // forward the request to GPT
-  // store the response in sorted set and the DB
-});
+      // TODO:
+      // 1. Rate limit user (Redis)
+      // 2. Send code to GPT / Judge
+      // 3. Evaluate result
+      // 4. Store submission in DB
+      // 5. Update leaderboard sorted set
+
+      const fakeResult = {
+        passed: true,
+        score: 10,
+        executionTime: "120ms",
+      };
+
+      return res.json({
+        ok: true,
+        challengeId,
+        userId,
+        result: fakeResult,
+      });
+    } catch (error) {
+      console.error("Submission error:", error);
+      return res.status(500).json({ ok: false, error: "Server error" });
+    }
+  },
+);
 
 export default router;
