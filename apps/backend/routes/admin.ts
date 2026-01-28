@@ -38,7 +38,6 @@ router.post("/signin", async (req, res) => {
       throw new Error("Admin password is missing");
     }
 
-    
     const isValidPassword = await compare(password, admin.password);
 
     if (!isValidPassword) {

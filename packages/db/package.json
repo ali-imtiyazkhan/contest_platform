@@ -16,5 +16,8 @@
     "@types/jsonwebtoken": "^9.0.10",
     "jsonwebtoken": "^9.0.2",
     "prisma": "^6.15.0"
+  },
+  "scripts": {
+    "seed": "bun run prisma/seed.ts"
   }
 }

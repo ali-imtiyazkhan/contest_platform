@@ -7,10 +7,8 @@ import {
   generateRefreshToken,
   refreshAccessToken,
   sendOtp,
-  // resendOtp,
 } from "../helpers/auth";
 import { hash, compare } from "../helpers/bcrypt";
-import { error } from "console";
 
 const router = Router();
 
