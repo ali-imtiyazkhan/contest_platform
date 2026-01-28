@@ -61,7 +61,7 @@ export default function LeaderboardPage() {
                 <CardContent>
                     <div className="max-h-96 overflow-auto rounded-md border">
                         <table className="w-full table-auto text-left">
-                            <thead className="sticky top-0 z-10 bg-muted/40 backdrop-blur supports-[backdrop-filter]:bg-muted/30">
+                            <thead className="sticky top-0 z-10 bg-muted/40 backdrop-blur supports-backdrop-filter:bg-muted/3">
                                 <tr className="text-xs text-muted-foreground">
                                     <th className="px-3 py-2 font-medium">Rank</th>
                                     <th className="px-3 py-2 font-medium">Participant</th>

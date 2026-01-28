@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getSessionUser } from "@/lib/auth";
+import { getSessionUser } from "@/lib/auth.server";
 import { startChallenge } from "@/lib/data";
 
 type User = {

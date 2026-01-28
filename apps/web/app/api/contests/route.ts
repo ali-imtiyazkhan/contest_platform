@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createContest, listContests } from "@/lib/data";
-import { getSessionUser } from "@/lib/auth";
+import { getSessionUser } from "@/lib/auth.server";
 
 export async function GET() {
   return NextResponse.json({ contests: listContests() });

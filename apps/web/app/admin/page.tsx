@@ -30,12 +30,15 @@ export default function AdminPage() {
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault()
-    // toast({
-    //   title: "Contest created (mock)",
-    //   description: `“${name || "Untitled"}” with ${subs.length} sub-challenge(s). ${
-    //     scheduled && startAt ? `Starts at ${new Date(startAt).toLocaleString()}.` : ""
-    //   }`,
-    // })
+    toast({
+      id: crypto.randomUUID(),
+      title: "Contest created (mock)",
+      description: `“${name || "Untitled"}” with ${subs.length} sub-challenge(s). ${scheduled && startAt
+          ? `Starts at ${new Date(startAt).toLocaleString()}.`
+          : ""
+        }`,
+    });
+
     setName("")
     setDescription("")
     setLive(false)

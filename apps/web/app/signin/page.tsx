@@ -35,9 +35,9 @@ export default function SignInPage() {
     setError(null);
 
     try {
-      const endpoint = role === "user" 
-        ? `${BACKEND_URL}/api/v1/user/signin`
-        : `${BACKEND_URL}/api/v1/admin/signin`;
+      const endpoint = role === "user"
+        ? `${BACKEND_URL}/user/signin`
+        : `${BACKEND_URL}/admin/signin`;
 
       const response = await axios.post(endpoint, {
         email,

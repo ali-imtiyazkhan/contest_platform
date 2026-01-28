@@ -1,48 +1,13 @@
-import { cookies } from "next/headers";
 import { jwtDecode } from "jwt-decode";
 import { BACKEND_URL } from "@/config";
 import axios from "axios";
 
 type JwtPayload = {
-  userId: string;
-  email?: string;
-  role?: "User" | "Admin";
   exp?: number;
 };
 
-type SessionUser = {
-  id: string;
-  email?: string;
-  role?: "User" | "Admin";
-  isAdmin: boolean;
-};
-
-
-export async function getSessionUser(): Promise<SessionUser | null> {
-  try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get("accessToken")?.value;
-
-    if (!token) return null;
-
-    const decoded = jwtDecode<JwtPayload>(token);
-
-    if (!decoded?.userId) return null;
-
-    return {
-      id: decoded.userId,
-      email: decoded.email,
-      role: decoded.role,
-      isAdmin: decoded.role === "Admin",
-    };
-  } catch (error) {
-    console.error("getSessionUser error:", error);
-    return null;
-  }
-}
-
 /**
- * ✅ Refresh token using backend (SSR)
+ * ✅ Refresh token using backend (SSR or client)
  */
 export const getAuthStateSSR = async () => {
   try {
