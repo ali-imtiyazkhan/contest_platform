@@ -90,7 +90,7 @@ export default function SignUpPage() {
   };
 
   return (
-    <div className="mx-auto grid w-full max-w-md gap-6">
+    <div className="mx-auto grid max-w-5xl w-full ml-24 gap-6">
       <div className="text-center">
         <h1 className="text-pretty text-2xl font-semibold">
           Welcome to 100xContest
