@@ -5,10 +5,6 @@ import { compare } from "../helpers/bcrypt";
 
 const router = Router();
 
-/**
- * ADMIN SIGNIN
- * Note: Admin signup is not allowed. Seed admin manually.
- */
 router.post("/signin", async (req, res) => {
   try {
     const { email, password } = req.body;

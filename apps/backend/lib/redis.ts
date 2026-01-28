@@ -15,7 +15,6 @@ redis.on("error", (error) => {
   console.error("Redis error:", error);
 });
 
-
 export async function addScoreToLeaderboard(
   contestId: string,
   userId: string,

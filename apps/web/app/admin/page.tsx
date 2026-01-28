@@ -34,8 +34,8 @@ export default function AdminPage() {
       id: crypto.randomUUID(),
       title: "Contest created (mock)",
       description: `“${name || "Untitled"}” with ${subs.length} sub-challenge(s). ${scheduled && startAt
-          ? `Starts at ${new Date(startAt).toLocaleString()}.`
-          : ""
+        ? `Starts at ${new Date(startAt).toLocaleString()}.`
+        : ""
         }`,
     });
 
@@ -138,7 +138,7 @@ export default function AdminPage() {
                   type="button"
                   variant="secondary"
                   onClick={addSub}
-                  className="transition-transform duration-150 hover:translate-y-[-1px]"
+                  className="transition-transform duration-150 hover:-translate-y-px"
                 >
                   Add sub-challenge
                 </Button>
@@ -198,7 +198,7 @@ export default function AdminPage() {
             </div>
 
             <div className="flex justify-end">
-              <Button type="submit" className="transition-transform duration-150 hover:translate-y-[-1px]">
+              <Button type="submit" className="transition-transform duration-150 hover:-translate-y-px">
                 Create contest
               </Button>
             </div>
