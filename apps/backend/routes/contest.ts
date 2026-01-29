@@ -16,6 +16,36 @@ function parsePagination(req: Request) {
   return { offset, limit };
 }
 
+// create contest
+router.post(
+  "/admin/contest",
+  adminMiddleware,
+  async (req: Request, res: Response) => {
+    try {
+      const { title, startTime } = req.body;
+
+      if (!title || !startTime) {
+        return res.status(400).json({
+          ok: false,
+          error: "title and startTime are required",
+        });
+      }
+
+      const contest = await client.contest.create({
+        data: {
+          title,
+          startTime: new Date(startTime),
+        },
+      });
+
+      return res.status(201).json({ ok: true, contest });
+    } catch (error) {
+      console.error("Create contest error:", error);
+      return res.status(500).json({ ok: false, error: "Create failed" });
+    }
+  },
+);
+
 // create challenge
 router.post(
   "/admin/challenge",
