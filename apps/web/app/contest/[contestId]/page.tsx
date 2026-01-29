@@ -15,7 +15,8 @@ import {
 type Challenge = {
     id: string;
     title: string;
-    points: number;
+    maxPoints: number;
+    description: string;
 };
 
 type Contest = {
@@ -89,8 +90,13 @@ export default function ContestDetailPage() {
                         <CardHeader>
                             <CardTitle>{item.challenge.title}</CardTitle>
                         </CardHeader>
-                        <CardContent className="flex items-center justify-between">
-                            <span>{item.challenge.points} pts</span>
+
+                        <CardHeader>
+                            <CardTitle>{item.challenge.description}</CardTitle>
+                        </CardHeader>
+
+                        <CardContent className="flex items-center justify-between text-black">
+                            <span>point {item.challenge.maxPoints}</span>
                             <Button
                                 onClick={() =>
                                     router.push(`/contest/${contestId}/challenge/${item.challenge.id}`)
