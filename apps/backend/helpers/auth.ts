@@ -63,9 +63,13 @@ const generateAccessToken = (user: any) => {
   if (!secret) {
     throw new Error("JWT_SECRET is not defined in environment variables");
   }
-  return jwt.sign({ userId: user.id, email: user.email }, secret, {
-    expiresIn: "2h",
-  });
+  return jwt.sign(
+    { userId: user.id, email: user.email, role: user.role },
+    secret,
+    {
+      expiresIn: "2h",
+    },
+  );
 };
 
 const generateRefreshToken = (user: any) => {
@@ -75,17 +79,30 @@ const generateRefreshToken = (user: any) => {
       "JWT_REFRESH_SECRET is not defined in environment variables",
     );
   }
-  return jwt.sign({ userId: user.id, email: user.email }, refreshSecret, {
-    expiresIn: "30d",
-  });
+  return jwt.sign(
+    { userId: user.id, email: user.email, role: user.role },
+    refreshSecret,
+    {
+      expiresIn: "30d",
+    },
+  );
 };
 
 const refreshAccessToken = (refreshToken: string) => {
   const decoded = jwt.verify(
     refreshToken,
     process.env.JWT_REFRESH_SECRET as string,
-  ) as any;
-  return generateAccessToken({ id: decoded.userId, email: decoded.email });
+  ) as {
+    userId: string;
+    email: string;
+    role: string;
+  };
+
+  return generateAccessToken({
+    id: decoded.userId,
+    email: decoded.email,
+    role: decoded.role,
+  });
 };
 
 export {

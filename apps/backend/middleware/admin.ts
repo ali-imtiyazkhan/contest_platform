@@ -6,31 +6,44 @@ export async function adminMiddleware(
   res: Response,
   next: NextFunction,
 ) {
-  const token = req.headers.authorization as string;
-
   try {
-    const decoded = jwt.verify(
-      token,
-      process.env.USER_JWT_PASSWORD!,
-    ) as JwtPayload;
-    if (decoded.userId) {
-      req.userId = decoded.userId;
+    const authHeader = req.headers.authorization;
 
-      if (decoded.role === "Admin") {
-        next();
-      } else {
-        res.status(403).json({
-          message: "You are not an admin ser",
-        });
-      }
-    } else {
-      res.status(403).json({
-        message: "Incorrect token",
-      });
+    if (!authHeader) {
+      return res.status(401).json({ message: "Authorization header missing" });
     }
-  } catch (e) {
-    res.status(403).json({
-      message: "Incorrect token",
+
+    // Remove "Bearer "
+    const token = authHeader.split(" ")[1];
+
+    if (!token) {
+      return res.status(401).json({ message: "Token missing" });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload & {
+      userId: string;
+      role?: string;
+    };
+
+    if (!decoded.userId) {
+      return res.status(403).json({ message: "Invalid token payload" });
+    }
+
+    req.userId = decoded.userId;
+
+    console.log("DECODED TOKEN:", decoded);
+
+    if (decoded.role === "Admin") {
+      return next();
+    }
+
+    return res.status(403).json({
+      message: "You are not an admin user",
+    });
+  } catch (error) {
+    console.error("Admin middleware error:", error);
+    return res.status(401).json({
+      message: "Invalid or expired token",
     });
   }
 }
