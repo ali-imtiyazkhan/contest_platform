@@ -6,8 +6,9 @@ import axios from "axios";
 import { BACKEND_URL } from "@/config";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useRouter } from "next/navigation";
+
 import {
     Select,
     SelectContent,
@@ -22,6 +23,8 @@ type Challenge = {
     description: string;
 };
 
+const router = useRouter();
+
 export default function ChallengePage() {
     const params = useParams();
     const contestId = params?.contestId as string;
@@ -34,6 +37,32 @@ export default function ChallengePage() {
     const [code, setCode] = useState("");
     const [submitting, setSubmitting] = useState(false);
 
+
+    const handleSubmit = async () => {
+        if (!code.trim()) return;
+
+        try {
+            setSubmitting(true);
+
+            await axios.post(
+                `${BACKEND_URL}/api/v1/contest/${contestId}/challenge/${challengeId}/submit`,
+                {
+                    submission: code,
+                    points: 0,
+                },
+                { withCredentials: true }
+            );
+
+            router.push("/finalpage")
+            alert("Submitted successfully");
+        } catch (err) {
+            console.error(err);
+            alert("Submission failed");
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
     // Timer
     const [elapsed, setElapsed] = useState(0);
     useEffect(() => {
@@ -43,7 +72,7 @@ export default function ChallengePage() {
     const mm = String(Math.floor(elapsed / 60)).padStart(2, "0");
     const ss = String(elapsed % 60).padStart(2, "0");
 
-    // /:contestId/challenge/:challengeId
+    // router:contestId/challenge/:challengeId
     const fetchChallenge = async () => {
         try {
             const res = await axios.get(
@@ -141,7 +170,7 @@ export default function ChallengePage() {
                             onChange={(e) => setCode(e.target.value)}
                             rows={16}
                             className="font-mono text-sm"
-                            placeholder="// Paste your solution here"
+                            placeholder="Paste your solution here"
                         />
 
                         <div className="flex items-center gap-3">
@@ -150,6 +179,7 @@ export default function ChallengePage() {
                                 onClick={() => {
                                     setSubmitting(true);
                                     setTimeout(() => setSubmitting(false), 900);
+                                    handleSubmit()
                                 }}
                             >
                                 {submitting ? "Submitting..." : "Submit"}

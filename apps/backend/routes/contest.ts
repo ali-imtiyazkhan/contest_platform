@@ -287,62 +287,58 @@ router.get("/:contestId/challenge/:challengeId", async (req, res) => {
 });
 
 // submit solution
-router.post(
-  "/contest/:contestId/challenge/:challengeId/submit",
-  userMiddleware,
-  async (req, res) => {
-    try {
-      const { submission, points } = req.body;
-      const userId = (req as any).user.id;
-      const { contestId, challengeId } = req.params;
+router.post("/:contestId/challenge/:challengeId/submit", async (req, res) => {
+  try {
+    const { submission, points } = req.body;
+    const userId = (req as any).user.id;
+    const { contestId, challengeId } = req.params;
 
-      if (!submission || typeof points !== "number") {
-        return res.status(400).json({ ok: false });
-      }
-
-      const allowed = await checkSubmissionRateLimit(userId);
-      if (!allowed) return res.status(429).json({ ok: false });
-
-      const mapping = await client.contestToChallengeMapping.findFirst({
-        where: { contestId, challengeId },
-      });
-
-      if (!mapping) {
-        return res
-          .status(404)
-          .json({ ok: false, error: "Invalid contest/challenge" });
-      }
-
-      // Save submission (upsert)
-      const saved = await client.contestSubmission.upsert({
-        where: {
-          contestToChallengeMappingId_userId: {
-            contestToChallengeMappingId: mapping.id,
-            userId,
-          },
-        },
-        update: {
-          submission,
-          points,
-        },
-        create: {
-          submission,
-          points,
-          userId,
-          contestToChallengeMappingId: mapping.id,
-        },
-      });
-
-      // 3 Update leaderboard cache
-      await addScoreToLeaderboard(contestId, userId, points);
-
-      res.status(201).json({ ok: true, submission: saved });
-    } catch (error) {
-      console.error("Submit error:", error);
-      res.status(500).json({ ok: false });
+    if (!submission || typeof points !== "number") {
+      return res.status(400).json({ ok: false });
     }
-  },
-);
+
+    const allowed = await checkSubmissionRateLimit(userId);
+    if (!allowed) return res.status(429).json({ ok: false });
+
+    const mapping = await client.contestToChallengeMapping.findFirst({
+      where: { contestId, challengeId },
+    });
+
+    if (!mapping) {
+      return res
+        .status(404)
+        .json({ ok: false, error: "Invalid contest/challenge" });
+    }
+
+    // Save submission (upsert)
+    const saved = await client.contestSubmission.upsert({
+      where: {
+        contestToChallengeMappingId_userId: {
+          contestToChallengeMappingId: mapping.id,
+          userId,
+        },
+      },
+      update: {
+        submission,
+        points,
+      },
+      create: {
+        submission,
+        points,
+        userId,
+        contestToChallengeMappingId: mapping.id,
+      },
+    });
+
+    // 3 Update leaderboard cache
+    await addScoreToLeaderboard(contestId, userId, points);
+
+    res.status(201).json({ ok: true, submission: saved });
+  } catch (error) {
+    console.error("Submit error:", error);
+    res.status(500).json({ ok: false });
+  }
+});
 
 // leaderboard
 router.get("/leaderboard/:contestId", async (req, res) => {
