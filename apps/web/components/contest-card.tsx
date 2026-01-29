@@ -16,6 +16,7 @@ export type ContestCardProps = {
   timeLeft?: string
   startsAt?: string
   className?: string
+  id: string
 }
 
 function DiffPill({ difficulty }: { difficulty: Difficulty }) {
@@ -45,6 +46,7 @@ export function ContestCard({
   timeLeft,
   startsAt,
   className,
+  id
 }: ContestCardProps) {
   const [started, setStarted] = useState(false)
   const router = useRouter()
@@ -91,7 +93,7 @@ export function ContestCard({
           onClick={(e) => {
             e.stopPropagation()
             setStarted(true)
-            router.push(`/challenges/${slug}`)
+            router.push(`/contest/${id}`)
           }}
           disabled={started}
           aria-live="polite"

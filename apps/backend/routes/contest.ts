@@ -178,6 +178,19 @@ router.delete(
   },
 );
 
+router.get("/", async (req: Request, res: Response) => {
+  try {
+    const contests = await client.contest.findMany({
+      orderBy: { startTime: "desc" },
+    });
+
+    res.json({ ok: true, data: contests });
+  } catch (error) {
+    console.error("contests error:", error);
+    res.status(500).json({ ok: false, error: "Load failed" });
+  }
+});
+
 // active contest
 router.get("/active", async (req: Request, res: Response) => {
   try {
