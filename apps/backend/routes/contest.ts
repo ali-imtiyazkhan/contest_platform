@@ -238,7 +238,7 @@ router.get("/finished", async (req: Request, res: Response) => {
 });
 
 // contest deatil
-router.get("/:contestId", userMiddleware, async (req, res) => {
+router.get("/:contestId", async (req, res) => {
   try {
     const contest = await client.contest.findUnique({
       where: { id: req.params.contestId },

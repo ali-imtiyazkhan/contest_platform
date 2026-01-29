@@ -47,6 +47,7 @@ model Challenge {
   title       String
   notionDocId String
   maxPoints   Int
+  description  String?
 
   contestToChallengeMapping ContestToChallengeMapping[]
 }

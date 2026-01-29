@@ -45,6 +45,8 @@ export default function ContestDetailPage() {
                 { withCredentials: true }
             );
 
+
+            console.log("res is :", res);
             console.log("API URL:", `${BACKEND_URL}/api/v1/contest/${contestId}`);
 
 
