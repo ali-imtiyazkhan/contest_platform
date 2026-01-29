@@ -59,7 +59,7 @@ export default function DashboardPage() {
 
   const fetchChallenges = async () => {
     try {
-      const response = await axios.get(`${BACKEND_URL}/fill/your/challenges/api/here/bhayia`)
+      const response = await axios.get(`${BACKEND_URL}/api/v1/contest//active`)
       if (response?.data) {
         setChallengesData(response.data)
       }

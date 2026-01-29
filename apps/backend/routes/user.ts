@@ -32,11 +32,11 @@ router.post("/signup", async (req, res) => {
       return res.status(409).json({ message: "User already exists!" });
     }
 
-    // ✅ Generate OTP
+    //  Generate OTP
     const otp = generateOtp().toString();
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
 
-    // ✅ Save OTP in DB (UPSERT)
+    // Save OTP in DB (UPSERT)
     await client.otpVerification.upsert({
       where: { email: normalizedEmail },
       update: {

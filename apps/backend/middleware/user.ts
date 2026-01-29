@@ -6,13 +6,18 @@ export function userMiddleware(
   res: Response,
   next: NextFunction,
 ) {
-  const token = req.headers.authorization as string;
-
   try {
-    const decoded = jwt.verify(
-      token,
-      process.env.USER_JWT_PASSWORD!,
-    ) as JwtPayload;
+    const authHeader = req.headers.authorization as string;
+    if (!authHeader) {
+      return res.status(404).json({
+        message: "token is invalid ",
+      });
+    }
+
+    const token = authHeader.split(" ")[1];
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
+
     if (decoded.userId) {
       req.userId = decoded.userId;
       next();

@@ -45,18 +45,18 @@ const sendOtp = async (email: string, otp: string) => {
   await transporter.sendMail(mailOptions);
 };
 
-// const resendOtp = async (email: string) => {
-//   const otp = generateOtp().toString();
-//   const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+const resendOtp = async (email: string) => {
+  const otp = generateOtp().toString();
+  const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
 
-//   await client.otpVerification.upsert({
-//     where: { email },
-//     update: { otp, expiresAt, attempts: 0 },
-//     create: { email, otp, expiresAt },
-//   });
+  await client.otpVerification.upsert({
+    where: { email },
+    update: { otp, expiresAt, attempts: 0 },
+    create: { email, otp, expiresAt },
+  });
 
-//   await sendOtp(email, otp);
-// };
+  await sendOtp(email, otp);
+};
 
 const generateAccessToken = (user: any) => {
   const secret = process.env.JWT_SECRET;
