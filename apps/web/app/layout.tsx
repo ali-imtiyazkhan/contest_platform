@@ -63,7 +63,7 @@ export default function RootLayout({
           <AuthProvider>
             <Suspense fallback={<div>Loading...</div>}>
               <SiteHeader />
-              <main className="mx-auto w-full max-w-6xl px-4 py-6">
+              <main>
                 {children}
               </main>
             </Suspense>
