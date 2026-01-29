@@ -51,7 +51,7 @@ router.post("/signup", async (req, res) => {
       },
     });
 
-    // ✅ Send OTP email
+    //  Send OTP email
     await sendOtp(normalizedEmail, otp);
 
     console.log("OTP generated:", otp);

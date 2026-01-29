@@ -35,6 +35,7 @@ model OtpVerification {
 model Contest {
   id        String   @id @default(uuid())
   title     String
+  description String?
   startTime DateTime
 
   contestToChallengeMapping ContestToChallengeMapping[]
