@@ -10,17 +10,13 @@ import {
 
 const router = Router();
 
-/* ================= Utils ================= */
-
 function parsePagination(req: Request) {
   const offset = Math.max(0, Number(req.query.offset) || 0);
   const limit = Math.min(50, Math.max(1, Number(req.query.limit) || 10));
   return { offset, limit };
 }
 
-/* ================= ADMIN ROUTES ================= */
-
-/* CREATE CHALLENGE */
+// create challenge
 router.post(
   "/admin/challenge",
   adminMiddleware,
@@ -47,7 +43,7 @@ router.post(
   },
 );
 
-/* MAP CHALLENGE TO CONTEST */
+// map challenge to contest
 router.post(
   "/admin/contest/:contestId/challenge",
   adminMiddleware,
@@ -96,7 +92,7 @@ router.post(
   },
 );
 
-/* REORDER CHALLENGES */
+// reorder challenege
 router.put(
   "/admin/contest/:contestId/reorder",
   adminMiddleware,
@@ -131,7 +127,7 @@ router.put(
   },
 );
 
-/* REMOVE CHALLENGE FROM CONTEST */
+// remove challenge from contest
 router.delete(
   "/admin/contest/:contestId/challenge/:challengeId",
   adminMiddleware,
@@ -151,9 +147,7 @@ router.delete(
   },
 );
 
-/* ================= USER ROUTES ================= */
-
-/* ACTIVE CONTESTS */
+// active contest
 router.get("/active", async (req: Request, res: Response) => {
   try {
     const { offset, limit } = parsePagination(req);
@@ -176,7 +170,7 @@ router.get("/active", async (req: Request, res: Response) => {
   }
 });
 
-/* FINISHED CONTESTS */
+// finsished contset
 router.get("/finished", async (req: Request, res: Response) => {
   try {
     const { offset, limit } = parsePagination(req);
@@ -199,7 +193,7 @@ router.get("/finished", async (req: Request, res: Response) => {
   }
 });
 
-/* CONTEST DETAILS */
+// contest deatil
 router.get("/:contestId", userMiddleware, async (req, res) => {
   try {
     const contest = await client.contest.findUnique({
@@ -221,7 +215,7 @@ router.get("/:contestId", userMiddleware, async (req, res) => {
   }
 });
 
-/* CHALLENGE DETAILS */
+// challenge details
 router.get(
   "/:contestId/challenge/:challengeId",
   userMiddleware,
@@ -246,7 +240,7 @@ router.get(
   },
 );
 
-/* SUBMIT SOLUTION */
+// submit solution
 router.post(
   "/contest/:contestId/challenge/:challengeId/submit",
   userMiddleware,
@@ -263,7 +257,6 @@ router.post(
       const allowed = await checkSubmissionRateLimit(userId);
       if (!allowed) return res.status(429).json({ ok: false });
 
-      // 1️⃣ Find mapping
       const mapping = await client.contestToChallengeMapping.findFirst({
         where: { contestId, challengeId },
       });
@@ -274,7 +267,7 @@ router.post(
           .json({ ok: false, error: "Invalid contest/challenge" });
       }
 
-      // 2️⃣ Save submission (upsert)
+      // Save submission (upsert)
       const saved = await client.contestSubmission.upsert({
         where: {
           contestToChallengeMappingId_userId: {
@@ -294,7 +287,7 @@ router.post(
         },
       });
 
-      // 3️⃣ Update leaderboard cache
+      // 3 Update leaderboard cache
       await addScoreToLeaderboard(contestId, userId, points);
 
       res.status(201).json({ ok: true, submission: saved });
@@ -305,7 +298,7 @@ router.post(
   },
 );
 
-/* LEADERBOARD */
+// leaderboard
 router.get("/leaderboard/:contestId", async (req, res) => {
   try {
     const leaderboard = await getLeaderboard(req.params.contestId);
