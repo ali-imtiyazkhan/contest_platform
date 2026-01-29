@@ -31,7 +31,7 @@ type Contest = {
 export default function ContestDetailPage() {
     const params = useParams();
     const router = useRouter();
-    const contestId = params?.id as string;
+    const contestId = params?.contestId as string;
 
     console.log("contestId is ", contestId)
 
@@ -93,7 +93,7 @@ export default function ContestDetailPage() {
                             <span>{item.challenge.points} pts</span>
                             <Button
                                 onClick={() =>
-                                    router.push(`/challenge/${item.challenge.id}`)
+                                    router.push(`/contest/${contestId}/challenge/${item.challenge.id}`)
                                 }
                             >
                                 Open

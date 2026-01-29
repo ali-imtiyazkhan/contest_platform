@@ -53,17 +53,22 @@ router.post(
   adminMiddleware,
   async (req: Request, res: Response) => {
     try {
-      const { title, notionDocId, maxPoints } = req.body;
+      const { title, notionDocId, maxPoints, description } = req.body;
 
-      if (!title || !notionDocId || typeof maxPoints !== "number") {
+      if (
+        !title ||
+        !notionDocId ||
+        typeof maxPoints !== "number" ||
+        !description
+      ) {
         return res.status(400).json({
           ok: false,
-          error: "title, notionDocId and maxPoints are required",
+          error: "title, notionDocId,description and maxPoints are required",
         });
       }
 
       const challenge = await client.challenge.create({
-        data: { title, notionDocId, maxPoints },
+        data: { title, notionDocId, description, maxPoints },
       });
 
       return res.status(201).json({ ok: true, challenge });
@@ -178,6 +183,7 @@ router.delete(
   },
 );
 
+// all contest
 router.get("/", async (req: Request, res: Response) => {
   try {
     const contests = await client.contest.findMany({
@@ -260,29 +266,25 @@ router.get("/:contestId", async (req, res) => {
 });
 
 // challenge details
-router.get(
-  "/:contestId/challenge/:challengeId",
-  userMiddleware,
-  async (req, res) => {
-    try {
-      const mapping = await client.contestToChallengeMapping.findFirst({
-        where: {
-          contestId: req.params.contestId,
-          challengeId: req.params.challengeId,
-        },
-        include: { challenge: true },
-      });
+router.get("/:contestId/challenge/:challengeId", async (req, res) => {
+  try {
+    const mapping = await client.contestToChallengeMapping.findFirst({
+      where: {
+        contestId: req.params.contestId,
+        challengeId: req.params.challengeId,
+      },
+      include: { challenge: true },
+    });
 
-      if (!mapping)
-        return res.status(404).json({ ok: false, error: "Not found" });
+    if (!mapping)
+      return res.status(404).json({ ok: false, error: "Not found" });
 
-      res.json({ ok: true, data: mapping });
-    } catch (error) {
-      console.error("Challenge fetch error:", error);
-      res.status(500).json({ ok: false });
-    }
-  },
-);
+    res.json({ ok: true, data: mapping });
+  } catch (error) {
+    console.error("Challenge fetch error:", error);
+    res.status(500).json({ ok: false });
+  }
+});
 
 // submit solution
 router.post(
