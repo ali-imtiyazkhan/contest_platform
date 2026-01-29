@@ -22,9 +22,9 @@ router.post(
   adminMiddleware,
   async (req: Request, res: Response) => {
     try {
-      const { title, startTime } = req.body;
+      const { title, startTime, description } = req.body;
 
-      if (!title || !startTime) {
+      if (!title || !startTime || !description) {
         return res.status(400).json({
           ok: false,
           error: "title and startTime are required",
@@ -34,6 +34,7 @@ router.post(
       const contest = await client.contest.create({
         data: {
           title,
+          description,
           startTime: new Date(startTime),
         },
       });
