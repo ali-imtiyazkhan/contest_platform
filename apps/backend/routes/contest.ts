@@ -18,10 +18,9 @@ function parsePagination(req: Request) {
   return { offset, limit };
 }
 
-// Admin Routes
+/* ================= ADMIN ROUTES ================= */
 
-// Create challenge
-
+/* CREATE CHALLENGE */
 router.post(
   "/admin/challenge",
   adminMiddleware,
@@ -48,7 +47,7 @@ router.post(
   },
 );
 
-// MAP CHALLENGE TO CONTEST
+/* MAP CHALLENGE TO CONTEST */
 router.post(
   "/admin/contest/:contestId/challenge",
   adminMiddleware,
@@ -97,7 +96,7 @@ router.post(
   },
 );
 
-//  REORDER CHALLENGES
+/* REORDER CHALLENGES */
 router.put(
   "/admin/contest/:contestId/reorder",
   adminMiddleware,
@@ -132,7 +131,7 @@ router.put(
   },
 );
 
-/*REMOVE CHALLENGE  */
+/* REMOVE CHALLENGE FROM CONTEST */
 router.delete(
   "/admin/contest/:contestId/challenge/:challengeId",
   adminMiddleware,
@@ -152,10 +151,9 @@ router.delete(
   },
 );
 
-/* 
-    USER ROUTES */
+/* ================= USER ROUTES ================= */
 
-/*  ACTIVE CONTESTS */
+/* ACTIVE CONTESTS */
 router.get("/active", async (req: Request, res: Response) => {
   try {
     const { offset, limit } = parsePagination(req);
@@ -178,7 +176,7 @@ router.get("/active", async (req: Request, res: Response) => {
   }
 });
 
-/* FINISHED CONTESTS  */
+/* FINISHED CONTESTS */
 router.get("/finished", async (req: Request, res: Response) => {
   try {
     const { offset, limit } = parsePagination(req);
@@ -223,7 +221,7 @@ router.get("/:contestId", userMiddleware, async (req, res) => {
   }
 });
 
-/*  CHALLENGE DETAILS */
+/* CHALLENGE DETAILS */
 router.get(
   "/:contestId/challenge/:challengeId",
   userMiddleware,
@@ -240,7 +238,7 @@ router.get(
       if (!mapping)
         return res.status(404).json({ ok: false, error: "Not found" });
 
-      res.json({ ok: true, data: mapping.challenge });
+      res.json({ ok: true, data: mapping });
     } catch (error) {
       console.error("Challenge fetch error:", error);
       res.status(500).json({ ok: false });
@@ -248,38 +246,56 @@ router.get(
   },
 );
 
-/*  SUBMIT SOLUTION  */
+/* SUBMIT SOLUTION */
 router.post(
-  "/challenge/:challengeId/submit",
+  "/contest/:contestId/challenge/:challengeId/submit",
   userMiddleware,
   async (req, res) => {
     try {
       const { submission, points } = req.body;
       const userId = (req as any).user.id;
+      const { contestId, challengeId } = req.params;
 
-      if (!submission || typeof points !== "number")
+      if (!submission || typeof points !== "number") {
         return res.status(400).json({ ok: false });
+      }
 
       const allowed = await checkSubmissionRateLimit(userId);
       if (!allowed) return res.status(429).json({ ok: false });
 
-      const saved = await client.submissions.create({
-        data: {
+      // 1️⃣ Find mapping
+      const mapping = await client.contestToChallengeMapping.findFirst({
+        where: { contestId, challengeId },
+      });
+
+      if (!mapping) {
+        return res
+          .status(404)
+          .json({ ok: false, error: "Invalid contest/challenge" });
+      }
+
+      // 2️⃣ Save submission (upsert)
+      const saved = await client.contestSubmission.upsert({
+        where: {
+          contestToChallengeMappingId_userId: {
+            contestToChallengeMappingId: mapping.id,
+            userId,
+          },
+        },
+        update: {
           submission,
           points,
-          challengeId: req.params.challengeId,
+        },
+        create: {
+          submission,
+          points,
           userId,
+          contestToChallengeMappingId: mapping.id,
         },
       });
 
-      const mapping = await client.contestToChallengeMapping.findFirst({
-        where: { challengeId: req.params.challengeId },
-        select: { contestId: true },
-      });
-
-      if (mapping) {
-        await addScoreToLeaderboard(mapping.contestId, userId, points);
-      }
+      // 3️⃣ Update leaderboard cache
+      await addScoreToLeaderboard(contestId, userId, points);
 
       res.status(201).json({ ok: true, submission: saved });
     } catch (error) {
@@ -289,7 +305,7 @@ router.post(
   },
 );
 
-/* LEADERBOARD  */
+/* LEADERBOARD */
 router.get("/leaderboard/:contestId", async (req, res) => {
   try {
     const leaderboard = await getLeaderboard(req.params.contestId);
