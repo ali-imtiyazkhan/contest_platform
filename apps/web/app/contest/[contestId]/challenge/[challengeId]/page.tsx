@@ -112,7 +112,7 @@ export default function ChallengePage() {
     }
 
     return (
-        <main className="mx-auto max-w-5xl px-4 py-6 md:py-8">
+        <main className="mx-auto max-w-full px-4 py-6 md:py-8">
             <div className="mb-4 flex items-center justify-between">
                 <h1 className="text-xl font-semibold">{challenge.title}</h1>
             </div>

@@ -39,13 +39,13 @@ export default function ContestDetailPage() {
 
     const contestId = params?.contestId as string;
 
-    // ✅ HOOK MUST BE HERE (inside component)
+    // HOOK MUST BE HERE (inside component)
     const { accessToken, loading: authLoading } = useAuth();
 
     const [contest, setContest] = useState<Contest | null>(null);
     const [loading, setLoading] = useState(true);
 
-    // 🔐 Redirect if not authenticated
+    //  Redirect if not authenticated
     useEffect(() => {
         if (!authLoading && !accessToken) {
             router.push("/signin");
