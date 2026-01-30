@@ -3,7 +3,7 @@
 import * as React from "react";
 
 export type Toast = {
-    id: string;
+    id?: string;
     title?: string;
     description?: string;
 };

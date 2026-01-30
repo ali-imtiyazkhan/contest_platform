@@ -1,206 +1,239 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
 import { useToast } from "@/hooks/use-toast"
 
-type SubChallenge = { title: string; points: number; live: boolean }
+type SubChallenge = {
+  title: string
+  points: number
+  description: string
+  notionDocId: string
+}
 
 export default function AdminPage() {
   const { toast } = useToast()
+
   const [name, setName] = useState("")
   const [description, setDescription] = useState("")
-  const [live, setLive] = useState(false)
-  const [subs, setSubs] = useState<SubChallenge[]>([{ title: "Warm-up task", points: 100, live: true }])
   const [scheduled, setScheduled] = useState(false)
-  const [startAt, setStartAt] = useState<string>("")
-  const [endAt, setEndAt] = useState<string>("")
+  const [startAt, setStartAt] = useState("")
+  const [endAt, setEndAt] = useState("")
 
-  const addSub = () => setSubs((s) => [...s, { title: "", points: 100, live: false }])
-  const removeSub = (idx: number) => setSubs((s) => s.filter((_, i) => i !== idx))
+  const [subs, setSubs] = useState<SubChallenge[]>([
+    {
+      title: "Warm-up task",
+      points: 100,
+      description: "demo test",
+      notionDocId: "123abc",
+    },
+  ])
+
+  const addSub = () =>
+    setSubs((s) => [
+      ...s,
+      { title: "", points: 100, description: "", notionDocId: "" },
+    ])
+
+  const removeSub = (idx: number) =>
+    setSubs((s) => s.filter((_, i) => i !== idx))
+
   const updateSub = (idx: number, patch: Partial<SubChallenge>) =>
-    setSubs((s) => s.map((item, i) => (i === idx ? { ...item, ...patch } : item)))
+    setSubs((s) =>
+      s.map((item, i) => (i === idx ? { ...item, ...patch } : item)),
+    )
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault()
-    toast({
-      id: crypto.randomUUID(),
-      title: "Contest created (mock)",
-      description: `“${name || "Untitled"}” with ${subs.length} sub-challenge(s). ${scheduled && startAt
-        ? `Starts at ${new Date(startAt).toLocaleString()}.`
-        : ""
-        }`,
-    });
 
-    setName("")
-    setDescription("")
-    setLive(false)
-    setSubs([{ title: "Warm-up task", points: 100, live: true }])
-    setScheduled(false)
-    setStartAt("")
-    setEndAt("")
+    try {
+      // 1️⃣ Create Contest
+      const contestRes = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/contest/admin/contest`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: name,
+            description,
+            startTime:
+              scheduled && startAt ? startAt : new Date().toISOString(),
+          }),
+        },
+      )
+
+      const contestJson = await contestRes.json()
+      if (!contestJson.ok) throw new Error("Contest creation failed")
+
+      const contestId = contestJson.contest.id
+
+      // 2️⃣ Create Challenges + Map
+      for (let i = 0; i < subs.length; i++) {
+        const sc = subs[i]
+
+        if (!sc.title || !sc.description || !sc.notionDocId) {
+          throw new Error("Challenge fields cannot be empty")
+        }
+
+        const challengeRes = await fetch(
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/contest/admin/challenge`,
+          {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              title: sc.title,
+              description: sc.description,
+              maxPoints: sc.points,
+              notionDocId: sc.notionDocId,
+            }),
+          },
+        )
+
+        const challengeJson = await challengeRes.json()
+        if (!challengeJson.ok)
+          throw new Error("Challenge creation failed")
+
+        await fetch(
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/contest/admin/contest/${contestId}/challenge`,
+          {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              challengeId: challengeJson.challenge.id,
+              index: i,
+            }),
+          },
+        )
+      }
+
+      toast({
+        title: "Contest created 🎉",
+        description: `${subs.length} challenges added successfully`,
+      })
+
+      // reset
+      setName("")
+      setDescription("")
+      setSubs([
+        {
+          title: "Warm-up task",
+          points: 100,
+          description: "demo test",
+          notionDocId: "123abc",
+        },
+      ])
+      setScheduled(false)
+      setStartAt("")
+      setEndAt("")
+    } catch (err: any) {
+      toast({
+        title: "Error",
+        description: err.message || "Something went wrong",
+      })
+    }
   }
 
   return (
     <div className="grid gap-6">
-      <header className="space-y-1">
-        <h1 className="text-pretty text-2xl font-semibold">Admin</h1>
+      <header>
+        <h1 className="text-2xl font-semibold">Admin Panel</h1>
         <p className="text-sm text-muted-foreground">
-          Create a contest and add sub-challenges. This is a frontend-only mock.
+          Create contests and challenges
         </p>
       </header>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">New Contest</CardTitle>
-          <CardDescription>Define the contest metadata and add sub-challenges.</CardDescription>
+          <CardTitle>New Contest</CardTitle>
+          <CardDescription>
+            Contest metadata and challenges
+          </CardDescription>
         </CardHeader>
+
         <CardContent>
           <form className="grid gap-6" onSubmit={submit}>
             <div className="grid gap-2">
-              <Label htmlFor="name">Name</Label>
-              <Input
-                id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="100x Sprint"
-                required
-                className="transition-shadow duration-150 focus-visible:shadow-sm"
-              />
-              <p className="text-xs text-muted-foreground">Keep it short and recognizable.</p>
+              <Label>Contest Name</Label>
+              <Input value={name} onChange={(e) => setName(e.target.value)} required />
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="description">Description</Label>
-              <Textarea
-                id="description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="A fast-paced developer contest focusing on modern web fundamentals."
-                rows={4}
-                required
-                className="transition-shadow duration-150 focus-visible:shadow-sm"
-              />
-              <p className="text-xs text-muted-foreground">What participants should expect.</p>
+              <Label>Contest Description</Label>
+              <Textarea value={description} onChange={(e) => setDescription(e.target.value)} required />
             </div>
 
-            <div className="flex flex-wrap items-center gap-4">
-              <div className="flex items-center gap-3">
-                <Switch id="live" checked={live} onCheckedChange={setLive} />
-                <Label htmlFor="live" className="text-sm text-muted-foreground">
-                  Live
-                </Label>
-              </div>
-              <div className="flex items-center gap-3">
-                <Switch id="scheduled" checked={scheduled} onCheckedChange={setScheduled} />
-                <Label htmlFor="scheduled" className="text-sm text-muted-foreground">
-                  Schedule for later
-                </Label>
-              </div>
+            <div className="flex items-center gap-3">
+              <Switch checked={scheduled} onCheckedChange={setScheduled} />
+              <Label>Schedule for later</Label>
             </div>
 
             {scheduled && (
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="grid gap-2">
-                  <Label htmlFor="startAt">Start at</Label>
-                  <Input
-                    id="startAt"
-                    type="datetime-local"
-                    value={startAt}
-                    onChange={(e) => setStartAt(e.target.value)}
-                    className="transition-shadow duration-150 focus-visible:shadow-sm"
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="endAt">End at (optional)</Label>
-                  <Input
-                    id="endAt"
-                    type="datetime-local"
-                    value={endAt}
-                    onChange={(e) => setEndAt(e.target.value)}
-                    className="transition-shadow duration-150 focus-visible:shadow-sm"
-                  />
-                </div>
+              <div className="grid sm:grid-cols-2 gap-4">
+                <Input type="datetime-local" value={startAt} onChange={(e) => setStartAt(e.target.value)} />
+                <Input type="datetime-local" value={endAt} onChange={(e) => setEndAt(e.target.value)} />
               </div>
             )}
 
-            <div className="grid gap-3">
-              <div className="flex items-center justify-between">
-                <h3 className="text-base font-semibold">Sub-challenges</h3>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  onClick={addSub}
-                  className="transition-transform duration-150 hover:-translate-y-px"
-                >
-                  Add sub-challenge
+            <div className="grid gap-4">
+              <div className="flex justify-between">
+                <h3 className="font-semibold">Challenges</h3>
+                <Button type="button" onClick={addSub} variant="secondary">
+                  Add Challenge
                 </Button>
               </div>
 
-              <div className="grid gap-4">
-                {subs.map((sc, idx) => (
-                  <div key={idx} className="rounded-lg border p-4">
-                    <div className="grid gap-3 sm:grid-cols-2">
-                      <div className="grid gap-2">
-                        <Label htmlFor={`title-${idx}`}>Title</Label>
-                        <Input
-                          id={`title-${idx}`}
-                          value={sc.title}
-                          onChange={(e) => updateSub(idx, { title: e.target.value })}
-                          placeholder="Implement LRU Cache"
-                          required
-                          className="transition-shadow duration-150 focus-visible:shadow-sm"
-                        />
-                      </div>
-                      <div className="grid gap-2">
-                        <Label htmlFor={`points-${idx}`}>Points</Label>
-                        <Input
-                          id={`points-${idx}`}
-                          type="number"
-                          value={sc.points}
-                          onChange={(e) => updateSub(idx, { points: Number(e.target.value) || 0 })}
-                          min={0}
-                          required
-                          className="transition-shadow duration-150 focus-visible:shadow-sm"
-                        />
-                      </div>
-                    </div>
-                    <div className="mt-3 flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <Switch
-                          id={`live-${idx}`}
-                          checked={sc.live}
-                          onCheckedChange={(checked) => updateSub(idx, { live: checked })}
-                        />
-                        <Label htmlFor={`live-${idx}`} className="text-sm text-muted-foreground">
-                          Live
-                        </Label>
-                      </div>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        className="text-destructive hover:bg-destructive/10"
-                        onClick={() => removeSub(idx)}
-                      >
-                        Remove
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              {subs.map((sc, idx) => (
+                <div key={idx} className="border rounded-lg p-4 grid gap-3">
+                  <Input
+                    placeholder="Title"
+                    value={sc.title}
+                    onChange={(e) => updateSub(idx, { title: e.target.value })}
+                    required
+                  />
+                  <Textarea
+                    placeholder="Description"
+                    value={sc.description}
+                    onChange={(e) => updateSub(idx, { description: e.target.value })}
+                    required
+                  />
+                  <Input
+                    placeholder="Notion Doc ID"
+                    value={sc.notionDocId}
+                    onChange={(e) => updateSub(idx, { notionDocId: e.target.value })}
+                    required
+                  />
+                  <Input
+                    type="number"
+                    min={0}
+                    value={sc.points}
+                    onChange={(e) =>
+                      updateSub(idx, { points: Number(e.target.value) || 0 })
+                    }
+                  />
+                  <Button type="button" variant="destructive" onClick={() => removeSub(idx)}>
+                    Remove
+                  </Button>
+                </div>
+              ))}
             </div>
 
             <div className="flex justify-end">
-              <Button type="submit" className="transition-transform duration-150 hover:-translate-y-px">
-                Create contest
-              </Button>
+              <Button type="submit">Create Contest</Button>
             </div>
           </form>
         </CardContent>
