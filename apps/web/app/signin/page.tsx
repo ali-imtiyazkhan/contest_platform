@@ -51,8 +51,14 @@ export default function SignInPage() {
         },
       );
 
+      console.log("response is :", response.data)
+
       if (response?.data) {
+
         const { accessToken, user } = response.data;
+
+        localStorage.setItem("accesstoken", response?.data.accessToken)
+
         login(user, accessToken);
         router.push("/dashboard");
       }

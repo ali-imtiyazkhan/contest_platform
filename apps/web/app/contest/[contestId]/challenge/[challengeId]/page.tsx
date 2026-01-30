@@ -3,10 +3,12 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import axios from "axios";
+
 import { BACKEND_URL } from "@/config";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
+import { useAuth } from "@/context/AuthProvider";
 
 import {
     Select,
@@ -26,50 +28,23 @@ export default function ChallengePage() {
     const params = useParams();
     const router = useRouter();
 
+    const { accessToken, loading: authLoading } = useAuth();
+
     const contestId = params?.contestId as string;
     const challengeId = params?.challengeId as string;
 
     const [challenge, setChallenge] = useState<Challenge | null>(null);
     const [loading, setLoading] = useState(true);
-
     const [lang, setLang] = useState("typescript");
     const [code, setCode] = useState("");
     const [submitting, setSubmitting] = useState(false);
 
-    const handleSubmit = async () => {
-        if (!code.trim()) return;
-
-        try {
-            setSubmitting(true);
-
-            await axios.post(
-                `${BACKEND_URL}/api/v1/contest/${contestId}/challenge/${challengeId}/submit`,
-                {
-                    submission: code,
-                    points: 0, // TEMP — later AI decides
-                },
-                { withCredentials: true }
-            );
-
-            alert("Submitted successfully");
-            router.push("/finalpage");
-        } catch (err) {
-            console.error(err);
-            alert("Submission failed");
-        } finally {
-            setSubmitting(false);
-        }
-    };
-
-    // Timer
-    const [elapsed, setElapsed] = useState(0);
+    // 🔐 Redirect if not authenticated
     useEffect(() => {
-        const t = setInterval(() => setElapsed((s) => s + 1), 1000);
-        return () => clearInterval(t);
-    }, []);
-
-    const mm = String(Math.floor(elapsed / 60)).padStart(2, "0");
-    const ss = String(elapsed % 60).padStart(2, "0");
+        if (!authLoading && !accessToken) {
+            router.push("/signin");
+        }
+    }, [authLoading, accessToken, router]);
 
     const fetchChallenge = async () => {
         try {
@@ -87,27 +62,63 @@ export default function ChallengePage() {
     };
 
     useEffect(() => {
-        if (contestId && challengeId) fetchChallenge();
+        if (contestId && challengeId) {
+            fetchChallenge();
+        }
     }, [contestId, challengeId]);
 
+    const handleSubmit = async () => {
+        if (!accessToken || authLoading) return;
+        if (!code.trim()) return;
+
+        try {
+            setSubmitting(true);
+
+            await axios.post(
+                `${BACKEND_URL}/api/v1/contest/${contestId}/challenge/${challengeId}/submit`,
+                {
+                    submission: code,
+                    points: 30,
+                    language: lang,
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${accessToken}`,
+                    },
+                    withCredentials: true,
+                }
+            );
+
+            alert("Submitted successfully");
+            router.push("/finalpage");
+        } catch (error) {
+            console.error("Submission failed:", error);
+            alert("Submission failed");
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
     if (loading) {
-        return <p className="p-6 text-muted-foreground">Loading challenge...</p>;
+        return (
+            <p className="p-6 text-muted-foreground">Loading challenge...</p>
+        );
     }
 
     if (!challenge) {
-        return <p className="p-6 text-red-500">Challenge not found.</p>;
+        return (
+            <p className="p-6 text-red-500">Challenge not found.</p>
+        );
     }
 
     return (
         <main className="mx-auto max-w-5xl px-4 py-6 md:py-8">
             <div className="mb-4 flex items-center justify-between">
                 <h1 className="text-xl font-semibold">{challenge.title}</h1>
-                <span className="rounded-md bg-primary/10 px-2 py-1 text-xs font-medium">
-                    {mm}:{ss}
-                </span>
             </div>
 
             <div className="grid gap-6 md:grid-cols-2">
+                {/* Problem */}
                 <Card>
                     <CardHeader>
                         <CardTitle>Problem Description</CardTitle>
@@ -119,6 +130,7 @@ export default function ChallengePage() {
                     </CardContent>
                 </Card>
 
+                {/* Solution */}
                 <Card>
                     <CardHeader className="flex items-center justify-between">
                         <CardTitle>Your Solution</CardTitle>
@@ -144,18 +156,17 @@ export default function ChallengePage() {
                             className="font-mono text-sm"
                         />
 
-                        <div className="flex gap-3">
-                            <Button
-                                disabled={submitting || !code.trim()}
-                                onClick={handleSubmit}
-                            >
-                                {submitting ? "Submitting..." : "Submit"}
-                            </Button>
-
-                            <Button variant="secondary" onClick={() => setCode("")}>
-                                Clear
-                            </Button>
-                        </div>
+                        <Button
+                            onClick={handleSubmit}
+                            disabled={
+                                submitting ||
+                                authLoading ||
+                                !accessToken ||
+                                !code.trim()
+                            }
+                        >
+                            {submitting ? "Submitting..." : "Submit"}
+                        </Button>
                     </CardContent>
                 </Card>
             </div>

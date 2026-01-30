@@ -8,10 +8,12 @@ export function userMiddleware(
 ) {
   try {
     const authHeader = req.headers.authorization as string;
+    console.log("AUTH HEADER:", req.headers.authorization);
+
+
+    console.log("auth token is this :", authHeader);
     if (!authHeader) {
-      return res.status(404).json({
-        message: "token is invalid ",
-      });
+      return res.status(401).json({ message: "Unauthorized" });
     }
 
     const token = authHeader.split(" ")[1];

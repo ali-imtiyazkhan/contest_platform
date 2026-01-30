@@ -17,65 +17,59 @@ function parsePagination(req: Request) {
 }
 
 // create contest
-router.post(
-  "/admin/contest",
-  async (req: Request, res: Response) => {
-    try {
-      const { title, startTime, description } = req.body;
+router.post("/admin/contest", async (req: Request, res: Response) => {
+  try {
+    const { title, startTime, description } = req.body;
 
-      if (!title || !startTime || !description) {
-        return res.status(400).json({
-          ok: false,
-          error: "title and startTime are required",
-        });
-      }
-
-      const contest = await client.contest.create({
-        data: {
-          title,
-          description,
-          startTime: new Date(startTime),
-        },
+    if (!title || !startTime || !description) {
+      return res.status(400).json({
+        ok: false,
+        error: "title and startTime are required",
       });
-
-      return res.status(201).json({ ok: true, contest });
-    } catch (error) {
-      console.error("Create contest error:", error);
-      return res.status(500).json({ ok: false, error: "Create failed" });
     }
-  },
-);
+
+    const contest = await client.contest.create({
+      data: {
+        title,
+        description,
+        startTime: new Date(startTime),
+      },
+    });
+
+    return res.status(201).json({ ok: true, contest });
+  } catch (error) {
+    console.error("Create contest error:", error);
+    return res.status(500).json({ ok: false, error: "Create failed" });
+  }
+});
 
 // create challenge
-router.post(
-  "/admin/challenge",
-  async (req: Request, res: Response) => {
-    try {
-      const { title, notionDocId, maxPoints, description } = req.body;
+router.post("/admin/challenge", async (req: Request, res: Response) => {
+  try {
+    const { title, notionDocId, maxPoints, description } = req.body;
 
-      if (
-        !title ||
-        !notionDocId ||
-        typeof maxPoints !== "number" ||
-        !description
-      ) {
-        return res.status(400).json({
-          ok: false,
-          error: "title, notionDocId,description and maxPoints are required",
-        });
-      }
-
-      const challenge = await client.challenge.create({
-        data: { title, notionDocId, description, maxPoints },
+    if (
+      !title ||
+      !notionDocId ||
+      typeof maxPoints !== "number" ||
+      !description
+    ) {
+      return res.status(400).json({
+        ok: false,
+        error: "title, notionDocId,description and maxPoints are required",
       });
-
-      return res.status(201).json({ ok: true, challenge });
-    } catch (error) {
-      console.error("Create challenge error:", error);
-      return res.status(500).json({ ok: false, error: "Create failed" });
     }
-  },
-);
+
+    const challenge = await client.challenge.create({
+      data: { title, notionDocId, description, maxPoints },
+    });
+
+    return res.status(201).json({ ok: true, challenge });
+  } catch (error) {
+    console.error("Create challenge error:", error);
+    return res.status(500).json({ ok: false, error: "Create failed" });
+  }
+});
 
 // map challenge to contest
 router.post(
@@ -289,6 +283,7 @@ router.post(
   userMiddleware,
   async (req, res) => {
     try {
+      console.log("🔥 SUBMIT ROUTE HIT");
       const { submission, points } = req.body;
       const userId = (req as any).userId;
 
@@ -308,6 +303,10 @@ router.post(
       const mapping = await client.contestToChallengeMapping.findFirst({
         where: { contestId, challengeId },
       });
+      console.log("DATABASE_URL:", process.env.DATABASE_URL);
+
+      const all = await client.contestToChallengeMapping.findMany();
+      console.log("ALL MAPPINGS FROM BACKEND:", all);
 
       if (!mapping) {
         return res
