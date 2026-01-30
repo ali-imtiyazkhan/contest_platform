@@ -1,9 +1,17 @@
-import { redirect } from "next/navigation"
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
-const page = () => {
-    return (
-        redirect("/signup")
-    )
-}
+const page = async () => {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("refreshToken");
 
-export default page
+    console.log("token is ", token)
+
+    if (token) {
+        redirect("/dashboard");
+    }
+
+    redirect("/signup");
+};
+
+export default page;
