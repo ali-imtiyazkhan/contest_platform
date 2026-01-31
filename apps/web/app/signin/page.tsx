@@ -71,34 +71,32 @@ export default function SignInPage() {
   };
 
   return (
-    <main className="w-full min-h-[calc(100vh-4rem)] flex justify-center pt-24">
-      <div className="w-full max-w-md px-4">
-        {/* Header */}
-        <div className="text-center mb-6">
-          <h1 className="text-2xl font-semibold">
-            Welcome to 100xContest
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Sign in with your email to join live developer challenges.
+    <main className="min-h-screen w-full bg-linear-to-br from-slate-50 via-white to-slate-100 flex items-center justify-center px-4">
+      <div className="w-full max-w-md">
+        {/* Brand */}
+        <div className="text-center mb-6 space-y-2">
+          <h1 className="text-4xl font-bold tracking-tight">100xContest</h1>
+          <p className="text-muted-foreground text-sm">
+            Welcome back. Sign in to continue your challenges.
           </p>
         </div>
 
-        <Card>
+        <Card className="border border-slate-200 shadow-2xl bg-white">
           <CardHeader>
-            <CardTitle className="text-lg">Sign In</CardTitle>
+            <CardTitle className="text-2xl">Sign In</CardTitle>
             <CardDescription>
-              Choose your role and enter your credentials to sign in.
+              Choose your role and enter your credentials
             </CardDescription>
           </CardHeader>
 
           <CardContent>
-            <form onSubmit={handleSignIn} className="grid gap-4">
+            <form onSubmit={handleSignIn} className="grid gap-5">
               {/* Role */}
               <div className="grid gap-2">
                 <Label htmlFor="role">Role</Label>
                 <select
                   id="role"
-                  className="border-input bg-background flex h-9 w-full rounded-md border px-3 py-2 text-sm"
+                  className="h-11 rounded-md border px-3 bg-background text-sm"
                   value={role}
                   onChange={(e) =>
                     setRole(e.target.value as "user" | "admin")
@@ -116,6 +114,7 @@ export default function SignInPage() {
                   id="email"
                   type="email"
                   placeholder="you@example.com"
+                  className="h-11"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -128,31 +127,34 @@ export default function SignInPage() {
                 <Input
                   id="password"
                   type="password"
-                  placeholder="password"
+                  placeholder="••••••••"
+                  className="h-11"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
                 />
               </div>
 
-              <Button type="submit" disabled={loading}>
+              <Button
+                type="submit"
+                className="w-full h-12 text-base font-semibold"
+                disabled={loading}
+              >
                 {loading ? "Signing in..." : "Sign In"}
               </Button>
 
               {error && (
-                <p className="text-sm text-red-500 text-center">{error}</p>
+                <p className="text-sm text-center text-destructive">
+                  {error}
+                </p>
               )}
 
-              <p className="text-xs text-muted-foreground text-center">
-                Tip: use your personal email.
-              </p>
-
-              <div className="text-center text-sm">
+              <div className="text-center text-sm mt-2">
                 <span className="text-muted-foreground">
-                  Don't have an account?{" "}
+                  Don’t have an account?{" "}
                 </span>
-                <a href="/signup" className="text-primary hover:underline">
-                  Sign up here
+                <a href="/signup" className="font-semibold text-primary hover:underline">
+                  Sign up
                 </a>
               </div>
             </form>
@@ -161,5 +163,6 @@ export default function SignInPage() {
       </div>
     </main>
   );
+
 
 }
