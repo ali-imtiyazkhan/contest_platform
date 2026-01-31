@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import axios from "axios";
 
@@ -22,12 +22,19 @@ type Challenge = {
     id: string;
     title: string;
     description: string;
+    maxPoints: number;
 };
+
+const SUPPORTED_LANGUAGES = [
+    { label: "TypeScript", value: "typescript" },
+    { label: "JavaScript", value: "javascript" },
+    { label: "Python", value: "python" },
+    { label: "Go", value: "go" },
+];
 
 export default function ChallengePage() {
     const params = useParams();
     const router = useRouter();
-
     const { accessToken, loading: authLoading } = useAuth();
 
     const contestId = params?.contestId as string;
@@ -35,18 +42,16 @@ export default function ChallengePage() {
 
     const [challenge, setChallenge] = useState<Challenge | null>(null);
     const [loading, setLoading] = useState(true);
-    const [lang, setLang] = useState("typescript");
+    const [lang, setLang] = useState(SUPPORTED_LANGUAGES[0].value);
     const [code, setCode] = useState("");
     const [submitting, setSubmitting] = useState(false);
 
-    // 🔐 Redirect if not authenticated
     useEffect(() => {
         if (!authLoading && !accessToken) {
             router.push("/signin");
         }
     }, [authLoading, accessToken, router]);
 
-    // ✅ Fetch challenge when URL changes
     const fetchChallenge = async () => {
         try {
             setLoading(true);
@@ -57,8 +62,6 @@ export default function ChallengePage() {
             );
 
             setChallenge(res.data.data.challenge);
-
-            // 🔥 Clear previous code when new challenge loads
             setCode("");
         } catch (error) {
             console.error("Failed to load challenge:", error);
@@ -73,9 +76,8 @@ export default function ChallengePage() {
         }
     }, [contestId, challengeId]);
 
-    // ✅ Submit and move to next problem
     const handleSubmit = async () => {
-        if (!accessToken || authLoading) return;
+        if (!accessToken || authLoading || !challenge) return;
         if (!code.trim()) return;
 
         try {
@@ -85,7 +87,7 @@ export default function ChallengePage() {
                 `${BACKEND_URL}/api/v1/contest/${contestId}/challenge/${challengeId}/submit`,
                 {
                     submission: code,
-                    points: 30,
+                    points: challenge.maxPoints,
                     language: lang,
                 },
                 {
@@ -96,58 +98,49 @@ export default function ChallengePage() {
                 }
             );
 
-            alert("Submitted successfully");
-
             const nextId = res.data.data.nextChallengeId;
 
             if (nextId) {
-                //  change only challengeId, stay on same page
                 router.replace(`/contest/${contestId}/challenge/${nextId}`);
             } else {
-                // no more problems
                 router.replace(`/contest/${contestId}/finalpage`);
             }
         } catch (error) {
             console.error("Submission failed:", error);
-            alert("Submission failed");
         } finally {
             setSubmitting(false);
         }
     };
 
     if (loading) {
-        return (
-            <p className="p-6 text-muted-foreground">Loading challenge...</p>
-        );
+        return <p className="p-6 text-muted-foreground">Loading challenge...</p>;
     }
 
     if (!challenge) {
-        return (
-            <p className="p-6 text-red-500">Challenge not found.</p>
-        );
+        return <p className="p-6 text-red-500">Challenge not found.</p>;
     }
 
     return (
-        <main className="mx-auto max-w-full px-4 py-6 md:py-8">
-            <div className="mb-4 flex items-center justify-between">
-                <h1 className="text-xl font-semibold">{challenge.title}</h1>
+        <main className="mx-auto max-w-6xl px-6 py-8">
+            <div className="mb-6">
+                <h1 className="text-2xl font-semibold">{challenge.title}</h1>
             </div>
 
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="grid gap-8 md:grid-cols-2">
                 {/* Problem */}
                 <Card>
                     <CardHeader>
                         <CardTitle>Problem Description</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-sm text-muted-foreground whitespace-pre-wrap">
                             {challenge.description}
                         </p>
                     </CardContent>
                 </Card>
 
                 {/* Solution */}
-                <Card>
+                <Card className="flex flex-col">
                     <CardHeader className="flex items-center justify-between">
                         <CardTitle>Your Solution</CardTitle>
 
@@ -156,29 +149,27 @@ export default function ChallengePage() {
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="typescript">TypeScript</SelectItem>
-                                <SelectItem value="javascript">JavaScript</SelectItem>
-                                <SelectItem value="python">Python</SelectItem>
-                                <SelectItem value="go">Go</SelectItem>
+                                {SUPPORTED_LANGUAGES.map((l) => (
+                                    <SelectItem key={l.value} value={l.value}>
+                                        {l.label}
+                                    </SelectItem>
+                                ))}
                             </SelectContent>
                         </Select>
                     </CardHeader>
 
-                    <CardContent className="space-y-3">
+                    <CardContent className="flex flex-col gap-4 flex-1">
                         <Textarea
                             value={code}
                             onChange={(e) => setCode(e.target.value)}
-                            rows={16}
-                            className="font-mono text-sm"
+                            className="font-mono text-sm flex-1 min-h-75"
+                            placeholder="Write your solution here..."
                         />
 
                         <Button
                             onClick={handleSubmit}
                             disabled={
-                                submitting ||
-                                authLoading ||
-                                !accessToken ||
-                                !code.trim()
+                                submitting || authLoading || !accessToken || !code.trim()
                             }
                         >
                             {submitting ? "Submitting..." : "Submit"}
