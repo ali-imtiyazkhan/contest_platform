@@ -278,19 +278,14 @@ router.get("/:contestId/challenge/:challengeId", async (req, res) => {
 });
 
 // submit solution
+// submit solution
 router.post(
   "/:contestId/challenge/:challengeId/submit",
   userMiddleware,
   async (req, res) => {
     try {
-      console.log("🔥 SUBMIT ROUTE HIT");
       const { submission, points } = req.body;
       const userId = (req as any).userId;
-
-      if (!userId) {
-        return res.status(401).json({ ok: false, error: "Unauthorized" });
-      }
-
       const { contestId, challengeId } = req.params;
 
       if (!submission || typeof points !== "number") {
@@ -300,25 +295,22 @@ router.post(
       const allowed = await checkSubmissionRateLimit(userId);
       if (!allowed) return res.status(429).json({ ok: false });
 
-      const mapping = await client.contestToChallengeMapping.findFirst({
+      // 🔹 1. Find current mapping
+      const currentMapping = await client.contestToChallengeMapping.findFirst({
         where: { contestId, challengeId },
       });
-      console.log("DATABASE_URL:", process.env.DATABASE_URL);
 
-      const all = await client.contestToChallengeMapping.findMany();
-      console.log("ALL MAPPINGS FROM BACKEND:", all);
-
-      if (!mapping) {
+      if (!currentMapping) {
         return res
           .status(404)
           .json({ ok: false, error: "Invalid contest/challenge" });
       }
 
-      // Save submission (upsert)
-      const saved = await client.contestSubmission.upsert({
+      // 🔹 2. Save submission
+      await client.contestSubmission.upsert({
         where: {
           contestToChallengeMappingId_userId: {
-            contestToChallengeMappingId: mapping.id,
+            contestToChallengeMappingId: currentMapping.id,
             userId,
           },
         },
@@ -330,14 +322,31 @@ router.post(
           submission,
           points,
           userId,
-          contestToChallengeMappingId: mapping.id,
+          contestToChallengeMappingId: currentMapping.id,
         },
       });
 
-      // 3 Update leaderboard cache
+      // 🔹 3. Update leaderboard
       await addScoreToLeaderboard(contestId, userId, points);
 
-      res.status(201).json({ ok: true, submission: saved });
+      // 🔥🔥🔥 4. FIND NEXT CHALLENGE BY INDEX
+      const nextMapping = await client.contestToChallengeMapping.findFirst({
+        where: {
+          contestId,
+          index: { gt: currentMapping.index },
+        },
+        orderBy: { index: "asc" },
+      });
+
+      const nextChallengeId = nextMapping?.challengeId ?? null;
+
+      // 🔥 FINAL RESPONSE
+      res.status(201).json({
+        ok: true,
+        data: {
+          nextChallengeId,
+        },
+      });
     } catch (error) {
       console.error("Submit error:", error);
       res.status(500).json({ ok: false });

@@ -46,14 +46,20 @@ export default function ChallengePage() {
         }
     }, [authLoading, accessToken, router]);
 
+    // ✅ Fetch challenge when URL changes
     const fetchChallenge = async () => {
         try {
+            setLoading(true);
+
             const res = await axios.get(
                 `${BACKEND_URL}/api/v1/contest/${contestId}/challenge/${challengeId}`,
                 { withCredentials: true }
             );
 
             setChallenge(res.data.data.challenge);
+
+            // 🔥 Clear previous code when new challenge loads
+            setCode("");
         } catch (error) {
             console.error("Failed to load challenge:", error);
         } finally {
@@ -67,6 +73,7 @@ export default function ChallengePage() {
         }
     }, [contestId, challengeId]);
 
+    // ✅ Submit and move to next problem
     const handleSubmit = async () => {
         if (!accessToken || authLoading) return;
         if (!code.trim()) return;
@@ -74,7 +81,7 @@ export default function ChallengePage() {
         try {
             setSubmitting(true);
 
-            await axios.post(
+            const res = await axios.post(
                 `${BACKEND_URL}/api/v1/contest/${contestId}/challenge/${challengeId}/submit`,
                 {
                     submission: code,
@@ -90,7 +97,16 @@ export default function ChallengePage() {
             );
 
             alert("Submitted successfully");
-            router.push("/finalpage");
+
+            const nextId = res.data.data.nextChallengeId;
+
+            if (nextId) {
+                //  change only challengeId, stay on same page
+                router.replace(`/contest/${contestId}/challenge/${nextId}`);
+            } else {
+                // no more problems
+                router.replace(`/contest/${contestId}/finalpage`);
+            }
         } catch (error) {
             console.error("Submission failed:", error);
             alert("Submission failed");
