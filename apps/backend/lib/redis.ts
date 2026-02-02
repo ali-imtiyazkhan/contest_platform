@@ -42,8 +42,6 @@ export async function getLeaderboard(contestId: string, limit = 10) {
   return leaderboard;
 }
 
-/* ================= Rate Limiter ================= */
-
 export async function checkSubmissionRateLimit(userId: string) {
   const key = `submit:${userId}`;
   const MAX = 5;
