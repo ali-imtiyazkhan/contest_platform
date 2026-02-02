@@ -19,12 +19,12 @@ function parsePagination(req: Request) {
 // create contest
 router.post("/admin/contest", async (req: Request, res: Response) => {
   try {
-    const { title, startTime, description } = req.body;
+    const { title, startTime, description, endTime } = req.body;
 
-    if (!title || !startTime || !description) {
+    if (!title || !startTime || !description || !endTime) {
       return res.status(400).json({
         ok: false,
-        error: "title and startTime are required",
+        error: "title, startTime and endTime are required",
       });
     }
 
@@ -33,6 +33,7 @@ router.post("/admin/contest", async (req: Request, res: Response) => {
         title,
         description,
         startTime: new Date(startTime),
+        endTime: new Date(startTime),
       },
     });
 
@@ -46,22 +47,23 @@ router.post("/admin/contest", async (req: Request, res: Response) => {
 // create challenge
 router.post("/admin/challenge", async (req: Request, res: Response) => {
   try {
-    const { title, notionDocId, maxPoints, description } = req.body;
+    const { title, notionDocId, maxPoints, description, type } = req.body;
 
     if (
       !title ||
       !notionDocId ||
       typeof maxPoints !== "number" ||
-      !description
+      !description ||
+      !type
     ) {
       return res.status(400).json({
         ok: false,
-        error: "title, notionDocId,description and maxPoints are required",
+        error: "title, notionDocId,description,type and maxPoints are required",
       });
     }
 
     const challenge = await client.challenge.create({
-      data: { title, notionDocId, description, maxPoints },
+      data: { title, notionDocId, description, maxPoints, type },
     });
 
     return res.status(201).json({ ok: true, challenge });
