@@ -259,9 +259,34 @@ router.post(
 );
 
 //LEADERBOARD
-router.get("/leaderboard/:contestId", async (req, res) => {
-  const leaderboard = await getLeaderboard(req.params.contestId);
-  res.json({ ok: true, leaderboard });
+router.get("/:contestId/leaderboard", async (req, res) => {
+  try {
+    const raw = await getLeaderboard(req.params.contestId);
+
+    // get all userIds
+    const userIds = raw.map((r) => r.userId);
+
+    // fetch users from DB
+    const users = await client.user.findMany({
+      where: { id: { in: userIds } },
+      select: { id: true, email: true },
+    });
+
+    // map id -> user
+    const userMap = new Map(users.map((u) => [u.id, u]));
+
+    // attach names
+    const leaderboard = raw.map((r) => ({
+      rank: r.rank,
+      score: r.score,
+      userId: r.userId,
+      email: userMap.get(r.userId)?.email,
+    }));
+
+    res.json({ ok: true, leaderboard });
+  } catch (e) {
+    res.status(500).json({ ok: false });
+  }
 });
 
 export default router;
