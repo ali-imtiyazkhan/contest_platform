@@ -83,6 +83,10 @@ export default function ContestDetailPage() {
                 <Button onClick={() => router.push("/dashboard")} variant="outline">
                     Return to Dashboard
                 </Button>
+
+                <Button onClick={() => router.push("/leaderboard")} variant="outline">
+                    LeaderBoard
+                </Button>
             </div>
         );
     }

@@ -74,7 +74,6 @@ export function SiteHeader() {
           ) : accessToken ? (
             <>
               <NavLink href="/dashboard">Dashboard</NavLink>
-              <NavLink href="/leaderboard">Leaderboard</NavLink>
 
               {user?.role === "Admin" && (
                 <NavLink href="/admin">Admin</NavLink>
@@ -104,7 +103,6 @@ export function SiteHeader() {
             </>
           ) : (
             <>
-              <NavLink href="/leaderboard">Leaderboard</NavLink>
               <Button asChild size="sm">
                 <Link href="/signin">Sign in</Link>
               </Button>

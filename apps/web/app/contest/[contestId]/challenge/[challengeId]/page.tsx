@@ -23,6 +23,7 @@ type Challenge = {
     title: string;
     description: string;
     maxPoints: number;
+    
 };
 
 const SUPPORTED_LANGUAGES = [
@@ -98,7 +99,8 @@ export default function ChallengePage() {
                 }
             );
 
-            const nextId = res.data.data.nextChallengeId;
+            const nextId = res.data.nextChallengeId;
+            console.log("next challenge id is : ", nextId);
 
             if (nextId) {
                 router.replace(`/contest/${contestId}/challenge/${nextId}`);
