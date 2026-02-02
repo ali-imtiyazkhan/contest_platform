@@ -2,6 +2,8 @@ import { Router, Request, Response } from "express";
 import { userMiddleware } from "../middleware/user";
 import { adminMiddleware } from "../middleware/admin";
 import { client } from "db/client";
+
+import { Type } from "../../../packages/db/generated/prisma";
 import {
   addScoreToLeaderboard,
   getLeaderboard,
@@ -16,16 +18,13 @@ function parsePagination(req: Request) {
   return { offset, limit };
 }
 
-// create contest
-router.post("/admin/contest", async (req: Request, res: Response) => {
+// CREATE CONTEST
+router.post("/admin/contest", adminMiddleware, async (req, res) => {
   try {
     const { title, startTime, description, endTime } = req.body;
 
     if (!title || !startTime || !description || !endTime) {
-      return res.status(400).json({
-        ok: false,
-        error: "title, startTime and endTime are required",
-      });
+      return res.status(400).json({ ok: false });
     }
 
     const contest = await client.contest.create({
@@ -33,71 +32,48 @@ router.post("/admin/contest", async (req: Request, res: Response) => {
         title,
         description,
         startTime: new Date(startTime),
-        endTime: new Date(startTime),
+        endTime: new Date(endTime),
       },
     });
 
-    return res.status(201).json({ ok: true, contest });
-  } catch (error) {
-    console.error("Create contest error:", error);
-    return res.status(500).json({ ok: false, error: "Create failed" });
+    res.status(201).json({ ok: true, contest });
+  } catch (e) {
+    res.status(500).json({ ok: false });
   }
 });
 
-// create challenge
-router.post("/admin/challenge", async (req: Request, res: Response) => {
+//CREATE CHALLENGE
+router.post("/admin/challenge", adminMiddleware, async (req, res) => {
   try {
-    const { title, notionDocId, maxPoints, description, type } = req.body;
+    const { title, notionDocId, description, type } = req.body;
+    const maxPoints = Number(req.body.maxPoints);
 
-    if (
-      !title ||
-      !notionDocId ||
-      typeof maxPoints !== "number" ||
-      !description ||
-      !type
-    ) {
-      return res.status(400).json({
-        ok: false,
-        error: "title, notionDocId,description,type and maxPoints are required",
-      });
+    if (!title || !notionDocId || !description || isNaN(maxPoints)) {
+      return res.status(400).json({ ok: false });
+    }
+
+    if (!Object.values(Type).includes(type)) {
+      return res.status(400).json({ ok: false, error: "Invalid type" });
     }
 
     const challenge = await client.challenge.create({
       data: { title, notionDocId, description, maxPoints, type },
     });
 
-    return res.status(201).json({ ok: true, challenge });
-  } catch (error) {
-    console.error("Create challenge error:", error);
-    return res.status(500).json({ ok: false, error: "Create failed" });
+    res.status(201).json({ ok: true, challenge });
+  } catch {
+    res.status(500).json({ ok: false });
   }
 });
 
-// map challenge to contest
+//MAP CHALLENGE TO CONTEST
 router.post(
   "/admin/contest/:contestId/challenge",
-  async (req: Request, res: Response) => {
+  adminMiddleware,
+  async (req, res) => {
     try {
       const { contestId } = req.params;
       const { challengeId, index } = req.body;
-
-      if (!contestId || !challengeId) {
-        return res.status(400).json({
-          ok: false,
-          error: "contestId and challengeId required",
-        });
-      }
-
-      const [contest, challenge] = await Promise.all([
-        client.contest.findUnique({ where: { id: contestId } }),
-        client.challenge.findUnique({ where: { id: challengeId } }),
-      ]);
-
-      if (!contest || !challenge) {
-        return res
-          .status(404)
-          .json({ ok: false, error: "Invalid contest or challenge" });
-      }
 
       const mapping = await client.contestToChallengeMapping.create({
         data: {
@@ -107,39 +83,24 @@ router.post(
         },
       });
 
-      return res.status(201).json({ ok: true, mapping });
-    } catch (error: any) {
-      if (error.code === "P2002") {
-        return res.status(409).json({
-          ok: false,
-          error: "Challenge already mapped",
-        });
-      }
-      console.error("Mapping error:", error);
-      return res.status(500).json({ ok: false, error: "Mapping failed" });
+      res.status(201).json({ ok: true, mapping });
+    } catch (e: any) {
+      if (e.code === "P2002") return res.status(409).json({ ok: false });
+      res.status(500).json({ ok: false });
     }
   },
 );
 
-// reorder challenege
+// REORDER
 router.put(
   "/admin/contest/:contestId/reorder",
   adminMiddleware,
-  async (req: Request, res: Response) => {
+  async (req, res) => {
     try {
       const { contestId } = req.params;
-      const { orders } = req.body as {
-        orders: { challengeId: string; index: number }[];
-      };
+      const { orders } = req.body;
 
-      if (!Array.isArray(orders)) {
-        return res.status(400).json({
-          ok: false,
-          error: "orders array required",
-        });
-      }
-
-      const tx = orders.map((o) =>
+      const tx = orders.map((o: any) =>
         client.contestToChallengeMapping.updateMany({
           where: { contestId, challengeId: o.challengeId },
           data: { index: o.index },
@@ -147,168 +108,123 @@ router.put(
       );
 
       await client.$transaction(tx);
-
-      return res.json({ ok: true });
-    } catch (error) {
-      console.error("Reorder error:", error);
-      return res.status(500).json({ ok: false, error: "Reorder failed" });
+      res.json({ ok: true });
+    } catch {
+      res.status(500).json({ ok: false });
     }
   },
 );
 
-// remove challenge from contest
+// REMOVE CHALLENGE
 router.delete(
   "/admin/contest/:contestId/challenge/:challengeId",
   adminMiddleware,
-  async (req: Request, res: Response) => {
-    try {
-      const { contestId, challengeId } = req.params;
-
-      await client.contestToChallengeMapping.deleteMany({
-        where: { contestId, challengeId },
-      });
-
-      return res.json({ ok: true });
-    } catch (error) {
-      console.error("Remove challenge error:", error);
-      return res.status(500).json({ ok: false, error: "Delete failed" });
-    }
+  async (req, res) => {
+    await client.contestToChallengeMapping.deleteMany({
+      where: req.params,
+    });
+    res.json({ ok: true });
   },
 );
 
-// all contest
-router.get("/", async (req: Request, res: Response) => {
-  try {
-    const contests = await client.contest.findMany({
-      orderBy: { startTime: "desc" },
-    });
-
-    res.json({ ok: true, data: contests });
-  } catch (error) {
-    console.error("contests error:", error);
-    res.status(500).json({ ok: false, error: "Load failed" });
-  }
+// ALL CONTESTS
+router.get("/", async (_, res) => {
+  const contests = await client.contest.findMany({
+    orderBy: { startTime: "desc" },
+  });
+  res.json({ ok: true, data: contests });
 });
 
-// active contest
-router.get("/active", async (req: Request, res: Response) => {
-  try {
-    const { offset, limit } = parsePagination(req);
-    const now = new Date();
+// ACTIVE CONTESTS
+router.get("/active", async (req, res) => {
+  const { offset, limit } = parsePagination(req);
+  const now = new Date();
 
-    const [data, total] = await Promise.all([
-      client.contest.findMany({
-        where: { startTime: { lte: now } },
-        skip: offset,
-        take: limit,
-        orderBy: { startTime: "desc" },
-      }),
-      client.contest.count({ where: { startTime: { lte: now } } }),
-    ]);
-
-    res.json({ ok: true, data, pagination: { offset, limit, total } });
-  } catch (error) {
-    console.error("Active contests error:", error);
-    res.status(500).json({ ok: false, error: "Load failed" });
-  }
-});
-
-// finsished contset
-router.get("/finished", async (req: Request, res: Response) => {
-  try {
-    const { offset, limit } = parsePagination(req);
-    const now = new Date();
-
-    const [data, total] = await Promise.all([
-      client.contest.findMany({
-        where: { startTime: { lt: now } },
-        skip: offset,
-        take: limit,
-        orderBy: { startTime: "desc" },
-      }),
-      client.contest.count({ where: { startTime: { lt: now } } }),
-    ]);
-
-    res.json({ ok: true, data, pagination: { offset, limit, total } });
-  } catch (error) {
-    console.error("Finished contests error:", error);
-    res.status(500).json({ ok: false, error: "Load failed" });
-  }
-});
-
-// contest deatil
-router.get("/:contestId", async (req, res) => {
-  try {
-    const contest = await client.contest.findUnique({
-      where: { id: req.params.contestId },
-      include: {
-        contestToChallengeMapping: {
-          include: { challenge: true },
-          orderBy: { index: "asc" },
-        },
-      },
-    });
-
-    if (!contest) return res.status(404).json({ ok: false });
-
-    res.json({ ok: true, data: contest });
-  } catch (error) {
-    console.error("Contest fetch error:", error);
-    res.status(500).json({ ok: false });
-  }
-});
-
-// challenge details
-router.get("/:contestId/challenge/:challengeId", async (req, res) => {
-  try {
-    const mapping = await client.contestToChallengeMapping.findFirst({
+  const [data, total] = await Promise.all([
+    client.contest.findMany({
       where: {
-        contestId: req.params.contestId,
-        challengeId: req.params.challengeId,
+        startTime: { lte: now },
+        endTime: { gte: now },
       },
-      include: { challenge: true },
-    });
+      skip: offset,
+      take: limit,
+      orderBy: { startTime: "desc" },
+    }),
+    client.contest.count({
+      where: {
+        startTime: { lte: now },
+        endTime: { gte: now },
+      },
+    }),
+  ]);
 
-    if (!mapping)
-      return res.status(404).json({ ok: false, error: "Not found" });
-
-    res.json({ ok: true, data: mapping });
-  } catch (error) {
-    console.error("Challenge fetch error:", error);
-    res.status(500).json({ ok: false });
-  }
+  res.json({ ok: true, data, pagination: { offset, limit, total } });
 });
 
-// submit solution
-// submit solution
+// FINISHED CONTESTS
+router.get("/finished", async (req, res) => {
+  const { offset, limit } = parsePagination(req);
+  const now = new Date();
+
+  const [data, total] = await Promise.all([
+    client.contest.findMany({
+      where: { endTime: { lt: now } },
+      skip: offset,
+      take: limit,
+      orderBy: { startTime: "desc" },
+    }),
+    client.contest.count({
+      where: { endTime: { lt: now } },
+    }),
+  ]);
+
+  res.json({ ok: true, data, pagination: { offset, limit, total } });
+});
+
+// CONTEST DETAIL
+router.get("/:contestId", async (req, res) => {
+  const contest = await client.contest.findUnique({
+    where: { id: req.params.contestId },
+    include: {
+      contestToChallengeMapping: {
+        include: { challenge: true },
+        orderBy: { index: "asc" },
+      },
+    },
+  });
+
+  if (!contest) return res.status(404).json({ ok: false });
+  res.json({ ok: true, data: contest });
+});
+
+// SUBMIT SOLUTION
 router.post(
   "/:contestId/challenge/:challengeId/submit",
   userMiddleware,
-  async (req, res) => {
+  async (req: any, res) => {
     try {
       const { submission, points } = req.body;
-      const userId = (req as any).userId;
+      const userId = req.userId;
       const { contestId, challengeId } = req.params;
 
-      if (!submission || typeof points !== "number") {
-        return res.status(400).json({ ok: false });
-      }
-
-      const allowed = await checkSubmissionRateLimit(userId);
-      if (!allowed) return res.status(429).json({ ok: false });
-
-      // 🔹 1. Find current mapping
       const currentMapping = await client.contestToChallengeMapping.findFirst({
         where: { contestId, challengeId },
       });
 
-      if (!currentMapping) {
-        return res
-          .status(404)
-          .json({ ok: false, error: "Invalid contest/challenge" });
-      }
+      if (!currentMapping) return res.status(404).json({ ok: false });
 
-      // 🔹 2. Save submission
+      const prev = await client.contestSubmission.findUnique({
+        where: {
+          contestToChallengeMappingId_userId: {
+            contestToChallengeMappingId: currentMapping.id,
+            userId,
+          },
+        },
+      });
+
+      const prevPoints = prev?.points ?? 0;
+      const diff = points - prevPoints;
+
       await client.contestSubmission.upsert({
         where: {
           contestToChallengeMappingId_userId: {
@@ -316,10 +232,7 @@ router.post(
             userId,
           },
         },
-        update: {
-          submission,
-          points,
-        },
+        update: { submission, points },
         create: {
           submission,
           points,
@@ -328,43 +241,27 @@ router.post(
         },
       });
 
-      // 🔹 3. Update leaderboard
-      await addScoreToLeaderboard(contestId, userId, points);
+      await addScoreToLeaderboard(contestId, userId, diff);
 
-      // 🔥🔥🔥 4. FIND NEXT CHALLENGE BY INDEX
       const nextMapping = await client.contestToChallengeMapping.findFirst({
-        where: {
-          contestId,
-          index: { gt: currentMapping.index },
-        },
+        where: { contestId, index: { gt: currentMapping.index } },
         orderBy: { index: "asc" },
       });
 
-      const nextChallengeId = nextMapping?.challengeId ?? null;
-
-      // 🔥 FINAL RESPONSE
       res.status(201).json({
         ok: true,
-        data: {
-          nextChallengeId,
-        },
+        nextChallengeId: nextMapping?.challengeId ?? null,
       });
-    } catch (error) {
-      console.error("Submit error:", error);
+    } catch {
       res.status(500).json({ ok: false });
     }
   },
 );
 
-// leaderboard
+//LEADERBOARD
 router.get("/leaderboard/:contestId", async (req, res) => {
-  try {
-    const leaderboard = await getLeaderboard(req.params.contestId);
-    res.json({ ok: true, leaderboard });
-  } catch (error) {
-    console.error("Leaderboard error:", error);
-    res.status(500).json({ ok: false });
-  }
+  const leaderboard = await getLeaderboard(req.params.contestId);
+  res.json({ ok: true, leaderboard });
 });
 
 export default router;
