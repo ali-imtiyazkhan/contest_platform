@@ -23,7 +23,7 @@ type Challenge = {
     title: string;
     description: string;
     maxPoints: number;
-    
+
 };
 
 const SUPPORTED_LANGUAGES = [
