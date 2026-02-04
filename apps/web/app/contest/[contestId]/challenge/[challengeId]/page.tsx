@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/context/AuthProvider";
+import { SiteHeader } from "@/components/site-header";
 
 import {
     Select,
@@ -123,62 +124,66 @@ export default function ChallengePage() {
     }
 
     return (
-        <main className="mx-auto max-w-6xl px-6 py-8">
-            <div className="mb-6">
-                <h1 className="text-2xl font-semibold">{challenge.title}</h1>
-            </div>
 
-            <div className="grid gap-8 md:grid-cols-2">
-                {/* Problem */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Problem Description</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                            {challenge.description}
-                        </p>
-                    </CardContent>
-                </Card>
+        <div>
+            <div><SiteHeader /></div>
+            <main className="mx-auto max-w-6xl px-6 py-8">
+                <div className="mb-6">
+                    <h1 className="text-2xl font-semibold">{challenge.title}</h1>
+                </div>
 
-                {/* Solution */}
-                <Card className="flex flex-col">
-                    <CardHeader className="flex items-center justify-between">
-                        <CardTitle>Your Solution</CardTitle>
+                <div className="grid gap-8 md:grid-cols-2">
+                    {/* Problem */}
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Problem Description</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                                {challenge.description}
+                            </p>
+                        </CardContent>
+                    </Card>
 
-                        <Select value={lang} onValueChange={setLang}>
-                            <SelectTrigger className="h-8 w-40">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {SUPPORTED_LANGUAGES.map((l) => (
-                                    <SelectItem key={l.value} value={l.value}>
-                                        {l.label}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </CardHeader>
+                    {/* Solution */}
+                    <Card className="flex flex-col">
+                        <CardHeader className="flex items-center justify-between">
+                            <CardTitle>Your Solution</CardTitle>
 
-                    <CardContent className="flex flex-col gap-4 flex-1">
-                        <Textarea
-                            value={code}
-                            onChange={(e) => setCode(e.target.value)}
-                            className="font-mono text-sm flex-1 min-h-75"
-                            placeholder="Write your solution here..."
-                        />
+                            <Select value={lang} onValueChange={setLang}>
+                                <SelectTrigger className="h-8 w-40">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {SUPPORTED_LANGUAGES.map((l) => (
+                                        <SelectItem key={l.value} value={l.value}>
+                                            {l.label}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </CardHeader>
 
-                        <Button
-                            onClick={handleSubmit}
-                            disabled={
-                                submitting || authLoading || !accessToken || !code.trim()
-                            }
-                        >
-                            {submitting ? "Submitting..." : "Submit"}
-                        </Button>
-                    </CardContent>
-                </Card>
-            </div>
-        </main>
+                        <CardContent className="flex flex-col gap-4 flex-1">
+                            <Textarea
+                                value={code}
+                                onChange={(e) => setCode(e.target.value)}
+                                className="font-mono text-sm flex-1 min-h-75"
+                                placeholder="Write your solution here..."
+                            />
+
+                            <Button
+                                onClick={handleSubmit}
+                                disabled={
+                                    submitting || authLoading || !accessToken || !code.trim()
+                                }
+                            >
+                                {submitting ? "Submitting..." : "Submit"}
+                            </Button>
+                        </CardContent>
+                    </Card>
+                </div>
+            </main>
+        </div>
     );
 }

@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/context/AuthProvider";
+import { SiteHeader } from "@/components/site-header";
 
 type Challenge = {
     id: string;
@@ -97,97 +98,102 @@ export default function ContestDetailPage() {
     );
 
     return (
-        <div className="min-h-screen bg-linear-to-b from-slate-50 to-white">
-            <div className="max-w-6xl mx-auto px-6 py-14 space-y-12">
-                {/* Back */}
-                <button
-                    onClick={() => router.push("/dashboard")}
-                    className="flex items-center text-sm text-muted-foreground hover:text-primary transition-colors"
-                >
-                    <ChevronLeft className="h-4 w-4 mr-1" />
-                    Back to Challenges
-                </button>
 
-                {/* Hero Card */}
-                <Card className="border shadow-sm">
-                    <CardHeader className="space-y-6 p-8">
-                        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
-                            <div className="space-y-3">
-                                <CardTitle className="text-4xl">
-                                    {contest.title}
-                                </CardTitle>
-                                <CardDescription className="max-w-2xl text-base">
-                                    {contest.description ||
-                                        "Complete all challenges to earn maximum points and climb the leaderboard."}
-                                </CardDescription>
-                            </div>
+        <div>
 
-                            <div className="flex gap-6">
-                                <div className="bg-muted px-6 py-4 rounded-lg border text-center">
-                                    <p className="text-xs uppercase text-muted-foreground font-semibold">
-                                        Total Points
-                                    </p>
-                                    <p className="text-2xl font-bold text-primary">
-                                        {totalPoints}
-                                    </p>
+            <div><SiteHeader /></div>
+            <div className="min-h-screen bg-linear-to-b from-slate-50 to-white">
+                <div className="max-w-6xl mx-auto px-6 py-14 space-y-12">
+                    {/* Back */}
+                    <button
+                        onClick={() => router.push("/dashboard")}
+                        className="flex items-center text-sm text-muted-foreground hover:text-primary transition-colors"
+                    >
+                        <ChevronLeft className="h-4 w-4 mr-1" />
+                        Back to Challenges
+                    </button>
+
+                    {/* Hero Card */}
+                    <Card className="border shadow-sm">
+                        <CardHeader className="space-y-6 p-8">
+                            <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
+                                <div className="space-y-3">
+                                    <CardTitle className="text-4xl">
+                                        {contest.title}
+                                    </CardTitle>
+                                    <CardDescription className="max-w-2xl text-base">
+                                        {contest.description ||
+                                            "Complete all challenges to earn maximum points and climb the leaderboard."}
+                                    </CardDescription>
                                 </div>
-                                <div className="bg-muted px-6 py-4 rounded-lg border text-center">
-                                    <p className="text-xs uppercase text-muted-foreground font-semibold">
-                                        Challenges
-                                    </p>
-                                    <p className="text-2xl font-bold text-primary">
-                                        {contest.contestToChallengeMapping.length}
-                                    </p>
+
+                                <div className="flex gap-6">
+                                    <div className="bg-muted px-6 py-4 rounded-lg border text-center">
+                                        <p className="text-xs uppercase text-muted-foreground font-semibold">
+                                            Total Points
+                                        </p>
+                                        <p className="text-2xl font-bold text-primary">
+                                            {totalPoints}
+                                        </p>
+                                    </div>
+                                    <div className="bg-muted px-6 py-4 rounded-lg border text-center">
+                                        <p className="text-xs uppercase text-muted-foreground font-semibold">
+                                            Challenges
+                                        </p>
+                                        <p className="text-2xl font-bold text-primary">
+                                            {contest.contestToChallengeMapping.length}
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </CardHeader>
-                </Card>
+                        </CardHeader>
+                    </Card>
 
-                {/* Problem List */}
-                <div className="space-y-6">
-                    {contest.contestToChallengeMapping
-                        .sort((a, b) => a.index - b.index)
-                        .map((item) => (
-                            <Card
-                                key={item.challengeId}
-                                className="transition-all hover:shadow-md hover:border-primary/50"
-                            >
-                                <CardContent className="p-8 flex flex-col md:flex-row md:items-center justify-between gap-8">
-                                    <div className="flex items-start gap-6">
-                                        <div className="w-14 h-14 flex items-center justify-center bg-muted rounded-lg text-xl font-bold text-muted-foreground">
-                                            {item.index + 1}
+                    {/* Problem List */}
+                    <div className="space-y-6">
+                        {contest.contestToChallengeMapping
+                            .sort((a, b) => a.index - b.index)
+                            .map((item) => (
+                                <Card
+                                    key={item.challengeId}
+                                    className="transition-all hover:shadow-md hover:border-primary/50"
+                                >
+                                    <CardContent className="p-8 flex flex-col md:flex-row md:items-center justify-between gap-8">
+                                        <div className="flex items-start gap-6">
+                                            <div className="w-14 h-14 flex items-center justify-center bg-muted rounded-lg text-xl font-bold text-muted-foreground">
+                                                {item.index + 1}
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <h3 className="text-lg font-semibold">
+                                                    {item.challenge.title}
+                                                </h3>
+                                                <p className="text-sm text-muted-foreground line-clamp-2 max-w-xl">
+                                                    {item.challenge.description}
+                                                </p>
+                                            </div>
                                         </div>
 
-                                        <div className="space-y-2">
-                                            <h3 className="text-lg font-semibold">
-                                                {item.challenge.title}
-                                            </h3>
-                                            <p className="text-sm text-muted-foreground line-clamp-2 max-w-xl">
-                                                {item.challenge.description}
-                                            </p>
+                                        <div className="flex items-center gap-6">
+                                            <Badge variant="secondary" className="font-mono">
+                                                {item.challenge.maxPoints} pts
+                                            </Badge>
+
+                                            <Button
+                                                onClick={() =>
+                                                    router.push(
+                                                        `/contest/${contestId}/challenge/${item.challengeId}`
+                                                    )
+                                                }
+                                            >
+                                                Solve Challenge
+                                                <ArrowRight className="ml-2 h-4 w-4" />
+                                            </Button>
                                         </div>
-                                    </div>
-
-                                    <div className="flex items-center gap-6">
-                                        <Badge variant="secondary" className="font-mono">
-                                            {item.challenge.maxPoints} pts
-                                        </Badge>
-
-                                        <Button
-                                            onClick={() =>
-                                                router.push(
-                                                    `/contest/${contestId}/challenge/${item.challengeId}`
-                                                )
-                                            }
-                                        >
-                                            Solve Challenge
-                                            <ArrowRight className="ml-2 h-4 w-4" />
-                                        </Button>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        ))}
+                                    </CardContent>
+                                </Card>
+                            ))}
+                    </div>
                 </div>
             </div>
         </div>

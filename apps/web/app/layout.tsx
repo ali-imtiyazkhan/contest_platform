@@ -12,7 +12,6 @@ import { SiteHeader } from "@/components/site-header";
 import { AuthProvider } from "@/context/AuthProvider";
 import { ToastProvider } from "@/hooks/use-toast";
 
-/* ================= FONTS ================= */
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -62,7 +61,6 @@ export default function RootLayout({
         <ToastProvider>
           <AuthProvider>
             <Suspense fallback={<div>Loading...</div>}>
-              <SiteHeader />
               <main>
                 {children}
               </main>
