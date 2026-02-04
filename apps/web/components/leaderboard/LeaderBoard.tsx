@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Trophy, Medal, Crown, User } from "lucide-react"; // Optional: npm i lucide-react
+import { Trophy, Medal, Crown, User } from "lucide-react";
 
 interface Entry {
     userId: string;

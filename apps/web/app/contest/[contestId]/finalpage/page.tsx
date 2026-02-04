@@ -5,8 +5,17 @@ import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { SiteHeader } from "@/components/site-header";
 
+import { useParams } from "next/navigation";
+import { use } from "react";
+
 const Page = () => {
     const router = useRouter();
+
+    const params = useParams()
+
+    const contestId = params.contestId;
+
+    console.log("contestId is ", contestId)
 
     return (
 
@@ -36,6 +45,8 @@ const Page = () => {
                     >
                         Go to Dashboard
                     </Button>
+
+                    <Button onClick={() => router.push(`/contest/${contestId}/leaderboard`)}> Go to LeaderBoard</Button>
                 </div>
             </div>
         </div>

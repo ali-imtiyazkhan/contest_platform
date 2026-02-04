@@ -173,7 +173,7 @@ export default function ChallengePage() {
                             />
 
                             <Button
-                            className="cursor-pointer"
+                                className="cursor-pointer"
                                 onClick={handleSubmit}
                                 disabled={
                                     submitting || authLoading || !accessToken || !code.trim()
