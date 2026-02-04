@@ -2,8 +2,7 @@
   "name": "backend",
   "module": "index.ts",
   "type": "module",
-
-    "scripts": {
+  "scripts": {
     "build": "turbo run build",
     "dev": "bun run index.ts"
   },
@@ -29,6 +28,7 @@
     "ioredis": "^5.9.2",
     "jsonwebtoken": "^9.0.2",
     "nodemailer": "^7.0.6",
+    "openai": "^6.17.0",
     "zod": "^4.3.6"
   }
 }

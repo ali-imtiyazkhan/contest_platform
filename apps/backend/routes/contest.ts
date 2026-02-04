@@ -2,6 +2,8 @@ import { Router, Request, Response } from "express";
 import { userMiddleware } from "../middleware/user";
 import { adminMiddleware } from "../middleware/admin";
 import { client } from "db/client";
+import { aiJudge } from "../lib/ai/aiJudge";
+
 
 import { Type } from "../../../packages/db/generated/prisma";
 import {
@@ -9,6 +11,7 @@ import {
   getLeaderboard,
   checkSubmissionRateLimit,
 } from "../lib/redis";
+import { generateChallengeContext } from "../lib/ai/generateContext";
 
 const router = Router();
 
@@ -56,8 +59,10 @@ router.post("/admin/challenge", adminMiddleware, async (req, res) => {
       return res.status(400).json({ ok: false, error: "Invalid type" });
     }
 
+    const aiContext = await generateChallengeContext(description);
+
     const challenge = await client.challenge.create({
-      data: { title, notionDocId, description, maxPoints, type },
+      data: { title, notionDocId, aiContext, maxPoints, type },
     });
 
     res.status(201).json({ ok: true, challenge });
@@ -223,25 +228,36 @@ router.post(
   userMiddleware,
   async (req: any, res) => {
     try {
-      const { submission, points } = req.body;
+      const { submission } = req.body;
       const userId = req.userId;
       const { contestId, challengeId } = req.params;
 
-      if (!submission || typeof points !== "number") {
+      if (!submission) {
         return res.status(400).json({ ok: false });
       }
 
-      const alllowed = await checkSubmissionRateLimit(userId);
-      if (!alllowed) {
+      const allowed = await checkSubmissionRateLimit(userId);
+      if (!allowed) {
         return res.status(429).json({ ok: false });
       }
 
       const currentMapping = await client.contestToChallengeMapping.findFirst({
         where: { contestId, challengeId },
+        include: { challenge: true },
       });
 
       if (!currentMapping) return res.status(404).json({ ok: false });
 
+      //  AI JUDGE
+      const ai = await aiJudge(
+        currentMapping.challenge.aiContext!,
+        submission,
+        currentMapping.challenge.maxPoints,
+      );
+
+      const finalPoints = ai.marks; // from AI
+
+      // find previous submission
       const prev = await client.contestSubmission.findUnique({
         where: {
           contestToChallengeMappingId_userId: {
@@ -252,8 +268,9 @@ router.post(
       });
 
       const prevPoints = prev?.points ?? 0;
-      const diff = points - prevPoints;
+      const diff = finalPoints - prevPoints;
 
+      // save submission
       await client.contestSubmission.upsert({
         where: {
           contestToChallengeMappingId_userId: {
@@ -261,15 +278,23 @@ router.post(
             userId,
           },
         },
-        update: { submission, points },
+        update: {
+          submission,
+          points: finalPoints,
+          aiVerdict: ai.verdict,
+          aiReason: ai.reason,
+        },
         create: {
           submission,
-          points,
+          points: finalPoints,
+          aiVerdict: ai.verdict,
+          aiReason: ai.reason,
           userId,
           contestToChallengeMappingId: currentMapping.id,
         },
       });
 
+      // update leaderboard
       await addScoreToLeaderboard(contestId, userId, diff);
 
       const nextMapping = await client.contestToChallengeMapping.findFirst({
@@ -279,9 +304,13 @@ router.post(
 
       res.status(201).json({
         ok: true,
+        verdict: ai.verdict,
+        marks: finalPoints,
+        reason: ai.reason,
         nextChallengeId: nextMapping?.challengeId ?? null,
       });
-    } catch {
+    } catch (e) {
+      console.error(e);
       res.status(500).json({ ok: false });
     }
   },

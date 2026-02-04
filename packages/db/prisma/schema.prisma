@@ -55,7 +55,9 @@ model Challenge {
   notionDocId String
   maxPoints   Int
   description String?
-  type        Type?
+
+  aiContext String?
+  type      Type?
 
   contestToChallengeMapping ContestToChallengeMapping[]
 }
@@ -75,12 +77,15 @@ model ContestToChallengeMapping {
 }
 
 model ContestSubmission {
-  id                          String   @id @default(uuid())
+  id                          String @id @default(uuid())
   submission                  String
   contestToChallengeMappingId String
   userId                      String
-  points                      Int      @default(0)
-  createdAt                   DateTime @default(now())
+
+  points    Int      @default(0)
+  aiVerdict String?
+  aiReason  String?
+  createdAt DateTime @default(now())
 
   user                      User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
   contestToChallengeMapping ContestToChallengeMapping @relation(fields: [contestToChallengeMappingId], references: [id], onDelete: Cascade)

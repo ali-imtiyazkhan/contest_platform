@@ -1,15 +1,21 @@
 import dotenv from "dotenv";
 dotenv.config();
 
-import "./lib/redis"; 
+import "./lib/redis";
 import express from "express";
 import userRouter from "./routes/user";
 import contestRouter from "./routes/contest";
 import adminRouter from "./routes/admin";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import { Router } from "express";
+
+const router = Router();
 
 const app = express();
+
+router.use(express.text());
+
 const allowedOrigins = ["http://localhost:3000"];
 const corsOptions = {
   origin: function (origin: any, callback: any) {
