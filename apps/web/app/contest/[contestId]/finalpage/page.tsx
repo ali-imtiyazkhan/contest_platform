@@ -25,11 +25,12 @@ const Page = () => {
                 </p>
 
                 <div className="flex gap-3 pt-2">
-                    <Button onClick={() => router.back()}>
+                    <Button className="cursor-pointer" onClick={() => router.back()}>
                         Back to Challenge
                     </Button>
 
                     <Button
+                        className="cursor-pointer"
                         variant="secondary"
                         onClick={() => router.push("/dashboard")}
                     >

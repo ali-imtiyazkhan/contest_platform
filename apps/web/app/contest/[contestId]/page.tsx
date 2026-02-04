@@ -81,11 +81,11 @@ export default function ContestDetailPage() {
                 <p className="text-xl font-medium text-muted-foreground">
                     Contest not found
                 </p>
-                <Button onClick={() => router.push("/dashboard")} variant="outline">
+                <Button className="cursor-pointer" onClick={() => router.push("/dashboard")} variant="outline">
                     Return to Dashboard
                 </Button>
 
-                <Button onClick={() => router.push("/leaderboard")} variant="outline">
+                <Button className="cursor-pointer" onClick={() => router.push("/leaderboard")} variant="outline">
                     LeaderBoard
                 </Button>
             </div>

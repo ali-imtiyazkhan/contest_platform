@@ -156,7 +156,7 @@ export default function SignUpPage() {
 
                   <Button
                     type="submit"
-                    className="w-full h-12 text-base font-semibold mt-2"
+                    className="w-full h-12 text-base font-semibold mt-2 cursor-pointer"
                     disabled={loading}
                   >
                     {loading ? (
@@ -194,7 +194,7 @@ export default function SignUpPage() {
 
                   <Button
                     type="submit"
-                    className="w-full h-12 text-base font-semibold"
+                    className="w-full h-12 text-base font-semibold cursor-pointer"
                     disabled={loading || code.length !== 6}
                   >
                     {loading ? (

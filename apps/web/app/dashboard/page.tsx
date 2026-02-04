@@ -68,10 +68,11 @@ export default function DashboardPage() {
           </div>
 
           <Button
+
             variant="outline"
             onClick={fetchChallenges}
             disabled={loading}
-            className="w-fit"
+            className="w-fit cursor-pointer"
           >
             <RefreshCw className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`} />
             {loading ? "Syncing..." : "Refresh Arena"}
@@ -146,7 +147,7 @@ export default function DashboardPage() {
                 <CardFooter>
                   <Button
                     onClick={() => router.push(`/contest/${contest.id}`)}
-                    className="w-full group/btn"
+                    className="w-full group/btn cursor-pointer"
                     variant={contest.live ? "default" : "outline"}
                   >
                     {contest.live ? "Enter Arena" : "View Details"}
