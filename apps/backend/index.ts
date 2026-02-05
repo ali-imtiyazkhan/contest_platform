@@ -37,12 +37,12 @@ const corsOptions = {
   optionsSuccessStatus: 204,
 };
 
-// Middleware
 app.use(cors(corsOptions));
 app.use(cookieParser());
 app.use(express.json());
 
-// Routes
+
+
 app.get("/health", (req, res) => {
   res.json({ message: "Health Check!" });
 });
