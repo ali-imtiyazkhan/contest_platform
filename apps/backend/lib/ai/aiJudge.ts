@@ -1,7 +1,7 @@
-import OpenAI from "openai";
+import { GoogleGenAI } from "@google/genai";
 
-const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY!,
+const ai = new GoogleGenAI({
+  apiKey: process.env.GEMINI_API_KEY!,
 });
 
 export async function aiJudge(
@@ -20,25 +20,31 @@ ${code}
 
 You MUST give marks out of ${maxPoints}.
 
-Return ONLY JSON in this format:
+Return ONLY JSON:
 {
  "verdict": "Correct or Wrong",
- "marks": number,   // must be between 0 and ${maxPoints}
+ "marks": number,
  "reason": "short reason"
 }
 `;
 
-  const res = await client.chat.completions.create({
-    model: "gpt-4o-mini",
-    messages: [{ role: "user", content: prompt }],
-    temperature: 0.1,
-  });
+const res = await ai.models.generateContent({
+  model: "gemini-2.5-flash",
+  contents: prompt,
+});
 
-  const text = res.choices[0].message.content ?? "{}";
-  const parsed = JSON.parse(text);
 
-  // Safety clamp (very important)
-  parsed.marks = Math.max(0, Math.min(parsed.marks, maxPoints));
+  let text = res.text ?? "{}";
+
+  let parsed: any = {};
+  try {
+    parsed = JSON.parse(text);
+  } catch {
+    const match = text.match(/\{[\s\S]*\}/);
+    if (match) parsed = JSON.parse(match[0]);
+  }
+
+  parsed.marks = Math.max(0, Math.min(parsed.marks ?? 0, maxPoints));
 
   return parsed;
 }

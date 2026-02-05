@@ -1,9 +1,12 @@
-import OpenAI from "openai";
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
+import { GoogleGenAI } from "@google/genai";
+
+const ai = new GoogleGenAI({
+  apiKey: process.env.GEMINI_API_KEY!,
+});
 
 export async function generateChallengeContext(
   description: string,
-  maxPoint: Number,
+  maxPoint: number,
 ) {
   const prompt = `
 You are a competitive programming expert.
@@ -17,14 +20,14 @@ Understand this problem deeply and explain:
 Problem:
 ${description}
 
-MaxNumber :
+MaxNumber:
 ${maxPoint}
 `;
 
-  const res = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
-    messages: [{ role: "user", content: prompt }],
+  const res = await ai.models.generateContent({
+    model: "gemini-2.5-flash",
+    contents: prompt,
   });
 
-  return res.choices[0].message.content;
+  return res.text;
 }
