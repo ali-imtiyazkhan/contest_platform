@@ -4,7 +4,6 @@ import { adminMiddleware } from "../middleware/admin";
 import { client } from "db/client";
 import { aiJudge } from "../lib/ai/aiJudge";
 
-
 import { Type } from "../../../packages/db/generated/prisma";
 import {
   addScoreToLeaderboard,
@@ -59,7 +58,7 @@ router.post("/admin/challenge", adminMiddleware, async (req, res) => {
       return res.status(400).json({ ok: false, error: "Invalid type" });
     }
 
-    const aiContext = await generateChallengeContext(description);
+    const aiContext = await generateChallengeContext(description, maxPoints);
 
     const challenge = await client.challenge.create({
       data: { title, notionDocId, aiContext, maxPoints, type },

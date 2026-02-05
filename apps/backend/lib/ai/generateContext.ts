@@ -1,7 +1,10 @@
 import OpenAI from "openai";
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
 
-export async function generateChallengeContext(description: string) {
+export async function generateChallengeContext(
+  description: string,
+  maxPoint: Number,
+) {
   const prompt = `
 You are a competitive programming expert.
 
@@ -13,6 +16,9 @@ Understand this problem deeply and explain:
 
 Problem:
 ${description}
+
+MaxNumber :
+${maxPoint}
 `;
 
   const res = await openai.chat.completions.create({
