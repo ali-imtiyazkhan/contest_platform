@@ -176,7 +176,7 @@ export default function ChallengePage() {
                                     value={code}
                                     onChange={(e) => setCode(e.target.value)}
                                     placeholder="Enter your source code or solution logic here..."
-                                    className="min-h-[400px] bg-black border-none text-emerald-50 font-mono p-6 focus-visible:ring-0 resize-none placeholder:text-zinc-800"
+                                    className="min-h-100 bg-black border-none text-emerald-50 font-mono p-6 focus-visible:ring-0 resize-none placeholder:text-zinc-800"
                                 />
                             </CardContent>
                             <div className="p-4 bg-zinc-900/30 border-t border-zinc-900 flex justify-end">
@@ -234,8 +234,8 @@ function ChallengeLoadingSkeleton() {
             <div className="max-w-7xl mx-auto space-y-8">
                 <Skeleton className="h-8 w-64 bg-zinc-900" />
                 <div className="grid grid-cols-2 gap-8">
-                    <Skeleton className="h-[500px] w-full bg-zinc-900 rounded-2xl" />
-                    <Skeleton className="h-[500px] w-full bg-zinc-900 rounded-2xl" />
+                    <Skeleton className="h-125 w-full bg-zinc-900 rounded-2xl" />
+                    <Skeleton className="h-125 w-full bg-zinc-900 rounded-2xl" />
                 </div>
             </div>
         </div>

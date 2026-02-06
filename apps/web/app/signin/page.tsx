@@ -71,7 +71,7 @@ export default function SignInPage() {
   return (
     <main className="min-h-screen w-full bg-black flex items-center justify-center px-4 relative overflow-hidden">
       {/* Background Glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-emerald-500/5 blur-[120px] rounded-full -z-10" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-125 h-125 bg-emerald-500/5 blur-[120px] rounded-full -z-10" />
 
       <div className="w-full max-w-md z-10">
         <div className="text-center mb-10 space-y-3">

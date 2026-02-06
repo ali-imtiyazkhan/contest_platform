@@ -10,7 +10,10 @@ import {
   FileText,
   Settings2,
   Loader2,
-  ChevronRight
+  ChevronRight,
+  ShieldCheck,
+  Zap,
+  Clock
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -19,7 +22,6 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  CardFooter,
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -28,6 +30,7 @@ import { Switch } from "@/components/ui/switch"
 import { useToast } from "@/hooks/use-toast"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
+import { SiteHeader } from "@/components/site-header"
 
 type SubChallenge = {
   title: string
@@ -102,154 +105,200 @@ export default function AdminPage() {
         }
       }
 
-      toast({ title: "Success! ", description: "Contest has been published successfully." })
-      // Reset form logic here...
+      toast({ title: "Deployment Successful", description: "Contest arena is now live." })
     } catch (err: any) {
-      toast({ title: "Error", description: err.message })
+      toast({ title: "Deployment Failed", description: err.message, variant: "destructive" })
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div className="max-w-full space-y-8 p-4">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Create Contest</h1>
-          <p className="text-muted-foreground">Setup your competition and link challenges from Notion.</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={() => window.location.reload()}>Discard</Button>
-          <Button onClick={submit} disabled={loading || !name}>
-            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Publish Contest
-          </Button>
-        </div>
-      </div>
+    <div className="min-h-screen bg-black text-white selection:bg-emerald-500/30">
+      <SiteHeader />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left Column: General Info */}
-        <div className="lg:col-span-1 space-y-6">
-          <Card className="sticky top-6">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <Settings2 className="h-5 w-5 text-primary" />
-                Contest Details
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-4">
-                <Label htmlFor="name">Contest Name</Label>
-                <Input id="name" placeholder="E.g. Winter Hackathon 2024" value={name} onChange={(e) => setName(e.target.value)} />
-              </div>
-              <div className="space-y-4">
-                <Label htmlFor="desc">Description</Label>
-                <Textarea id="desc" placeholder="What is this contest about?" className="min-h-25" value={description} onChange={(e) => setDescription(e.target.value)} />
-              </div>
-
-              <Separator />
-
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Scheduling</Label>
-                  <p className="text-xs text-muted-foreground">Set a specific start time</p>
-                </div>
-                <Switch checked={scheduled} onCheckedChange={setScheduled} />
-              </div>
-
-              {scheduled && (
-                <div className="space-y-3 pt-2">
-                  <div className="grid gap-1.5">
-                    <Label className="text-xs">Start Date & Time</Label>
-                    <Input type="datetime-local" value={startAt} onChange={(e) => setStartAt(e.target.value)} />
-                  </div>
-                  <div className="grid gap-1.5">
-                    <Label className="text-xs">End Date & Time</Label>
-                    <Input type="datetime-local" value={endAt} onChange={(e) => setEndAt(e.target.value)} />
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Right Column: Challenges */}
-        <div className="lg:col-span-2 space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-xl font-semibold flex items-center gap-2">
-              <Trophy className="h-5 w-5 text-yellow-500" />
-              Challenges
-              <Badge variant="secondary" className="ml-2">{subs.length}</Badge>
-            </h3>
-            <Button type="button" size="sm" onClick={addSub} className="gap-1">
-              <Plus className="h-4 w-4" /> Add Task
+      <main className="max-w-full mx-auto px-6 py-12 space-y-10">
+        {/* Page Header */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-zinc-900 pb-10">
+          <div className="space-y-2">
+            <h1 className="text-4xl font-black tracking-tighter text-white flex items-center gap-3">
+              <ShieldCheck className="text-emerald-500 h-10 w-10" />
+              COMMAND CENTER
+            </h1>
+            <p className="text-zinc-500 font-mono text-sm uppercase tracking-widest">Deploy new combat environments</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <Button
+              variant="ghost"
+              className="text-zinc-500 hover:text-white hover:bg-zinc-900"
+              onClick={() => window.location.reload()}
+            >
+              Discard Draft
+            </Button>
+            <Button
+              onClick={submit}
+              disabled={loading || !name}
+              className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold h-11 px-6 shadow-[0_0_20px_-5px_rgba(16,185,129,0.4)]"
+            >
+              {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Zap className="mr-2 h-4 w-4 fill-current" />}
+              Publish Arena
             </Button>
           </div>
+        </div>
 
-          <div className="space-y-4">
-            {subs.map((sc, idx) => (
-              <Card key={idx} className="relative overflow-hidden group border-l-4 border-l-primary/20 hover:border-l-primary transition-all">
-                <CardHeader className="pb-3">
-                  <div className="flex justify-between items-start">
-                    <Badge variant="outline" className="mb-2">Challenge #{idx + 1}</Badge>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="text-muted-foreground hover:text-destructive transition-colors"
-                      onClick={() => removeSub(idx)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+          {/* Left Column: Configuration */}
+          <div className="lg:col-span-1 space-y-6">
+            <Card className="bg-zinc-950 border-zinc-800">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-zinc-100 italic tracking-tight">
+                  <Settings2 className="h-4 w-4 text-emerald-500" />
+                  Contest Configuration
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-2">
+                  <Label htmlFor="name" className="text-zinc-400 text-xs font-bold uppercase tracking-wider">Arena Designation</Label>
                   <Input
-                    className="text-lg font-bold border-none px-0 focus-visible:ring-0 placeholder:opacity-50"
-                    placeholder="Enter challenge title..."
-                    value={sc.title}
-                    onChange={(e) => updateSub(idx, { title: e.target.value })}
+                    id="name"
+                    placeholder="E.g. NEON_NIGHT_HACK"
+                    className="bg-black border-zinc-800 text-white focus-visible:ring-emerald-500/20 focus-visible:border-emerald-500/50"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
                   />
-                </CardHeader>
-                <CardContent className="space-y-4">
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="desc" className="text-zinc-400 text-xs font-bold uppercase tracking-wider">Briefing</Label>
                   <Textarea
-                    placeholder="Short summary for the challenge card..."
-                    className="resize-none"
-                    value={sc.description}
-                    onChange={(e) => updateSub(idx, { description: e.target.value })}
+                    id="desc"
+                    placeholder="Mission objectives..."
+                    className="bg-black border-zinc-800 text-white focus-visible:ring-emerald-500/20 focus-visible:border-emerald-500/50 min-h-30"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
                   />
-                  <div className="grid sm:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label className="text-xs flex items-center gap-1">
-                        <FileText className="h-3 w-3" /> Notion Document ID
-                      </Label>
+                </div>
+
+                <Separator className="bg-zinc-900" />
+
+                <div className="flex items-center justify-between p-3 bg-zinc-900/30 rounded-lg border border-zinc-800/50">
+                  <div className="space-y-1">
+                    <Label className="text-sm font-bold text-zinc-200 flex items-center gap-2">
+                      <Clock className="h-3.5 w-3.5 text-emerald-500" />
+                      Scheduling
+                    </Label>
+                    <p className="text-[10px] text-zinc-500 uppercase font-mono tracking-tight">Deferred Start Protocol</p>
+                  </div>
+                  <Switch checked={scheduled} onCheckedChange={setScheduled} />
+                </div>
+
+                {scheduled && (
+                  <div className="space-y-4 pt-2 animate-in slide-in-from-top-2 duration-300">
+                    <div className="grid gap-2">
+                      <Label className="text-[10px] text-zinc-500 uppercase font-bold">Infiltration Date (Start)</Label>
                       <Input
-                        placeholder="e.g. 123abc456..."
-                        value={sc.notionDocId}
-                        onChange={(e) => updateSub(idx, { notionDocId: e.target.value })}
+                        type="datetime-local"
+                        className="bg-black border-zinc-800 text-white"
+                        value={startAt}
+                        onChange={(e) => setStartAt(e.target.value)}
                       />
                     </div>
-                    <div className="space-y-2">
-                      <Label className="text-xs flex items-center gap-1">
-                        <Trophy className="h-3 w-3" /> Max Points
-                      </Label>
+                    <div className="grid gap-2">
+                      <Label className="text-[10px] text-zinc-500 uppercase font-bold">Extraction Date (End)</Label>
                       <Input
-                        type="number"
-                        value={sc.points}
-                        onChange={(e) => updateSub(idx, { points: Number(e.target.value) || 0 })}
+                        type="datetime-local"
+                        className="bg-black border-zinc-800 text-white"
+                        value={endAt}
+                        onChange={(e) => setEndAt(e.target.value)}
                       />
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            ))}
+                )}
+              </CardContent>
+            </Card>
+          </div>
 
-            {subs.length === 0 && (
-              <div className="text-center py-12 border-2 border-dashed rounded-xl bg-muted/30">
-                <p className="text-muted-foreground">No challenges added yet.</p>
-                <Button variant="link" onClick={addSub}>Add your first challenge</Button>
-              </div>
-            )}
+          {/* Right Column: Task Modules */}
+          <div className="lg:col-span-2 space-y-6">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xl font-black tracking-tighter flex items-center gap-2 text-white italic">
+                TASK_MODULES
+                <Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 ml-2">{subs.length}</Badge>
+              </h3>
+              <Button type="button" size="sm" onClick={addSub} className="bg-zinc-100 text-black hover:bg-white font-bold gap-1 rounded-md">
+                <Plus className="h-4 w-4" /> Add Challenge
+              </Button>
+            </div>
+
+            <div className="space-y-6">
+              {subs.map((sc, idx) => (
+                <Card key={idx} className="relative overflow-hidden bg-zinc-950 border-zinc-800 hover:border-emerald-500/30 transition-all duration-300">
+                  <div className="absolute top-0 left-0 w-1 h-full bg-emerald-600" />
+                  <CardHeader className="pb-2">
+                    <div className="flex justify-between items-center">
+                      <Badge variant="outline" className="border-zinc-800 text-zinc-500 font-mono text-[10px]">#MOD_0{idx + 1}</Badge>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-zinc-600 hover:text-rose-500 hover:bg-rose-500/5 transition-all"
+                        onClick={() => removeSub(idx)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <Input
+                      className="text-xl font-black border-none px-0 focus-visible:ring-0 bg-transparent text-white placeholder:text-zinc-800 tracking-tight italic"
+                      placeholder="CHALLENGE_TITLE"
+                      value={sc.title}
+                      onChange={(e) => updateSub(idx, { title: e.target.value })}
+                    />
+                  </CardHeader>
+                  <CardContent className="space-y-6 pb-6">
+                    <Textarea
+                      placeholder="Task overview and success criteria..."
+                      className="bg-black/50 border-zinc-800 text-zinc-300 placeholder:text-zinc-700 min-h-20"
+                      value={sc.description}
+                      onChange={(e) => updateSub(idx, { description: e.target.value })}
+                    />
+                    <div className="grid sm:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <Label className="text-[10px] font-bold text-zinc-500 uppercase flex items-center gap-1">
+                          <FileText className="h-3 w-3 text-emerald-500" /> Notion Asset ID
+                        </Label>
+                        <Input
+                          placeholder="Doc ID..."
+                          className="bg-black border-zinc-800 text-white font-mono text-xs"
+                          value={sc.notionDocId}
+                          onChange={(e) => updateSub(idx, { notionDocId: e.target.value })}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-[10px] font-bold text-zinc-500 uppercase flex items-center gap-1">
+                          <Trophy className="h-3 w-3 text-emerald-500" /> Bounty (Points)
+                        </Label>
+                        <Input
+                          type="number"
+                          className="bg-black border-zinc-800 text-emerald-500 font-black"
+                          value={sc.points}
+                          onChange={(e) => updateSub(idx, { points: Number(e.target.value) || 0 })}
+                        />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+
+              {subs.length === 0 && (
+                <div className="text-center py-20 border border-dashed border-zinc-800 rounded-2xl bg-zinc-950/50">
+                  <p className="text-zinc-600 font-mono text-sm uppercase">Arena Empty: Deploy Tasks to Begin</p>
+                  <Button variant="link" onClick={addSub} className="text-emerald-500 mt-2 font-bold uppercase text-xs tracking-widest hover:text-emerald-400">
+                    Initialize First Module
+                  </Button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      </main>
     </div>
   )
 }

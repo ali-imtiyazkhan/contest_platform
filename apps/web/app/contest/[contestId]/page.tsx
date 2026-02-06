@@ -129,7 +129,7 @@ export default function ContestDetailPage() {
                             </div>
 
                             <div className="flex flex-wrap gap-4">
-                                <div className="bg-zinc-900/50 border border-zinc-800 px-8 py-5 rounded-2xl text-center min-w-[140px]">
+                                <div className="bg-zinc-900/50 border border-zinc-800 px-8 py-5 rounded-2xl text-center min-w-35">
                                     <p className="text-[10px] uppercase tracking-widest text-zinc-500 font-bold mb-1">
                                         Total Points
                                     </p>
@@ -137,7 +137,7 @@ export default function ContestDetailPage() {
                                         {totalPoints}
                                     </p>
                                 </div>
-                                <div className="bg-zinc-900/50 border border-zinc-800 px-8 py-5 rounded-2xl text-center min-w-[140px]">
+                                <div className="bg-zinc-900/50 border border-zinc-800 px-8 py-5 rounded-2xl text-center min-w-35">
                                     <p className="text-[10px] uppercase tracking-widest text-zinc-500 font-bold mb-1">
                                         Tasks
                                     </p>
@@ -167,7 +167,7 @@ export default function ContestDetailPage() {
                                 >
                                     <CardContent className="p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-8">
                                         <div className="flex items-start gap-6">
-                                            <div className="flex-shrink-0 w-14 h-14 flex items-center justify-center bg-zinc-900 border border-zinc-800 rounded-xl text-xl font-bold text-emerald-500 group-hover:border-emerald-500/50 transition-colors">
+                                            <div className="shrink-0 w-14 h-14 flex items-center justify-center bg-zinc-900 border border-zinc-800 rounded-xl text-xl font-bold text-emerald-500 group-hover:border-emerald-500/50 transition-colors">
                                                 {item.index + 1}
                                             </div>
 

@@ -26,7 +26,7 @@ const Page = () => {
 
                 {/* Text Content */}
                 <div className="space-y-4 mb-10">
-                    <h1 className="text-4xl md:text-5xl font-black tracking-tighter bg-gradient-to-b from-white to-zinc-500 bg-clip-text text-transparent">
+                    <h1 className="text-4xl md:text-5xl font-black tracking-tighter bg-linear-to-b from-white to-zinc-500 bg-clip-text text-transparent">
                         MISSION ACCOMPLISHED
                     </h1>
                     <p className="max-w-md mx-auto text-lg text-zinc-400 leading-relaxed">

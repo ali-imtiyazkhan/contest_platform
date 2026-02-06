@@ -6,6 +6,7 @@ export type Toast = {
     id?: string;
     title?: string;
     description?: string;
+    variant?: string
 };
 
 type ToastContextType = {
