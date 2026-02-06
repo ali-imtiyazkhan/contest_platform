@@ -1,15 +1,10 @@
-import { Router, Request, Response } from "express";
+import { Router, Request } from "express";
 import { userMiddleware } from "../middleware/user";
 import { adminMiddleware } from "../middleware/admin";
 import { client } from "db/client";
 import { aiJudge } from "../lib/ai/aiJudge";
-
 import { Type } from "../../../packages/db/generated/prisma";
-import {
-  addScoreToLeaderboard,
-  getLeaderboard,
-  checkSubmissionRateLimit,
-} from "../lib/redis";
+import { checkSubmissionRateLimit } from "../lib/redis";
 import { generateChallengeContext } from "../lib/ai/generateContext";
 
 const router = Router();
@@ -20,7 +15,7 @@ function parsePagination(req: Request) {
   return { offset, limit };
 }
 
-// CREATE CONTEST
+// create contest
 router.post("/admin/contest", adminMiddleware, async (req, res) => {
   try {
     const { title, startTime, description, endTime } = req.body;
@@ -44,7 +39,7 @@ router.post("/admin/contest", adminMiddleware, async (req, res) => {
   }
 });
 
-//CREATE CHALLENGE
+// create challenge
 router.post("/admin/challenge", adminMiddleware, async (req, res) => {
   try {
     const { title, notionDocId, description, type } = req.body;
@@ -70,7 +65,7 @@ router.post("/admin/challenge", adminMiddleware, async (req, res) => {
   }
 });
 
-//MAP CHALLENGE TO CONTEST
+// map b/w challenege and contest
 router.post(
   "/admin/contest/:contestId/challenge",
   adminMiddleware,
@@ -95,97 +90,7 @@ router.post(
   },
 );
 
-// REORDER
-router.put(
-  "/admin/contest/:contestId/reorder",
-  adminMiddleware,
-  async (req, res) => {
-    try {
-      const { contestId } = req.params;
-      const { orders } = req.body;
-
-      const tx = orders.map((o: any) =>
-        client.contestToChallengeMapping.updateMany({
-          where: { contestId, challengeId: o.challengeId },
-          data: { index: o.index },
-        }),
-      );
-
-      await client.$transaction(tx);
-      res.json({ ok: true });
-    } catch {
-      res.status(500).json({ ok: false });
-    }
-  },
-);
-
-// REMOVE CHALLENGE
-router.delete(
-  "/admin/contest/:contestId/challenge/:challengeId",
-  adminMiddleware,
-  async (req, res) => {
-    await client.contestToChallengeMapping.deleteMany({
-      where: req.params,
-    });
-    res.json({ ok: true });
-  },
-);
-
-// ALL CONTESTS
-router.get("/", async (_, res) => {
-  const contests = await client.contest.findMany({
-    orderBy: { startTime: "desc" },
-  });
-  res.json({ ok: true, data: contests });
-});
-
-// ACTIVE CONTESTS
-router.get("/active", async (req, res) => {
-  const { offset, limit } = parsePagination(req);
-  const now = new Date();
-
-  const [data, total] = await Promise.all([
-    client.contest.findMany({
-      where: {
-        startTime: { lte: now },
-        endTime: { gte: now },
-      },
-      skip: offset,
-      take: limit,
-      orderBy: { startTime: "desc" },
-    }),
-    client.contest.count({
-      where: {
-        startTime: { lte: now },
-        endTime: { gte: now },
-      },
-    }),
-  ]);
-
-  res.json({ ok: true, data, pagination: { offset, limit, total } });
-});
-
-// FINISHED CONTESTS
-router.get("/finished", async (req, res) => {
-  const { offset, limit } = parsePagination(req);
-  const now = new Date();
-
-  const [data, total] = await Promise.all([
-    client.contest.findMany({
-      where: { endTime: { lt: now } },
-      skip: offset,
-      take: limit,
-      orderBy: { startTime: "desc" },
-    }),
-    client.contest.count({
-      where: { endTime: { lt: now } },
-    }),
-  ]);
-
-  res.json({ ok: true, data, pagination: { offset, limit, total } });
-});
-
-// CONTEST DETAIL
+// get contest detail
 router.get("/:contestId", async (req, res) => {
   const contest = await client.contest.findUnique({
     where: { id: req.params.contestId },
@@ -201,27 +106,7 @@ router.get("/:contestId", async (req, res) => {
   res.json({ ok: true, data: contest });
 });
 
-router.get("/:contestId/challenge/:challengeId", async (req, res) => {
-  try {
-    const mapping = await client.contestToChallengeMapping.findFirst({
-      where: {
-        contestId: req.params.contestId,
-        challengeId: req.params.challengeId,
-      },
-      include: { challenge: true },
-    });
-
-    if (!mapping)
-      return res.status(404).json({ ok: false, error: "Not found" });
-
-    res.json({ ok: true, data: mapping });
-  } catch (error) {
-    console.error("Challenge fetch error:", error);
-    res.status(500).json({ ok: false });
-  }
-});
-
-// SUBMIT SOLUTION
+// submit solution
 router.post(
   "/:contestId/challenge/:challengeId/submit",
   userMiddleware,
@@ -247,29 +132,15 @@ router.post(
 
       if (!currentMapping) return res.status(404).json({ ok: false });
 
-      //  AI JUDGE
       const ai = await aiJudge(
         currentMapping.challenge.aiContext!,
         submission,
         currentMapping.challenge.maxPoints,
       );
 
-      const finalPoints = ai.marks; // from AI
+      const finalPoints = ai.marks;
 
-      // find previous submission
-      const prev = await client.contestSubmission.findUnique({
-        where: {
-          contestToChallengeMappingId_userId: {
-            contestToChallengeMappingId: currentMapping.id,
-            userId,
-          },
-        },
-      });
-
-      const prevPoints = prev?.points ?? 0;
-      const diff = finalPoints - prevPoints;
-
-      // save submission
+      // upsert solution
       await client.contestSubmission.upsert({
         where: {
           contestToChallengeMappingId_userId: {
@@ -293,12 +164,35 @@ router.post(
         },
       });
 
-      // update leaderboard
-      await addScoreToLeaderboard(contestId, userId, diff);
+      // calculate totel score
+      const total = await client.contestSubmission.aggregate({
+        where: {
+          userId,
+          contestToChallengeMapping: {
+            contestId,
+          },
+        },
+        _sum: { points: true },
+      });
 
-      const nextMapping = await client.contestToChallengeMapping.findFirst({
-        where: { contestId, index: { gt: currentMapping.index } },
-        orderBy: { index: "asc" },
+      const totalScore = total._sum.points ?? 0;
+
+      //  leaderboard table
+      await client.leaderboard.upsert({
+        where: {
+          contestId_userId: {
+            contestId,
+            userId,
+          },
+        },
+        update: {
+          score: totalScore,
+        },
+        create: {
+          contestId,
+          userId,
+          score: totalScore,
+        },
       });
 
       res.status(201).json({
@@ -306,7 +200,6 @@ router.post(
         verdict: ai.verdict,
         marks: finalPoints,
         reason: ai.reason,
-        nextChallengeId: nextMapping?.challengeId ?? null,
       });
     } catch (e) {
       console.error(e);
@@ -315,33 +208,34 @@ router.post(
   },
 );
 
-//LEADERBOARD
+// leaderboard
 router.get("/:contestId/leaderboard", async (req, res) => {
   try {
-    const raw = await getLeaderboard(req.params.contestId);
+    const { contestId } = req.params;
 
-    // get all userIds
-    const userIds = raw.map((r) => r.userId);
-
-    // fetch users from DB
-    const users = await client.user.findMany({
-      where: { id: { in: userIds } },
-      select: { id: true, email: true },
+    const entries = await client.leaderboard.findMany({
+      where: { contestId },
+      orderBy: [{ score: "desc" }, { userId: "asc" }],
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+          },
+        },
+      },
     });
 
-    // map id -> user
-    const userMap = new Map(users.map((u) => [u.id, u]));
-
-    // attach names
-    const leaderboard = raw.map((r) => ({
-      rank: r.rank,
-      score: r.score,
-      userId: r.userId,
-      email: userMap.get(r.userId)?.email,
+    const leaderboard = entries.map((entry, index) => ({
+      rank: index + 1,
+      userId: entry.userId,
+      email: entry.user.email,
+      score: entry.score,
     }));
 
     res.json({ ok: true, leaderboard });
   } catch (e) {
+    console.error(e);
     res.status(500).json({ ok: false });
   }
 });
