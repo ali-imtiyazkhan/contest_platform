@@ -27,86 +27,90 @@ export function SiteHeader() {
   }
 
   return (
-    <header className="sticky top-0 z-50 border-b  backdrop-blur">
-      <div className="mx-auto flex h-16 max-w-8xl items-center justify-between px-4">
+    <header className="sticky top-0 z-50 border-b border-zinc-900 bg-black/80 backdrop-blur-md">
+      <div className=" flex h-16 max-w-full items-center justify-between px-6 sm:px-8 lg:px-12">
         {/* Logo */}
         <Link
           href={accessToken ? "/dashboard" : "/signin"}
           className="group flex items-center gap-2"
           aria-label="100xContest home"
         >
-          <svg
-            className="h-7 w-7 text-primary transition-transform duration-200 group-hover:rotate-6"
-            viewBox="0 0 24 24"
-            fill="none"
-            aria-hidden="true"
-          >
-            <rect
-              x="3"
-              y="3"
-              width="18"
-              height="18"
-              rx="5"
-              stroke="currentColor"
-              strokeWidth="1.6"
-            />
-            <path
-              d="M8 8l8 8M16 8l-8 8"
-              stroke="currentColor"
-              strokeWidth="1.6"
-              strokeLinecap="round"
-            />
-          </svg>
+          <div className="relative flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-900 border border-zinc-800 transition-all group-hover:border-orange-500/50">
+            <svg
+              className="h-5 w-5 text-orange-500 transition-transform duration-300 group-hover:scale-110"
+              viewBox="0 0 24 24"
+              fill="none"
+              aria-hidden="true"
+            >
+              <rect
+                x="3"
+                y="3"
+                width="18"
+                height="18"
+                rx="5"
+                stroke="currentColor"
+                strokeWidth="2"
+              />
+              <path
+                d="M8 8l8 8M16 8l-8 8"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+            </svg>
+          </div>
 
-          <span className="text-lg font-semibold tracking-tight">
+          <span className="text-xl font-bold tracking-tight text-white">
             <span>100x</span>
-            <span className="ml-1 text-muted-foreground">Contest</span>
+            <span className="ml-1 text-zinc-500 font-medium">Contest</span>
           </span>
         </Link>
 
         {/* Navigation */}
-        <nav className="flex items-center gap-4">
+        <nav className="flex items-center gap-6">
           {loading ? (
             <div className="flex items-center gap-3">
-              <div className="h-4 w-20 animate-pulse rounded bg-muted" />
-              <div className="h-9 w-20 animate-pulse rounded bg-muted" />
+              <div className="h-4 w-20 animate-pulse rounded bg-zinc-800" />
+              <div className="h-8 w-20 animate-pulse rounded bg-zinc-800" />
             </div>
           ) : accessToken ? (
             <>
-              <NavLink href="/dashboard">Dashboard</NavLink>
+              <div className="hidden items-center gap-6 md:flex">
+                <NavLink href="/dashboard">Dashboard</NavLink>
+                {user?.role === "Admin" && (
+                  <NavLink href="/admin">Admin Control</NavLink>
+                )}
+              </div>
 
-              {user?.role === "Admin" && (
-                <NavLink href="/admin">Admin</NavLink>
-              )}
+              {/* User Section */}
+              <div className="flex items-center gap-4 border-l border-zinc-800 pl-6">
+                <div className="flex items-center gap-3">
+                  <Avatar className="h-8 w-8 border border-zinc-800 bg-zinc-900">
+                    <AvatarFallback className="text-[10px] font-bold text-zinc-400">
+                      {user?.email?.[0]?.toUpperCase() ?? "U"}
+                    </AvatarFallback>
+                  </Avatar>
 
-              {/* User */}
-              <div className="flex items-center gap-3 pl-2">
-                <Avatar className="h-7 w-7">
-                  <AvatarFallback className="text-[10px]">
-                    {user?.email?.[0]?.toUpperCase() ?? "U"}
-                  </AvatarFallback>
-                </Avatar>
-
-                <span className="hidden text-sm text-muted-foreground md:block">
-                  {user?.email}
-                </span>
+                  <span className="hidden text-sm font-medium text-zinc-400 lg:block">
+                    {user?.email}
+                  </span>
+                </div>
 
                 <Button
                   onClick={handleLogout}
-                  variant="outline"
+                  variant="ghost"
                   size="sm"
+                  className="text-zinc-500 hover:bg-zinc-900 hover:text-white transition-colors"
                   disabled={logoutLoading}
                 >
-                  {logoutLoading ? "Logging out..." : "Logout"}
+                  {logoutLoading ? "..." : "Logout"}
                 </Button>
               </div>
             </>
           ) : (
-            <>
-              <Button asChild size="sm">
-                <Link href="/signin">Sign in</Link>
-              </Button>
-            </>
+            <Button asChild size="sm" className="bg-white text-black hover:bg-zinc-200">
+              <Link href="/signin">Sign in</Link>
+            </Button>
           )}
         </nav>
       </div>
@@ -126,7 +130,7 @@ function NavLink({
   return (
     <Link
       href={href}
-      className="text-sm text-muted-foreground transition hover:text-foreground focus-visible:outline-none focus-visible:underline focus-visible:underline-offset-4"
+      className="text-sm font-medium text-zinc-400 transition-colors hover:text-white focus-visible:outline-none"
     >
       {children}
     </Link>

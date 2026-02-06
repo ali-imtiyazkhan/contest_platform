@@ -196,6 +196,26 @@ router.get("/:contestId", async (req, res) => {
   res.json({ ok: true, data: contest });
 });
 
+router.get("/:contestId/challenge/:challengeId", async (req, res) => {
+  try {
+    const mapping = await client.contestToChallengeMapping.findFirst({
+      where: {
+        contestId: req.params.contestId,
+        challengeId: req.params.challengeId,
+      },
+      include: { challenge: true },
+    });
+
+    if (!mapping)
+      return res.status(404).json({ ok: false, error: "Not found" });
+
+    res.json({ ok: true, data: mapping });
+  } catch (error) {
+    console.error("Challenge fetch error:", error);
+    res.status(500).json({ ok: false });
+  }
+});
+
 // submit solution
 router.post(
   "/:contestId/challenge/:challengeId/submit",

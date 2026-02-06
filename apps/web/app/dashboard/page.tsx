@@ -3,10 +3,9 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-import { RefreshCw, Trophy, Calendar, Clock, ArrowRight, LayoutGrid } from "lucide-react";
+import { RefreshCw, Trophy, Calendar, Clock, ArrowRight, LayoutGrid, Zap } from "lucide-react";
 
 import { SiteHeader } from "@/components/site-header";
-
 import { BACKEND_URL } from "@/config";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge"
@@ -23,7 +22,7 @@ type Contest = {
 
 export default function DashboardPage() {
   const [challengesData, setChallengesData] = useState<Contest[]>([]);
-  const [loading, setLoading] = useState(true); // Start as true for initial mount
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const router = useRouter();
@@ -48,117 +47,118 @@ export default function DashboardPage() {
   }, []);
 
   return (
+    <div className="min-h-screen bg-black text-white selection:bg-emerald-500/30">
+      <SiteHeader />
 
-    <div>
+      {/* Main Container: Added max-w-7xl for a centered look and px-6 for side padding */}
+      <main className="max-w-full px-6 sm:px-8 lg:px-12 py-12 space-y-16">
 
-      <div>
-        <SiteHeader />
-      </div>
-      <div className="max-w-full gap-10 p-6 space-y-8">
-        {/* Header Section */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-              <Trophy className="h-8 w-8 text-yellow-500" />
-              Active Arena
-            </h1>
-            <p className="text-muted-foreground mt-1">
-              Compete in real-time developer challenges and climb the leaderboard.
-            </p>
+        {/* Header Section: Added more margin-top (mt-8) and gap between elements */}
+        <section className="flex flex-col md:flex-row md:items-end justify-between gap-8 mt-4">
+          <div className="space-y-4">
+            <div>
+              <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight bg-linear-to-b from-white to-zinc-500 bg-clip-text text-transparent">
+                Active Arena
+              </h1>
+              <p className="text-zinc-400 mt-3 text-lg max-w-2xl leading-relaxed">
+                High-stakes developer challenges. Prove your logic and dominate the board.
+              </p>
+            </div>
           </div>
 
           <Button
-
             variant="outline"
             onClick={fetchChallenges}
             disabled={loading}
-            className="w-fit cursor-pointer"
+            className="h-12 px-6 bg-zinc-900 border-zinc-800 hover:bg-zinc-800 hover:text-white transition-all rounded-xl"
           >
-            <RefreshCw className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+            <RefreshCw className={`mr-2 h-5 w-5 ${loading ? "animate-spin" : ""}`} />
             {loading ? "Syncing..." : "Refresh Arena"}
           </Button>
-        </div>
+        </section>
 
-        <hr className="border-slate-200 m-4" />
+        {/* Separator with margin */}
+        <div className="h-px w-full bg-zinc-900" />
 
-        {/* Main Grid */}
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 mt-10 pt-6">
+        {/* Main Grid: Using gap-8 for much better spacing between cards */}
+        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 pb-20 pt-10">
           {loading ? (
-            // Loading State: Skeleton Cards
+            // Skeleton State... (same logic, just ensure card background matches)
             Array.from({ length: 3 }).map((_, i) => (
-              <Card key={i} className="overflow-hidden">
-                <CardHeader className="gap-2">
-                  <Skeleton className="h-6 w-3/4" />
-                  <Skeleton className="h-4 w-full" />
-                </CardHeader>
-                <CardContent>
-                  <Skeleton className="h-20 w-full" />
-                </CardContent>
-                <CardFooter>
-                  <Skeleton className="h-10 w-full" />
-                </CardFooter>
-              </Card>
+              <Card key={i} className="bg-zinc-950 border-zinc-900 h-87.5" />
             ))
           ) : error ? (
-            // Error State
-            <div className="col-span-full py-12 text-center bg-destructive/5 rounded-xl border border-destructive/20">
-              <p className="text-destructive font-medium">{error}</p>
-              <Button variant="ghost" onClick={fetchChallenges} className="mt-4">Try Again</Button>
+            <div className="col-span-full py-20 text-center bg-red-500/5 rounded-3xl border border-red-500/10">
+              <p className="text-red-400 text-lg">{error}</p>
+              <Button variant="outline" onClick={fetchChallenges} className="mt-6 border-zinc-800">Try Again</Button>
             </div>
           ) : challengesData.length === 0 ? (
-            // Empty State
-            <div className="col-span-full py-20 text-center border-2 border-dashed rounded-2xl">
-              <LayoutGrid className="mx-auto h-12 w-12 text-muted-foreground/50" />
-              <h3 className="mt-4 text-lg font-semibold">No challenges live</h3>
-              <p className="text-muted-foreground">Check back later for new contests.</p>
+            <div className="col-span-full py-32 text-center border border-zinc-900 bg-zinc-950/50 rounded-4xl">
+              <LayoutGrid className="mx-auto h-16 w-16 text-zinc-800 mb-6" />
+              <h3 className="text-2xl font-bold text-zinc-300">No challenges live</h3>
+              <p className="text-zinc-500 mt-2">The arena is quiet... check back later.</p>
             </div>
           ) : (
-            // Contest Cards
             challengesData.map((contest) => (
-              <Card key={contest.id} className="group flex flex-col transition-all hover:shadow-lg hover:border-primary/50 mt-10">
-                <CardHeader>
-                  <div className="flex justify-between items-start mb-2">
-                    <Badge variant={contest.live ? "default" : "secondary"} className={contest.live ? "bg-emerald-500 hover:bg-emerald-600 animate-pulse" : ""}>
+              <Card
+                key={contest.id}
+                className="group relative flex flex-col bg-zinc-950 border-zinc-900 rounded-2xl transition-all duration-300 hover:border-emerald-500/40 hover:-translate-y-1"
+              >
+                <CardHeader className="p-6">
+                  <div className="flex justify-between items-center mb-6">
+                    <Badge
+                      className={contest.live
+                        ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20 px-3 py-1"
+                        : "bg-zinc-900 text-zinc-500 border-zinc-800 px-3 py-1"
+                      }
+                    >
                       {contest.live ? "● LIVE" : "UPCOMING"}
                     </Badge>
-                    <span className="text-xs font-medium text-muted-foreground flex items-center">
-                      <Clock className="mr-1 h-3 w-3" />
-                      60m
-                    </span>
+                    <div className="flex items-center text-xs font-mono text-zinc-500 tracking-wider">
+                      <Clock className="mr-1.5 h-3.5 w-3.5" />
+                      60 MINS
+                    </div>
                   </div>
-                  <CardTitle className="text-xl group-hover:text-primary transition-colors">
+                  <CardTitle className="text-2xl font-bold text-zinc-100 group-hover:text-white transition-colors mb-2">
                     {contest.title}
                   </CardTitle>
-                  <CardDescription className="line-clamp-2">
-                    {contest.description || "No description provided for this challenge."}
+                  <CardDescription className="text-zinc-400 line-clamp-2 text-base leading-relaxed">
+                    {contest.description || "Mission briefing unavailable for this sector."}
                   </CardDescription>
                 </CardHeader>
 
-                <CardContent className="glow">
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                    <div className="flex items-center gap-1">
+                <CardContent className="px-6 py-4 mt-auto">
+                  <div className="flex items-center gap-6">
+                    <div className="flex items-center gap-2 text-zinc-500">
                       <Calendar className="h-4 w-4" />
-                      {contest.startTime ? new Date(contest.startTime).toLocaleDateString() : "TBD"}
+                      <span className="text-sm font-mono">
+                        {contest.startTime ? new Date(contest.startTime).toLocaleDateString() : "TBD"}
+                      </span>
                     </div>
-                    <Badge variant="outline" className="font-normal">Easy</Badge>
+                    <div className="flex items-center gap-2">
+                      <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                      <span className="text-sm text-zinc-400">Novice</span>
+                    </div>
                   </div>
                 </CardContent>
 
-                <CardFooter>
+                <CardFooter className="p-6">
                   <Button
                     onClick={() => router.push(`/contest/${contest.id}`)}
-                    className="w-full group/btn cursor-pointer"
-                    variant={contest.live ? "default" : "outline"}
+                    className={`w-full h-12 rounded-xl text-base font-bold transition-all ${contest.live
+                      ? "bg-emerald-600 hover:bg-emerald-500 text-white"
+                      : "bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800"
+                      }`}
                   >
                     {contest.live ? "Enter Arena" : "View Details"}
-                    <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
+                    <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
                 </CardFooter>
               </Card>
             ))
           )}
         </div>
-      </div>
+      </main>
     </div>
   );
 }

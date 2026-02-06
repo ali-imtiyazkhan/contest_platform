@@ -11,6 +11,7 @@ import {
   ChevronLeft,
   ArrowRight,
   ShieldCheck,
+  Terminal,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -51,7 +52,7 @@ export default function SignUpPage() {
       setStep("otp");
     } catch (err: any) {
       setError(
-        err.response?.data?.message || "Something went wrong. Please try again."
+        err.response?.data?.message || "Authentication system error. Try again."
       );
     } finally {
       setLoading(false);
@@ -78,34 +79,40 @@ export default function SignUpPage() {
         router.push("/dashboard");
       }
     } catch (err: any) {
-      setError(err.response?.data?.message || "Invalid or expired code.");
+      setError(err.response?.data?.message || "Invalid or expired protocol code.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <main className="min-h-screen w-full bg-linear-to-br from-slate-50 via-white to-slate-100 flex items-center justify-center px-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-6 space-y-2">
-          <div className="w-14 h-14 mx-auto rounded-2xl bg-primary/10 flex items-center justify-center shadow-sm">
-            <ShieldCheck className="w-8 h-8 text-primary" />
+    <main className="min-h-screen w-full bg-black flex items-center justify-center px-4 relative overflow-hidden">
+      {/* Background Radial Glow */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-emerald-500/5 blur-[120px] rounded-full -z-10" />
+
+      <div className="w-full max-w-md z-10">
+        <div className="text-center mb-10 space-y-3">
+          <div className="w-16 h-16 mx-auto rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center shadow-2xl">
+            <ShieldCheck className="w-9 h-9 text-emerald-500" />
           </div>
-          <h1 className="text-4xl font-bold tracking-tight">100xContest</h1>
-          <p className="text-muted-foreground text-sm">
-            Join the elite circle of developers
+          <h1 className="text-4xl font-black tracking-tighter text-white">
+            JOIN THE ARENA
+          </h1>
+          <p className="text-zinc-500 text-sm font-mono uppercase tracking-widest">
+            Identity Verification Required
           </p>
         </div>
 
-        <Card className="border border-slate-200 shadow-2xl bg-white">
-          <CardHeader>
-            <CardTitle className="text-2xl">
-              {step === "email" ? "Create an account" : "Check your inbox"}
+        <Card className="border-zinc-800 bg-zinc-950/50 backdrop-blur-xl shadow-2xl">
+          <CardHeader className="space-y-1">
+            <CardTitle className="text-xl text-white flex items-center gap-2">
+              <Terminal className="h-4 w-4 text-emerald-500" />
+              {step === "email" ? "Initialize Account" : "Verify Protocol"}
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-zinc-500">
               {step === "email"
-                ? "Enter your details to get started"
-                : `We sent a verification code to ${email}`}
+                ? "Provide your credentials to establish a session"
+                : `Enter the 6-digit code sent to ${email}`}
             </CardDescription>
           </CardHeader>
 
@@ -114,22 +121,21 @@ export default function SignUpPage() {
               {step === "email" ? (
                 <motion.form
                   key="email-form"
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 20 }}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
                   onSubmit={requestOtp}
                   className="grid gap-5"
                 >
-                  {/* Email */}
                   <div className="grid gap-2">
-                    <Label htmlFor="email">Email address</Label>
-                    <div className="flex items-center border rounded-md px-3 h-11 bg-background">
-                      <Mail className="h-4 w-4 text-muted-foreground mr-2" />
+                    <Label htmlFor="email" className="text-zinc-400">Email Address</Label>
+                    <div className="flex items-center border border-zinc-800 rounded-lg px-3 h-12 bg-black focus-within:border-emerald-500/50 transition-colors">
+                      <Mail className="h-4 w-4 text-zinc-600 mr-2" />
                       <Input
                         id="email"
                         type="email"
-                        placeholder="name@company.com"
-                        className="border-0 focus-visible:ring-0 p-0 h-auto"
+                        placeholder="hacker@arena.com"
+                        className="border-0 focus-visible:ring-0 p-0 h-auto bg-transparent text-white placeholder:text-zinc-800"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         required
@@ -137,16 +143,15 @@ export default function SignUpPage() {
                     </div>
                   </div>
 
-                  {/* Password */}
                   <div className="grid gap-2">
-                    <Label htmlFor="password">Password</Label>
-                    <div className="flex items-center border rounded-md px-3 h-11 bg-background">
-                      <Lock className="h-4 w-4 text-muted-foreground mr-2" />
+                    <Label htmlFor="password text-zinc-400">Security Key</Label>
+                    <div className="flex items-center border border-zinc-800 rounded-lg px-3 h-12 bg-black focus-within:border-emerald-500/50 transition-colors">
+                      <Lock className="h-4 w-4 text-zinc-600 mr-2" />
                       <Input
                         id="password"
                         type="password"
                         placeholder="••••••••"
-                        className="border-0 focus-visible:ring-0 p-0 h-auto"
+                        className="border-0 focus-visible:ring-0 p-0 h-auto bg-transparent text-white placeholder:text-zinc-800"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         required
@@ -156,35 +161,36 @@ export default function SignUpPage() {
 
                   <Button
                     type="submit"
-                    className="w-full h-12 text-base font-semibold mt-2 cursor-pointer"
+                    className="w-full h-12 text-base font-bold bg-emerald-600 hover:bg-emerald-500 text-white mt-2 transition-all shadow-[0_0_20px_-5px_rgba(16,185,129,0.3)]"
                     disabled={loading}
                   >
                     {loading ? (
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    ) : null}
-                    {loading ? "Sending code..." : "Continue"}
-                    {!loading && <ArrowRight className="ml-2 h-4 w-4" />}
+                    ) : (
+                      <>
+                        Request Access Code
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </>
+                    )}
                   </Button>
                 </motion.form>
               ) : (
                 <motion.form
                   key="otp-form"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
                   onSubmit={verifyOtp}
-                  className="grid gap-5"
+                  className="grid gap-6"
                 >
                   <div className="grid gap-2 text-center">
-                    <Label htmlFor="code" className="sr-only">
-                      OTP Code
-                    </Label>
+                    <Label htmlFor="code" className="sr-only">OTP Code</Label>
                     <Input
                       id="code"
                       inputMode="numeric"
                       maxLength={6}
                       placeholder="000000"
-                      className="text-center text-2xl tracking-[0.5em] h-14 font-mono"
+                      className="text-center text-3xl tracking-[0.5em] h-16 font-mono bg-black border-zinc-800 text-emerald-500 focus-visible:ring-emerald-500/30"
                       value={code}
                       onChange={(e) => setCode(e.target.value)}
                       required
@@ -194,23 +200,23 @@ export default function SignUpPage() {
 
                   <Button
                     type="submit"
-                    className="w-full h-12 text-base font-semibold cursor-pointer"
+                    className="w-full h-12 text-base font-bold bg-emerald-600 hover:bg-emerald-500 text-white transition-all shadow-[0_0_20px_-5px_rgba(16,185,129,0.3)]"
                     disabled={loading || code.length !== 6}
                   >
                     {loading ? (
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     ) : (
-                      "Verify & Complete"
+                      "Establish Session"
                     )}
                   </Button>
 
                   <button
                     type="button"
                     onClick={() => setStep("email")}
-                    className="flex items-center justify-center text-sm text-muted-foreground hover:text-primary"
+                    className="flex items-center justify-center text-xs font-mono text-zinc-500 hover:text-emerald-500 transition-colors uppercase tracking-widest"
                   >
                     <ChevronLeft className="h-4 w-4 mr-1" />
-                    Back to email
+                    Re-enter Identity
                   </button>
                 </motion.form>
               )}
@@ -218,20 +224,18 @@ export default function SignUpPage() {
 
             {error && (
               <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="mt-4 text-sm text-center text-destructive bg-destructive/10 py-2 rounded-md"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="mt-6 text-xs text-center font-mono text-rose-400 bg-rose-500/10 py-3 rounded-lg border border-rose-500/20"
               >
-                {error}
+                [ERROR]: {error}
               </motion.p>
             )}
 
-            <div className="mt-6 text-center text-sm">
-              <span className="text-muted-foreground">
-                Already have an account?{" "}
-              </span>
-              <a href="/signin" className="font-semibold text-primary hover:underline">
-                Sign in
+            <div className="mt-8 pt-6 border-t border-zinc-900 text-center text-sm">
+              <span className="text-zinc-500">Known operative? </span>
+              <a href="/signin" className="font-bold text-emerald-500 hover:text-emerald-400 transition-colors">
+                Sign In
               </a>
             </div>
           </CardContent>
