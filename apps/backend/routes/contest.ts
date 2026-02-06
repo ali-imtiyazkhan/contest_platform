@@ -90,6 +90,96 @@ router.post(
   },
 );
 
+// REORDER
+router.put(
+  "/admin/contest/:contestId/reorder",
+  adminMiddleware,
+  async (req, res) => {
+    try {
+      const { contestId } = req.params;
+      const { orders } = req.body;
+
+      const tx = orders.map((o: any) =>
+        client.contestToChallengeMapping.updateMany({
+          where: { contestId, challengeId: o.challengeId },
+          data: { index: o.index },
+        }),
+      );
+
+      await client.$transaction(tx);
+      res.json({ ok: true });
+    } catch {
+      res.status(500).json({ ok: false });
+    }
+  },
+);
+
+// REMOVE CHALLENGE
+router.delete(
+  "/admin/contest/:contestId/challenge/:challengeId",
+  adminMiddleware,
+  async (req, res) => {
+    await client.contestToChallengeMapping.deleteMany({
+      where: req.params,
+    });
+    res.json({ ok: true });
+  },
+);
+
+// all contest
+router.get("/", async (_, res) => {
+  const contests = await client.contest.findMany({
+    orderBy: { startTime: "desc" },
+  });
+  res.json({ ok: true, data: contests });
+});
+
+// active contest
+router.get("/active", async (req, res) => {
+  const { offset, limit } = parsePagination(req);
+  const now = new Date();
+
+  const [data, total] = await Promise.all([
+    client.contest.findMany({
+      where: {
+        startTime: { lte: now },
+        endTime: { gte: now },
+      },
+      skip: offset,
+      take: limit,
+      orderBy: { startTime: "desc" },
+    }),
+    client.contest.count({
+      where: {
+        startTime: { lte: now },
+        endTime: { gte: now },
+      },
+    }),
+  ]);
+
+  res.json({ ok: true, data, pagination: { offset, limit, total } });
+});
+
+// finished contest
+router.get("/finished", async (req, res) => {
+  const { offset, limit } = parsePagination(req);
+  const now = new Date();
+
+  const [data, total] = await Promise.all([
+    client.contest.findMany({
+      where: { endTime: { lt: now } },
+      skip: offset,
+      take: limit,
+      orderBy: { startTime: "desc" },
+    }),
+    client.contest.count({
+      where: { endTime: { lt: now } },
+    }),
+  ]);
+
+  res.json({ ok: true, data, pagination: { offset, limit, total } });
+});
+
 // get contest detail
 router.get("/:contestId", async (req, res) => {
   const contest = await client.contest.findUnique({
