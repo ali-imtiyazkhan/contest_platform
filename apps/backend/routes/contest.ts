@@ -56,7 +56,7 @@ router.post("/admin/challenge", adminMiddleware, async (req, res) => {
     const aiContext = await generateChallengeContext(description, maxPoints);
 
     const challenge = await client.challenge.create({
-      data: { title, notionDocId, aiContext, maxPoints, type },
+      data: { title, notionDocId, aiContext, maxPoints, type, description },
     });
 
     res.status(201).json({ ok: true, challenge });

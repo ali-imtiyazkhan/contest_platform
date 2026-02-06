@@ -8,6 +8,7 @@ export async function adminMiddleware(
 ) {
   try {
     const authHeader = req.headers.authorization;
+    console.log("auth header is :", authHeader);
 
     if (!authHeader) {
       return res.status(401).json({ message: "Authorization header missing" });

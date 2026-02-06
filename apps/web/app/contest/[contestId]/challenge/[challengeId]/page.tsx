@@ -14,6 +14,7 @@ import { SiteHeader } from "@/components/site-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 
+
 type Challenge = {
     id: string;
     title: string;
