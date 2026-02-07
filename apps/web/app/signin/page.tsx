@@ -102,8 +102,8 @@ export default function SignInPage() {
                     type="button"
                     onClick={() => setRole("user")}
                     className={`flex items-center justify-center gap-2 py-2 text-sm font-bold rounded-md transition-all ${role === "user"
-                        ? "bg-zinc-800 text-emerald-400 shadow-inner"
-                        : "text-zinc-500 hover:text-zinc-300"
+                      ? "bg-zinc-800 text-emerald-400 shadow-inner"
+                      : "text-zinc-500 hover:text-zinc-300"
                       }`}
                   >
                     <UserIcon className="h-4 w-4" />
@@ -113,8 +113,8 @@ export default function SignInPage() {
                     type="button"
                     onClick={() => setRole("admin")}
                     className={`flex items-center justify-center gap-2 py-2 text-sm font-bold rounded-md transition-all ${role === "admin"
-                        ? "bg-zinc-800 text-rose-400 shadow-inner"
-                        : "text-zinc-500 hover:text-zinc-300"
+                      ? "bg-zinc-800 text-rose-400 shadow-inner"
+                      : "text-zinc-500 hover:text-zinc-300"
                       }`}
                   >
                     <ShieldAlert className="h-4 w-4" />
@@ -160,8 +160,8 @@ export default function SignInPage() {
               <Button
                 type="submit"
                 className={`w-full h-12 text-base font-bold transition-all shadow-lg ${role === "admin"
-                    ? "bg-rose-600 hover:bg-rose-500 shadow-rose-900/20"
-                    : "bg-emerald-600 hover:bg-emerald-500 shadow-emerald-900/20"
+                  ? "bg-rose-600 hover:bg-rose-500 shadow-rose-900/20"
+                  : "bg-emerald-600 hover:bg-emerald-500 shadow-emerald-900/20"
                   }`}
                 disabled={loading}
               >

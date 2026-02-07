@@ -100,7 +100,7 @@ export function SiteHeader() {
                   onClick={handleLogout}
                   variant="ghost"
                   size="sm"
-                  className="text-zinc-500 hover:bg-zinc-900 hover:text-white transition-colors"
+                  className="text-black hover:bg-zinc-900 hover:text-white transition-colors"
                   disabled={logoutLoading}
                 >
                   {logoutLoading ? "..." : "Logout"}
