@@ -108,7 +108,7 @@ export function SiteHeader() {
               </div>
             </>
           ) : (
-            <Button asChild size="sm" className="bg-white text-black hover:bg-zinc-200">
+            <Button asChild size="sm" className="bg-black text-white hover:bg-zinc-600">
               <Link href="/signin">Sign in</Link>
             </Button>
           )}

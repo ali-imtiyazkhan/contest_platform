@@ -59,7 +59,6 @@ export default function AdminPage() {
       variant: "destructive",
     })
     router.push("/signin")
-    return
   }
 
   const [subs, setSubs] = useState<SubChallenge[]>([
@@ -103,7 +102,6 @@ export default function AdminPage() {
       })
       return
     }
-
 
     if (scheduled) {
       if (!startAt || !endAt) {
