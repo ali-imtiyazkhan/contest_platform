@@ -134,6 +134,38 @@ router.get("/", async (_, res) => {
   res.json({ ok: true, data: contests });
 });
 
+// upcoming contest
+router.get("/upcoming", async (req, res) => {
+  try {
+    const { offset, limit } = parsePagination(req);
+    const now = new Date();
+
+    const [data, total] = await Promise.all([
+      client.contest.findMany({
+        where: {
+          startTime: { gt: now },
+        },
+        skip: offset,
+        take: limit,
+        orderBy: { startTime: "asc" },
+      }),
+      client.contest.count({
+        where: {
+          startTime: { gt: now },
+        },
+      }),
+    ]);
+
+    res.json({
+      ok: true,
+      data,
+      pagination: { offset, limit, total },
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ ok: false });
+  }
+});
 // active contest
 router.get("/active", async (req, res) => {
   const { offset, limit } = parsePagination(req);
@@ -195,6 +227,8 @@ router.get("/:contestId", async (req, res) => {
   if (!contest) return res.status(404).json({ ok: false });
   res.json({ ok: true, data: contest });
 });
+
+// upcoming contest
 
 router.get("/:contestId/challenge/:challengeId", async (req, res) => {
   try {

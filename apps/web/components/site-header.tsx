@@ -118,8 +118,6 @@ export function SiteHeader() {
   )
 }
 
-/* ================= Reusable NavLink ================= */
-
 function NavLink({
   href,
   children,
