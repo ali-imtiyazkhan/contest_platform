@@ -24,9 +24,11 @@ model User {
   email    String  @unique
   password String?
   role     Role    @default(User)
+  rating   Int     @default(1200)
 
   contestSubmissions ContestSubmission[]
   leaderboard        Leaderboard[]
+  ratingHistories    RatingHistory[]
 }
 
 model OtpVerification {
@@ -44,17 +46,20 @@ model Contest {
   description String?
   startTime   DateTime
   endTime     DateTime?
+  createdAt   DateTime  @default(now())
 
   contestToChallengeMapping ContestToChallengeMapping[]
   leaderboard               Leaderboard[]
+  ratingHistories           RatingHistory[]
 }
 
 model Challenge {
-  id          String  @id @default(uuid())
+  id          String   @id @default(uuid())
   title       String
   notionDocId String
   maxPoints   Int
   description String?
+  createdAt   DateTime @default(now())
 
   aiContext String?
   type      Type?
@@ -82,10 +87,11 @@ model ContestSubmission {
   contestToChallengeMappingId String
   userId                      String
 
-  points    Int      @default(0)
+  points    Int              @default(0)
   aiVerdict String?
   aiReason  String?
-  createdAt DateTime @default(now())
+  createdAt DateTime         @default(now())
+  status    SubmissionStatus @default(Pending)
 
   user                      User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
   contestToChallengeMapping ContestToChallengeMapping @relation(fields: [contestToChallengeMappingId], references: [id], onDelete: Cascade)
@@ -103,4 +109,26 @@ model Leaderboard {
   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([contestId, userId])
+  @@index([contestId, score])
+}
+
+enum SubmissionStatus {
+  Pending
+  Judging
+  Accepted
+  Rejected
+}
+
+model RatingHistory {
+  id        String   @id @default(uuid())
+  userId    String
+  contestId String
+  before    Int
+  after     Int
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contest Contest @relation(fields: [contestId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }

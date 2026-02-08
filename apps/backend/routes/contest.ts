@@ -260,6 +260,33 @@ router.post(
       const userId = req.userId;
       const { contestId, challengeId } = req.params;
 
+      const contest = await client.contest.findUnique({
+        where: { id: contestId },
+      });
+
+      if (!contest) {
+        return res.status(404).json({
+          ok: false,
+          message: "Contest not found",
+        });
+      }
+
+      const now = new Date();
+
+      if (now < contest.startTime) {
+        return res.status(403).json({
+          ok: false,
+          message: "Contest has not started yet",
+        });
+      }
+
+      if (contest.endTime && now > contest.endTime) {
+        return res.status(403).json({
+          ok: false,
+          message: "Contest has ended",
+        });
+      }
+
       if (!submission) {
         return res.status(400).json({ ok: false });
       }
