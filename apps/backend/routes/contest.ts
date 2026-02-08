@@ -6,6 +6,7 @@ import { aiJudge } from "../lib/ai/aiJudge";
 import { Type } from "../../../packages/db/generated/prisma";
 import { checkSubmissionRateLimit } from "../lib/redis";
 import { generateChallengeContext } from "../lib/ai/generateContext";
+import { submissionQueue } from "../lib/queue";
 
 const router = Router();
 
@@ -301,18 +302,13 @@ router.post(
         include: { challenge: true },
       });
 
-      if (!currentMapping) return res.status(404).json({ ok: false });
+      if (!currentMapping) {
+        return res.status(404).json({ ok: false });
+      }
 
-      const ai = await aiJudge(
-        currentMapping.challenge.aiContext!,
-        submission,
-        currentMapping.challenge.maxPoints,
-      );
+      // CHANGE STARTS HERE — remove aiJudge + leaderboard logic
 
-      const finalPoints = ai.marks;
-
-      // upsert solution
-      await client.contestSubmission.upsert({
+      const submissionRecord = await client.contestSubmission.upsert({
         where: {
           contestToChallengeMappingId_userId: {
             contestToChallengeMappingId: currentMapping.id,
@@ -321,57 +317,27 @@ router.post(
         },
         update: {
           submission,
-          points: finalPoints,
-          aiVerdict: ai.verdict,
-          aiReason: ai.reason,
+          status: "Pending",
         },
         create: {
           submission,
-          points: finalPoints,
-          aiVerdict: ai.verdict,
-          aiReason: ai.reason,
           userId,
           contestToChallengeMappingId: currentMapping.id,
+          status: "Pending",
         },
       });
 
-      // calculate totel score
-      const total = await client.contestSubmission.aggregate({
-        where: {
-          userId,
-          contestToChallengeMapping: {
-            contestId,
-          },
-        },
-        _sum: { points: true },
+      // push job to queue
+      await submissionQueue.add("judge", {
+        submissionId: submissionRecord.id,
       });
 
-      const totalScore = total._sum.points ?? 0;
-
-      //  leaderboard table
-      await client.leaderboard.upsert({
-        where: {
-          contestId_userId: {
-            contestId,
-            userId,
-          },
-        },
-        update: {
-          score: totalScore,
-        },
-        create: {
-          contestId,
-          userId,
-          score: totalScore,
-        },
-      });
-
-      res.status(201).json({
+      return res.status(201).json({
         ok: true,
-        verdict: ai.verdict,
-        marks: finalPoints,
-        reason: ai.reason,
+        message: "Submission received. Judging in progress.",
       });
+
+      // END OF CHANGE
     } catch (e) {
       console.error(e);
       res.status(500).json({ ok: false });

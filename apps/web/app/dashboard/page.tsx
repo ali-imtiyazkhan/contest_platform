@@ -28,15 +28,17 @@ type Contest = {
   id: string;
   title: string;
   description?: string;
-  live: boolean;
-  startTime?: string;
+  startTime: string;
+  endTime?: string;
 };
 
 export default function DashboardPage() {
   const [challengesData, setChallengesData] = useState<Contest[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [view, setView] = useState<"active" | "finished" | "all" | "upcoming">("all");
+  const [view, setView] = useState<
+    "active" | "finished" | "all" | "upcoming"
+  >("all");
 
   const router = useRouter();
 
@@ -51,15 +53,8 @@ export default function DashboardPage() {
         endpoint = "/api/v1/contest/active";
       } else if (type === "finished") {
         endpoint = "/api/v1/contest/finished";
-      }
-
-      else if (type === "upcoming") {
-        endpoint = "/api/v1/contest/upcoming"
-      }
-
-
-      else {
-        endpoint = "/api/v1/contest";
+      } else if (type === "upcoming") {
+        endpoint = "/api/v1/contest/upcoming";
       }
 
       const response = await axios.get(`${BACKEND_URL}${endpoint}`, {
@@ -83,7 +78,6 @@ export default function DashboardPage() {
       <SiteHeader />
 
       <main className="max-w-full px-6 sm:px-8 lg:px-12 py-12 space-y-16">
-
         {/* Header */}
         <section className="flex flex-col md:flex-row md:items-end justify-between gap-8 mt-4">
           <div className="space-y-4">
@@ -92,17 +86,23 @@ export default function DashboardPage() {
                 Contest Arena
               </h1>
               <p className="text-zinc-400 mt-3 text-lg max-w-2xl leading-relaxed">
-                High-stakes developer challenges. Prove your logic and dominate the board.
+                High-stakes developer challenges. Prove your logic and dominate
+                the board.
               </p>
             </div>
           </div>
 
           <div className="flex gap-4 items-center">
-            {/* VIEW DROPDOWN */}
             <select
               value={view}
               onChange={(e) =>
-                setView(e.target.value as "active" | "finished" | "all")
+                setView(
+                  e.target.value as
+                  | "active"
+                  | "finished"
+                  | "all"
+                  | "upcoming"
+                )
               }
               className="h-12 px-4 bg-zinc-900 border border-zinc-800 rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500"
             >
@@ -112,7 +112,6 @@ export default function DashboardPage() {
               <option value="upcoming">Upcoming</option>
             </select>
 
-            {/* REFRESH BUTTON */}
             <Button
               variant="outline"
               onClick={() => fetchChallenges(view)}
@@ -120,7 +119,8 @@ export default function DashboardPage() {
               className="h-12 px-6 bg-zinc-900 border-zinc-800 hover:bg-zinc-800 hover:text-white transition-all rounded-xl"
             >
               <RefreshCw
-                className={`mr-2 h-5 w-5 ${loading ? "animate-spin" : ""}`}
+                className={`mr-2 h-5 w-5 ${loading ? "animate-spin" : ""
+                  }`}
               />
               {loading ? "Syncing..." : "Refresh Arena"}
             </Button>
@@ -157,65 +157,93 @@ export default function DashboardPage() {
               </p>
             </div>
           ) : (
-            challengesData.map((contest) => (
-              <Card
-                key={contest.id}
-                className="group relative flex flex-col bg-zinc-950 border-zinc-900 rounded-2xl transition-all duration-300 hover:border-emerald-500/40 hover:-translate-y-1"
-              >
-                <CardHeader className="p-6">
-                  <div className="flex justify-between items-center mb-6">
-                    <Badge
-                      className={
-                        contest.live
-                          ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20 px-3 py-1"
-                          : "bg-zinc-900 text-zinc-500 border-zinc-800 px-3 py-1"
+            challengesData.map((contest) => {
+              const now = new Date();
+              const start = new Date(contest.startTime);
+              const end = contest.endTime
+                ? new Date(contest.endTime)
+                : null;
+
+              const isLive =
+                start <= now && (!end || end >= now);
+
+              const isUpcoming = start > now;
+
+              const duration =
+                end && start
+                  ? `${Math.floor(
+                    (end.getTime() - start.getTime()) /
+                    (1000 * 60)
+                  )} mins`
+                  : "Open";
+
+              return (
+                <Card
+                  key={contest.id}
+                  className="group relative flex flex-col bg-zinc-950 border-zinc-900 rounded-2xl transition-all duration-300 hover:border-emerald-500/40 hover:-translate-y-1"
+                >
+                  <CardHeader className="p-6">
+                    <div className="flex justify-between items-center mb-6">
+                      <Badge
+                        className={
+                          isLive
+                            ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20 px-3 py-1"
+                            : isUpcoming
+                              ? "bg-blue-500/10 text-blue-400 border-blue-500/20 px-3 py-1"
+                              : "bg-zinc-900 text-zinc-500 border-zinc-800 px-3 py-1"
+                        }
+                      >
+                        {isLive
+                          ? "● LIVE"
+                          : isUpcoming
+                            ? "UPCOMING"
+                            : "FINISHED"}
+                      </Badge>
+
+                      <div className="flex items-center text-xs font-mono text-zinc-500 tracking-wider">
+                        <Clock className="mr-1.5 h-3.5 w-3.5" />
+                        {duration}
+                      </div>
+                    </div>
+
+                    <CardTitle className="text-2xl font-bold text-zinc-100 group-hover:text-white transition-colors mb-2">
+                      {contest.title}
+                    </CardTitle>
+
+                    <CardDescription className="text-zinc-400 line-clamp-2 text-base leading-relaxed">
+                      {contest.description ||
+                        "Mission briefing unavailable for this sector."}
+                    </CardDescription>
+                  </CardHeader>
+
+                  <CardContent className="px-6 py-4 mt-auto">
+                    <div className="flex items-center gap-6">
+                      <div className="flex items-center gap-2 text-zinc-500">
+                        <Calendar className="h-4 w-4" />
+                        <span className="text-sm font-mono">
+                          {start.toLocaleDateString()}
+                        </span>
+                      </div>
+                    </div>
+                  </CardContent>
+
+                  <CardFooter className="p-6">
+                    <Button
+                      onClick={() =>
+                        router.push(`/contest/${contest.id}`)
                       }
+                      className={`w-full h-12 rounded-xl text-base font-bold transition-all ${isLive
+                        ? "bg-emerald-600 hover:bg-emerald-500 text-white"
+                        : "bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800"
+                        }`}
                     >
-                      {contest.live ? "● LIVE" : "FINISHED"}
-                    </Badge>
-                    <div className="flex items-center text-xs font-mono text-zinc-500 tracking-wider">
-                      <Clock className="mr-1.5 h-3.5 w-3.5" />
-                      60 MINS
-                    </div>
-                  </div>
-
-                  <CardTitle className="text-2xl font-bold text-zinc-100 group-hover:text-white transition-colors mb-2">
-                    {contest.title}
-                  </CardTitle>
-
-                  <CardDescription className="text-zinc-400 line-clamp-2 text-base leading-relaxed">
-                    {contest.description ||
-                      "Mission briefing unavailable for this sector."}
-                  </CardDescription>
-                </CardHeader>
-
-                <CardContent className="px-6 py-4 mt-auto">
-                  <div className="flex items-center gap-6">
-                    <div className="flex items-center gap-2 text-zinc-500">
-                      <Calendar className="h-4 w-4" />
-                      <span className="text-sm font-mono">
-                        {contest.startTime
-                          ? new Date(contest.startTime).toLocaleDateString()
-                          : "TBD"}
-                      </span>
-                    </div>
-                  </div>
-                </CardContent>
-
-                <CardFooter className="p-6">
-                  <Button
-                    onClick={() => router.push(`/contest/${contest.id}`)}
-                    className={`w-full h-12 rounded-xl text-base font-bold transition-all ${contest.live
-                      ? "bg-emerald-600 hover:bg-emerald-500 text-white"
-                      : "bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800"
-                      }`}
-                  >
-                    {contest.live ? "Enter Arena" : "View Details"}
-                    <ArrowRight className="ml-2 h-5 w-5" />
-                  </Button>
-                </CardFooter>
-              </Card>
-            ))
+                      {isLive ? "Enter Arena" : "View Details"}
+                      <ArrowRight className="ml-2 h-5 w-5" />
+                    </Button>
+                  </CardFooter>
+                </Card>
+              );
+            })
           )}
         </div>
       </main>
