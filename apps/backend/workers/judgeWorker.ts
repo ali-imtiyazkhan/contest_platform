@@ -2,16 +2,21 @@ import { Worker } from "bullmq";
 import IORedis from "ioredis";
 import { client } from "db/client";
 import { aiJudge } from "../lib/ai/aiJudge";
+import { Server } from "socket.io";
+import { createAdapter } from "@socket.io/redis-adapter";
 
-// Separate Redis connection for BullMQ
 const connection = new IORedis({
   host: process.env.REDIS_HOST,
   port: Number(process.env.REDIS_PORT),
-  password: process.env.REDIS_PASSWORD,
-  maxRetriesPerRequest: null, 
+  password: process.env.REDIS_PASSWORD || undefined,
+  maxRetriesPerRequest: null,
 });
 
-console.log(" Judge Worker Started...");
+const io = new Server({
+  adapter: createAdapter(connection, connection.duplicate()),
+});
+
+console.log("Judge Worker Started...");
 
 new Worker(
   "submissionQueue",
@@ -51,19 +56,20 @@ new Worker(
     );
 
     const finalPoints = ai.marks;
+    const finalStatus = finalPoints > 0 ? "Accepted" : "Rejected";
 
-    // Update submission with result
+    // Update submission
     await client.contestSubmission.update({
       where: { id: submissionId },
       data: {
-        status: finalPoints > 0 ? "Accepted" : "Rejected",
+        status: finalStatus,
         points: finalPoints,
         aiVerdict: ai.verdict,
         aiReason: ai.reason,
       },
     });
 
-    // Calculate total score for this contest
+    // Calculate total score
     const total = await client.contestSubmission.aggregate({
       where: {
         userId: submission.userId,
@@ -92,7 +98,14 @@ new Worker(
       },
     });
 
-    console.log(" Submission processed:", submissionId);
+    //  EMIT REAL-TIME UPDATE
+    io.to(submission.userId).emit("submission:update", {
+      submissionId: submission.id,
+      status: finalStatus,
+      points: finalPoints,
+    });
+
+    console.log("Submission processed:", submissionId);
   },
   { connection },
 );

@@ -41,12 +41,12 @@ model OtpVerification {
 }
 
 model Contest {
-  id          String    @id @default(uuid())
+  id          String   @id @default(uuid())
   title       String
   description String?
   startTime   DateTime
   endTime     DateTime
-  createdAt   DateTime  @default(now())
+  createdAt   DateTime @default(now())
 
   contestToChallengeMapping ContestToChallengeMapping[]
   leaderboard               Leaderboard[]

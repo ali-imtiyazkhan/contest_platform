@@ -1,5 +1,7 @@
-import dotenv from "dotenv";
-dotenv.config();
+import { createServer } from "http";
+import { Server } from "socket.io";
+import { createAdapter } from "@socket.io/redis-adapter";
+import IORedis from "ioredis";
 
 import "./lib/redis";
 import express from "express";
@@ -8,50 +10,72 @@ import contestRouter from "./routes/contest";
 import adminRouter from "./routes/admin";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import { Router } from "express";
+import dotenv from "dotenv";
 
-const router = Router();
+dotenv.config();
 
 const app = express();
+const server = createServer(app);
 
-router.use(express.text());
+export const io = new Server(server, {
+  cors: {
+    origin: ["http://localhost:3000"],
+    credentials: true,
+  },
+});
+
+// Redis adapter setup
+const pubClient = new IORedis({
+  host: process.env.REDIS_HOST,
+  port: Number(process.env.REDIS_PORT),
+  password: process.env.REDIS_PASSWORD || undefined,
+  maxRetriesPerRequest: null,
+});
+
+const subClient = pubClient.duplicate();
+
+io.adapter(createAdapter(pubClient, subClient));
+
+// Socket connection logic
+io.on("connection", (socket) => {
+  console.log("User connected:", socket.id);
+
+  socket.on("join", (userId: string) => {
+    socket.join(userId);
+    console.log(`User ${userId} joined their room`);
+  });
+
+  socket.on("disconnect", () => {
+    console.log("User disconnected:", socket.id);
+  });
+});
+
 
 const allowedOrigins = ["http://localhost:3000"];
-const corsOptions = {
-  origin: function (origin: any, callback: any) {
-    if (!origin) {
-      return callback(null, true);
-    }
 
-    if (allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      console.error(`Blocked by CORS: ${origin}`);
-      callback(new Error(`Origin ${origin} not allowed by CORS`));
-    }
-  },
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
-  credentials: true,
-  preflightContinue: false,
-  optionsSuccessStatus: 204,
-};
+app.use(
+  cors({
+    origin: allowedOrigins,
+    credentials: true,
+  })
+);
 
-app.use(cors(corsOptions));
 app.use(cookieParser());
 app.use(express.json());
-
+app.use(express.text());
 
 
 app.get("/health", (req, res) => {
   res.json({ message: "Health Check!" });
 });
+
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/admin", adminRouter);
 app.use("/api/v1/contest", contestRouter);
 
+
 const port = process.env.PORT || 4000;
 
-app.listen(port, () => {
-  console.log(`Server is running at http://localhost:${port}`);
+server.listen(port, () => {
+  console.log(` Server running at http://localhost:${port}`);
 });
