@@ -28,6 +28,7 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { SiteHeader } from "@/components/site-header"
 import { useAuth } from "@/context/AuthProvider"
+import { useRouter } from "next/navigation"
 
 type Difficulty = "Easy" | "Medium" | "Hard"
 
@@ -41,7 +42,8 @@ type SubChallenge = {
 
 export default function AdminPage() {
   const { toast } = useToast()
-  const { accessToken } = useAuth()
+  const { accessToken, user } = useAuth()
+  const router = useRouter();
 
   const [loading, setLoading] = useState(false)
   const [name, setName] = useState("")
@@ -49,6 +51,16 @@ export default function AdminPage() {
   const [scheduled, setScheduled] = useState(false)
   const [startAt, setStartAt] = useState("")
   const [endAt, setEndAt] = useState("")
+
+  if (!accessToken || user?.role !== "Admin") {
+    toast({
+      title: "Unauthorized",
+      description: "Admin access required.",
+      variant: "destructive",
+    })
+    router.push("/signin")
+    return
+  }
 
   const [subs, setSubs] = useState<SubChallenge[]>([
     {
@@ -91,6 +103,7 @@ export default function AdminPage() {
       })
       return
     }
+
 
     if (scheduled) {
       if (!startAt || !endAt) {
