@@ -50,20 +50,18 @@ io.on("connection", (socket) => {
   });
 });
 
-
 const allowedOrigins = ["http://localhost:3000"];
 
 app.use(
   cors({
     origin: allowedOrigins,
     credentials: true,
-  })
+  }),
 );
 
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.text());
-
 
 app.get("/health", (req, res) => {
   res.json({ message: "Health Check!" });
@@ -72,7 +70,6 @@ app.get("/health", (req, res) => {
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/admin", adminRouter);
 app.use("/api/v1/contest", contestRouter);
-
 
 const port = process.env.PORT || 4000;
 
