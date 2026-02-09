@@ -324,6 +324,21 @@ router.post(
         });
       }
 
+      const participant = await client.contestParticipant.findUnique({
+        where: {
+          contestId_userId: {
+            contestId,
+            userId,
+          },
+        },
+      });
+
+      if (!participant) {
+        return res.status(403).json({
+          ok: false,
+          message: "You are not registered for this contest",
+        });
+      }
       const now = new Date();
 
       if (now < contest.startTime) {
