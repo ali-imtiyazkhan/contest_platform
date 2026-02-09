@@ -23,6 +23,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useAuth } from "@/context/AuthProvider";
 
 type Contest = {
   id: string;
@@ -40,7 +41,28 @@ export default function DashboardPage() {
     "active" | "finished" | "all" | "upcoming"
   >("all");
 
+  const { accessToken } = useAuth();
+
   const router = useRouter();
+
+  const handleRegister = async (contestId: string) => {
+    try {
+      await axios.post(
+        `${BACKEND_URL}/api/v1/contest/${contestId}/register`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+          withCredentials: true,
+        }
+      );
+
+      alert("Successfully registered ");
+    } catch (err: any) {
+      alert(err?.response?.data?.message || "Registration failed");
+    }
+  };
 
   const fetchChallenges = async (type = view) => {
     try {
@@ -58,7 +80,7 @@ export default function DashboardPage() {
       }
 
       const response = await axios.get(`${BACKEND_URL}${endpoint}`, {
-        withCredentials: true,
+        withCredentials: true
       });
 
       setChallengesData(response.data.data || []);
@@ -200,6 +222,12 @@ export default function DashboardPage() {
                             : "FINISHED"}
                       </Badge>
 
+
+                      <div>
+
+                        {isUpcoming ? <Button onClick={() => { handleRegister(contest.id) }} className="bg-red-500">Register Contest</Button> : ""}
+
+                      </div>
                       <div className="flex items-center text-xs font-mono text-zinc-500 tracking-wider">
                         <Clock className="mr-1.5 h-3.5 w-3.5" />
                         {duration}
