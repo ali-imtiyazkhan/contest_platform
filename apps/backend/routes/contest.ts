@@ -2,7 +2,6 @@ import { Router, Request } from "express";
 import { userMiddleware } from "../middleware/user";
 import { adminMiddleware } from "../middleware/admin";
 import { client } from "db/client";
-import { aiJudge } from "../lib/ai/aiJudge";
 import { Type } from "../../../packages/db/generated/prisma";
 import { checkSubmissionRateLimit } from "../lib/redis";
 import { generateChallengeContext } from "../lib/ai/generateContext";
@@ -229,8 +228,61 @@ router.get("/:contestId", async (req, res) => {
   res.json({ ok: true, data: contest });
 });
 
-// upcoming contest
+//Pre registration
+router.post("/:contestId/register", userMiddleware, async (req: any, res) => {
+  try {
+    const { contestId } = req.params;
+    const userId = req.userId;
+    const now = new Date();
 
+    const contest = await client.contest.findUnique({
+      where: { id: contestId },
+    });
+
+    if (!contest) {
+      return res.status(404).json({
+        ok: false,
+        message: "Contest not found",
+      });
+    }
+
+    // Registration closes when contest starts
+    if (now >= contest.startTime) {
+      return res.status(403).json({
+        ok: false,
+        message: "Registration closed",
+      });
+    }
+
+    // Create participant (unique constraint prevents duplicates)
+    await client.contestParticipant.create({
+      data: {
+        contestId,
+        userId,
+      },
+    });
+
+    return res.json({
+      ok: true,
+      message: "Successfully registered",
+    });
+  } catch (error: any) {
+    if (error.code === "P2002") {
+      return res.status(409).json({
+        ok: false,
+        message: "Already registered",
+      });
+    }
+
+    console.error(error);
+    return res.status(500).json({
+      ok: false,
+      message: "Registration failed",
+    });
+  }
+});
+
+// upcoming contest
 router.get("/:contestId/challenge/:challengeId", async (req, res) => {
   try {
     const mapping = await client.contestToChallengeMapping.findFirst({

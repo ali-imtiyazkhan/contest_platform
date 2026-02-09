@@ -145,4 +145,5 @@ model ContestParticipant {
   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([contestId, userId])
+  @@index([contestId])
 }
