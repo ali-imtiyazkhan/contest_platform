@@ -5,7 +5,7 @@ import { client } from "db/client";
 import { Type } from "../../../packages/db/generated/prisma";
 import { checkSubmissionRateLimit } from "../lib/redis";
 import { generateChallengeContext } from "../lib/ai/generateContext";
-import { submissionQueue } from "../lib/queue";
+import { aiQueue, submissionQueue } from "../lib/queue";
 
 const router = Router();
 
@@ -49,19 +49,31 @@ router.post("/admin/challenge", adminMiddleware, async (req, res) => {
       return res.status(400).json({ ok: false });
     }
 
-    if (!Object.values(Type).includes(type)) {
-      return res.status(400).json({ ok: false, error: "Invalid type" });
-    }
-
-    const aiContext = await generateChallengeContext(description, maxPoints);
-
     const challenge = await client.challenge.create({
-      data: { title, notionDocId, aiContext, maxPoints, type, description },
+      data: {
+        title,
+        notionDocId,
+        description,
+        maxPoints,
+        type,
+        contextStatus: "Generating",
+        aiContext: "",
+      },
     });
 
-    res.status(201).json({ ok: true, challenge });
-  } catch {
-    res.status(500).json({ ok: false });
+    // Push background job
+    await aiQueue.add("generate-context", {
+      challengeId: challenge.id,
+    });
+
+    return res.status(201).json({
+      ok: true,
+      challenge,
+      message: "Challenge created. AI generation running in background.",
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ ok: false });
   }
 });
 

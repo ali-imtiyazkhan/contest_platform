@@ -11,3 +11,7 @@ const queueConnection = new IORedis({
 export const submissionQueue = new Queue("submissionQueue", {
   connection: queueConnection,
 });
+
+export const aiQueue = new Queue("aiQueue", {
+  connection: queueConnection,
+});

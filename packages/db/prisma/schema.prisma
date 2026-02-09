@@ -56,12 +56,13 @@ model Contest {
 }
 
 model Challenge {
-  id          String   @id @default(uuid())
-  title       String
-  notionDocId String
-  maxPoints   Int
-  description String?
-  createdAt   DateTime @default(now())
+  id            String        @id @default(uuid())
+  title         String
+  notionDocId   String
+  maxPoints     Int
+  description   String?
+  createdAt     DateTime      @default(now())
+  contextStatus ContextStatus @default(Pending)
 
   aiContext String?
   type      Type?
@@ -81,6 +82,13 @@ model ContestToChallengeMapping {
   submissions ContestSubmission[]
 
   @@unique([contestId, challengeId])
+}
+
+enum ContextStatus {
+  Pending
+  Generating
+  Completed
+  Failed
 }
 
 model ContestSubmission {

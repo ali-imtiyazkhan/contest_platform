@@ -5,7 +5,8 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "bun run index.ts",
-    "worker": "bun run workers/judgeWorker.ts"
+    "worker": "bun run workers/judgeWorker.ts",
+    "worker:ai": "bun run workers/aiWorker.ts"
   },
   "devDependencies": {
     "@types/bun": "latest"
