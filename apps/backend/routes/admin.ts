@@ -2,6 +2,7 @@ import { Router } from "express";
 import { client } from "db/client";
 import { generateAccessToken, generateRefreshToken } from "../helpers/auth";
 import { compare } from "../helpers/bcrypt";
+import { processContestRating } from "../src/services/ratingService";
 
 const router = Router();
 
@@ -67,6 +68,15 @@ router.post("/signin", async (req, res) => {
       success: false,
       message: "Internal server error",
     });
+  }
+});
+
+router.post("/admin/contest/:contestId/process-rating", async (req, res) => {
+  try {
+    await processContestRating(req.params.contestId);
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ ok: false });
   }
 });
 
