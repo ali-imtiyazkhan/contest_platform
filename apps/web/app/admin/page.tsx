@@ -221,7 +221,7 @@ export default function AdminPage() {
     <div className="min-h-screen bg-black text-white selection:bg-emerald-500/30">
       <SiteHeader />
 
-      <main className="max-w-7xl mx-auto px-6 py-12 space-y-10">
+      <main className="max-w-full px-6 py-12 space-y-10">
 
         {/* HEADER */}
         <div className="flex justify-between items-center border-b border-zinc-900 pb-8">
