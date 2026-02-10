@@ -4,6 +4,7 @@ import { client } from "db/client";
 import { aiJudge } from "../lib/ai/aiJudge";
 import { Server } from "socket.io";
 import { createAdapter } from "@socket.io/redis-adapter";
+import { GoogleGenAI } from "@google/genai";
 
 const connection = new IORedis({
   host: process.env.REDIS_HOST,
@@ -21,9 +22,20 @@ console.log("Judge Worker Started...");
 new Worker(
   "submissionQueue",
   async (job) => {
-    const { submissionId } = job.data;
+    const { submissionId, aiApiKey } = job.data;
 
     console.log("Processing submission:", submissionId);
+
+    if (!aiApiKey) {
+      console.log("No API key provided");
+      return;
+    }
+
+    // Basic key validation
+    if (!aiApiKey.startsWith("AIza")) {
+      console.log("Invalid API key format");
+      return;
+    }
 
     const submission = await client.contestSubmission.findUnique({
       where: { id: submissionId },
@@ -48,64 +60,92 @@ new Worker(
       data: { status: "Judging" },
     });
 
-    // Run AI Judge
-    const ai = await aiJudge(
-      submission.contestToChallengeMapping.challenge.aiContext!,
-      submission.submission,
-      submission.contestToChallengeMapping.challenge.maxPoints,
-    );
+    try {
+      // Create dynamic AI instance (BYOK)
+      const userKey = aiApiKey;
+      const fallbackKey = process.env.GEMINI_API_KEY;
 
-    const finalPoints = ai.marks;
-    const finalStatus = finalPoints > 0 ? "Accepted" : "Rejected";
+      let finalKey: string;
 
-    // Update submission
-    await client.contestSubmission.update({
-      where: { id: submissionId },
-      data: {
-        status: finalStatus,
-        points: finalPoints,
-        aiVerdict: ai.verdict,
-        aiReason: ai.reason,
-      },
-    });
+      if (userKey && userKey.startsWith("AIza")) {
+        finalKey = userKey;
+      } else {
+        finalKey = fallbackKey!;
+      }
 
-    // Calculate total score
-    const total = await client.contestSubmission.aggregate({
-      where: {
-        userId: submission.userId,
-        contestToChallengeMapping: {
-          contestId: submission.contestToChallengeMapping.contestId,
+      const ai = new GoogleGenAI({
+        apiKey: finalKey,
+      });
+
+      const result = await aiJudge(
+        submission.contestToChallengeMapping.challenge.aiContext!,
+        submission.submission,
+        submission.contestToChallengeMapping.challenge.maxPoints,
+        ai,
+      );
+
+      const finalPoints = result.marks;
+      const finalStatus = finalPoints > 0 ? "Accepted" : "Rejected";
+
+      // Update submission
+      await client.contestSubmission.update({
+        where: { id: submissionId },
+        data: {
+          status: finalStatus,
+          points: finalPoints,
+          aiVerdict: result.verdict,
+          aiReason: result.reason,
         },
-      },
-      _sum: { points: true },
-    });
+      });
 
-    const totalScore = total._sum.points ?? 0;
+      // Calculate total score
+      const total = await client.contestSubmission.aggregate({
+        where: {
+          userId: submission.userId,
+          contestToChallengeMapping: {
+            contestId: submission.contestToChallengeMapping.contestId,
+          },
+        },
+        _sum: { points: true },
+      });
 
-    // Update leaderboard
-    await client.leaderboard.upsert({
-      where: {
-        contestId_userId: {
+      const totalScore = total._sum.points ?? 0;
+
+      // Update leaderboard
+      await client.leaderboard.upsert({
+        where: {
+          contestId_userId: {
+            contestId: submission.contestToChallengeMapping.contestId,
+            userId: submission.userId,
+          },
+        },
+        update: { score: totalScore },
+        create: {
           contestId: submission.contestToChallengeMapping.contestId,
           userId: submission.userId,
+          score: totalScore,
         },
-      },
-      update: { score: totalScore },
-      create: {
-        contestId: submission.contestToChallengeMapping.contestId,
-        userId: submission.userId,
-        score: totalScore,
-      },
-    });
+      });
 
-    //  EMIT REAL-TIME UPDATE
-    io.to(submission.userId).emit("submission:update", {
-      submissionId: submission.id,
-      status: finalStatus,
-      points: finalPoints,
-    });
+      // Emit real-time update
+      io.to(submission.userId).emit("submission:update", {
+        submissionId: submission.id,
+        status: finalStatus,
+        points: finalPoints,
+      });
 
-    console.log("Submission processed:", submissionId);
+      console.log("Submission processed:", submissionId);
+    } catch (error) {
+      console.error("AI Judge failed:", error);
+
+      await client.contestSubmission.update({
+        where: { id: submissionId },
+        data: {
+          status: "Rejected",
+          aiReason: "AI judging failed",
+        },
+      });
+    }
   },
   { connection },
 );

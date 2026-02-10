@@ -321,7 +321,7 @@ router.post(
   userMiddleware,
   async (req: any, res) => {
     try {
-      const { submission } = req.body;
+      const { submission, aiApiKey } = req.body;
       const userId = req.userId;
       const { contestId, challengeId } = req.params;
 
@@ -385,8 +385,6 @@ router.post(
         return res.status(404).json({ ok: false });
       }
 
-      // CHANGE STARTS HERE — remove aiJudge + leaderboard logic
-
       const submissionRecord = await client.contestSubmission.upsert({
         where: {
           contestToChallengeMappingId_userId: {
@@ -409,6 +407,7 @@ router.post(
       // push job to queue
       await submissionQueue.add("judge", {
         submissionId: submissionRecord.id,
+        aiApiKey,
       });
 
       return res.status(201).json({

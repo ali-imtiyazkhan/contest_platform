@@ -20,12 +20,14 @@ type Challenge = {
     title: string;
     description: string;
     maxPoints: number;
+    aiApiKey: string
 };
 
 export default function ChallengePage() {
     const params = useParams();
     const router = useRouter();
     const { accessToken, loading: authLoading } = useAuth();
+    const aiApiKey = localStorage.getItem("aiapiKey")
 
     const contestId = params.contestId as string;
     const challengeId = params.challengeId as string;
@@ -73,7 +75,7 @@ export default function ChallengePage() {
 
             const res = await axios.post(
                 `${BACKEND_URL}/api/v1/contest/${contestId}/challenge/${challengeId}/submit`,
-                { submission: code },
+                { submission: code, aiApiKey },
                 {
                     headers: {
                         Authorization: `Bearer ${accessToken}`,

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import React, { useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/context/AuthProvider"
@@ -11,6 +11,7 @@ export function SiteHeader() {
   const { loading, logout, accessToken, user } = useAuth()
   const router = useRouter()
   const [logoutLoading, setLogoutLoading] = useState(false)
+  const [apiKey, setApiKey] = useState("")
 
   const handleLogout = async () => {
     if (logoutLoading) return
@@ -25,6 +26,14 @@ export function SiteHeader() {
       setLogoutLoading(false)
     }
   }
+
+  const handleChangeApi = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+
+    setApiKey(value);
+    localStorage.setItem("aiApiKey", value);
+  };
+
 
   return (
     <header className="sticky top-0 z-50 border-b border-zinc-900 bg-black/80 backdrop-blur-md">
@@ -81,6 +90,13 @@ export function SiteHeader() {
                   <NavLink href="/admin">Admin Control</NavLink>
                 )}
               </div>
+
+              <input
+                type="text"
+                placeholder="Enter your API key"
+                value={apiKey}
+                onChange={handleChangeApi}
+              />
 
               {/* User Section */}
               <div className="flex items-center gap-4 border-l border-zinc-800 pl-6">

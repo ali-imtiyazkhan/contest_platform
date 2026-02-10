@@ -1,13 +1,10 @@
 import { GoogleGenAI } from "@google/genai";
 
-const ai = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY!,
-});
-
 export async function aiJudge(
   aiContext: string,
   code: string,
   maxPoints: number,
+  ai: GoogleGenAI,
 ) {
   const prompt = `
 You are an advanced AI programming contest judge.
