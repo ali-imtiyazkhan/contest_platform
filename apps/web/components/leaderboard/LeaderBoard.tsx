@@ -160,7 +160,7 @@ function PodiumCard({ entry, rank, color, bgColor, borderColor, isLarge = false 
             </div>
 
             <div className="flex flex-col mb-4">
-                <span className={cn("font-black tracking-tighter uppercase truncate max-w-35", isLarge ? "text-2xl" : "text-lg")}>
+                <span className={cn("font-black tracking-tighter  uppercase truncate max-w-35", isLarge ? "text-2xl" : "text-lg")}>
                     {entry.email.split('@')[0]}
                 </span>
                 <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest">Rank {rank}</span>
