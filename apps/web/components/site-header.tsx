@@ -86,7 +86,7 @@ export function SiteHeader() {
 
               {/* API Key Input - Styled */}
               <div className="relative hidden lg:block group">
-                <Key className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-500 group-focus-within:text-orange-500 transition-colors" />
+                <Key className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-400 group-focus-within:text-orange-500 transition-colors" />
                 <input
                   type="password"
                   placeholder="AI API Key"
