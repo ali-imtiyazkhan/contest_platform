@@ -72,16 +72,16 @@ export default function SignUpPage() {
 
             const data = await res.json();
 
+            console.log("data is : ", data);
+
             if (!res.ok) {
                 throw new Error(data.message || "Sign up failed");
             }
 
-            // Store token
             if (data.token) {
                 localStorage.setItem("token", data.token);
             }
 
-            // Redirect to contests
             router.push("/contests");
         } catch (err: any) {
             setError(err.message || "Something went wrong");

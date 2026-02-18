@@ -41,21 +41,20 @@ export default function LoginPage() {
             });
 
             const data = await res.json();
-
+            
+            console.log("user data is : ", data);
             if (!res.ok) {
                 throw new Error(data.message || "Login failed");
             }
 
-            // Store token
-            if (data.token) {
+            if (data.accessToken) {
                 if (form.remember) {
-                    localStorage.setItem("token", data.token);
+                    localStorage.setItem("token", data.accessToken);
                 } else {
-                    sessionStorage.setItem("token", data.token);
+                    sessionStorage.setItem("token", data.accessToken);
                 }
             }
 
-            // Redirect
             router.push("/contests");
         } catch (err: any) {
             setError(err.message || "Invalid credentials");
