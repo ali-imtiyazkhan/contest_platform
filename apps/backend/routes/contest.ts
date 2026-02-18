@@ -128,6 +128,13 @@ router.get("/", async (_, res) => {
   res.json({ ok: true, data: contests });
 });
 
+router.get("/:contestId/participants/count", async (req, res) => {
+  const count = await client.contestParticipant.count({
+    where: { contestId: req.params.contestId },
+  });
+  res.json({ ok: true, count });
+});
+
 router.get("/upcoming", async (req, res) => {
   const { offset, limit } = parsePagination(req);
   const now = new Date();
