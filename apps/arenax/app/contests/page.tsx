@@ -2,7 +2,152 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { CONTESTS, Contest, ContestStatus, ContestCategory } from "@/lib/contestData";
+import { useRouter } from "next/navigation";
+
+// ─────────────────────────────────────────────
+// Types matching your backend
+// ─────────────────────────────────────────────
+type ContestStatus = "live" | "upcoming" | "completed";
+type ContestCategory = "MATH" | "WRITING" | "GENERAL_KNOWLEDGE" | "TECH" | "All";
+
+interface Challenge {
+  id: string;
+  title: string;
+  type: string;
+  maxPoints: number;
+  duration: number;
+}
+
+interface ActivityEvent {
+  id: string;
+  user: string;
+  avatar: string;
+  avatarColor: string;
+  action: string;
+  time: string;
+  points?: number;
+}
+
+interface Contest {
+  id: string;
+  title: string;
+  category: string;
+  status: ContestStatus;
+  participants: number;
+  maxParticipants: number;
+  prize: number;
+  startTime: string;
+  endTime: string;
+  challenges: Challenge[];
+  difficulty: string;
+  host: string;
+  description: string;
+  tags: string[];
+}
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api/v1";
+
+async function fetchContests(): Promise<Contest[]> {
+  const [all, active, upcoming, finished] = await Promise.all([
+    fetch(`${API_BASE}/`).then(r => r.json()),
+    fetch(`${API_BASE}/active`).then(r => r.json()),
+    fetch(`${API_BASE}/upcoming`).then(r => r.json()),
+    fetch(`${API_BASE}/finished`).then(r => r.json()),
+  ]);
+
+  const contests: Contest[] = [];
+  const now = new Date();
+
+  all.data?.forEach((c: any) => {
+    const start = new Date(c.startTime);
+    const end = new Date(c.endTime);
+    const status: ContestStatus =
+      now >= start && now <= end ? "live"
+        : now < start ? "upcoming"
+          : "completed";
+
+    contests.push({
+      id: c.id,
+      title: c.title,
+      category: c.category || "GENERAL_KNOWLEDGE",
+      status,
+      participants: 0,
+      maxParticipants: c.maxParticipants || 1000,
+      prize: c.prize || 0,
+      startTime: c.startTime,
+      endTime: c.endTime,
+      challenges: [],
+      difficulty: c.difficulty || "Intermediate",
+      host: c.host || "ArenaX Official",
+      description: c.description || "",
+      tags: c.tags || [],
+    });
+  });
+
+  return contests;
+}
+
+async function fetchContestDetails(contestId: string): Promise<Contest | null> {
+  try {
+    const res = await fetch(`${API_BASE}/${contestId}`);
+    const json = await res.json();
+    if (!json.ok) return null;
+
+    const c = json.data;
+    const now = new Date();
+    const start = new Date(c.startTime);
+    const end = new Date(c.endTime);
+    const status: ContestStatus =
+      now >= start && now <= end ? "live"
+        : now < start ? "upcoming"
+          : "completed";
+
+    const challenges = c.contestToChallengeMapping?.map((m: any) => ({
+      id: m.challenge.id,
+      title: m.challenge.title,
+      type: m.challenge.type,
+      maxPoints: m.challenge.maxPoints,
+      duration: m.challenge.duration,
+    })) || [];
+
+    return {
+      id: c.id,
+      title: c.title,
+      category: c.category || "GENERAL_KNOWLEDGE",
+      status,
+      participants: 0,
+      maxParticipants: c.maxParticipants || 1000,
+      prize: c.prize || 0,
+      startTime: c.startTime,
+      endTime: c.endTime,
+      challenges,
+      difficulty: c.difficulty || "Intermediate",
+      host: c.host || "ArenaX Official",
+      description: c.description || "",
+      tags: c.tags || [],
+    };
+  } catch (e) {
+    console.error(e);
+    return null;
+  }
+}
+
+async function registerForContest(contestId: string): Promise<{ ok: boolean; message?: string }> {
+  try {
+    const token = localStorage.getItem("token");
+    const res = await fetch(`${API_BASE}/${contestId}/register`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    const json = await res.json();
+    return json;
+  } catch (e) {
+    return { ok: false, message: "Network error" };
+  }
+}
 
 function useCountdown(targetIso: string) {
   const calc = () => Math.max(0, Math.floor((new Date(targetIso).getTime() - Date.now()) / 1000));
@@ -21,8 +166,8 @@ function pad(n: number) { return String(n).padStart(2, "0"); }
 
 function StatusBadge({ status }: { status: ContestStatus }) {
   const map = {
-    live:      { label: "● Live Now",  cls: "bg-acid/15 text-acid border-acid/30" },
-    upcoming:  { label: "◷ Upcoming",  cls: "bg-orange-500/15 text-orange-400 border-orange-500/30" },
+    live: { label: "● Live Now", cls: "bg-acid/15 text-acid border-acid/30" },
+    upcoming: { label: "◷ Upcoming", cls: "bg-orange-500/15 text-orange-400 border-orange-500/30" },
     completed: { label: "✓ Completed", cls: "bg-white/10 text-muted border-white/15" },
   };
   const { label, cls } = map[status];
@@ -33,20 +178,18 @@ function StatusBadge({ status }: { status: ContestStatus }) {
   );
 }
 
-function DifficultyPip({ level }: { level: Contest["difficulty"] }) {
+function DifficultyPip({ level }: { level: string }) {
   const colors: Record<string, string> = {
     Beginner: "text-emerald-400", Intermediate: "text-amber-400",
     Advanced: "text-orange-400", Elite: "text-red-400",
   };
-  return <span className={`font-mono text-[0.68rem] font-bold tracking-widest ${colors[level]}`}>{level}</span>;
+  return <span className={`font-mono text-[0.68rem] font-bold tracking-widest ${colors[level] || "text-muted"}`}>{level}</span>;
 }
 
 function ActivityFeed({ contest }: { contest: Contest }) {
-  const [events, setEvents] = useState(contest.activity);
+  const [events, setEvents] = useState<ActivityEvent[]>([]);
   const [pulse, setPulse] = useState(false);
-  const bottomRef = useRef<HTMLDivElement>(null);
 
-  // Simulate live events for live contests
   useEffect(() => {
     if (contest.status !== "live") return;
     const names = ["Alex R.", "Jordan K.", "Mia T.", "Sven L.", "Aria B.", "Omar H."];
@@ -109,17 +252,15 @@ function ActivityFeed({ contest }: { contest: Contest }) {
             <span className="font-mono text-[0.6rem] text-muted flex-shrink-0 mt-0.5">{ev.time}</span>
           </div>
         ))}
-        <div ref={bottomRef} />
       </div>
     </div>
   );
 }
 
-
 function ChallengeTimeline({ contest }: { contest: Contest }) {
   const completedCount = contest.status === "completed" ? contest.challenges.length
     : contest.status === "live" ? Math.floor(contest.challenges.length / 2)
-    : 0;
+      : 0;
 
   return (
     <div>
@@ -131,25 +272,23 @@ function ChallengeTimeline({ contest }: { contest: Contest }) {
           return (
             <div
               key={ch.id}
-              className={`flex items-center gap-3 p-3 rounded border transition-colors duration-200 ${
-                active  ? "border-acid/40 bg-acid/[0.06]"
-                : done  ? "border-white/[0.06] bg-white/[0.03] opacity-60"
-                : "border-white/[0.04] bg-white/[0.02]"
-              }`}
+              className={`flex items-center gap-3 p-3 rounded border transition-colors duration-200 ${active ? "border-acid/40 bg-acid/[0.06]"
+                : done ? "border-white/[0.06] bg-white/[0.03] opacity-60"
+                  : "border-white/[0.04] bg-white/[0.02]"
+                }`}
             >
-              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[0.65rem] font-bold flex-shrink-0 ${
-                active ? "bg-acid text-black"
-                : done  ? "bg-white/20 text-white"
-                : "bg-white/[0.06] text-muted"
-              }`}>
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[0.65rem] font-bold flex-shrink-0 ${active ? "bg-acid text-black"
+                : done ? "bg-white/20 text-white"
+                  : "bg-white/[0.06] text-muted"
+                }`}>
                 {done ? "✓" : i + 1}
               </div>
               <div className="flex-1 min-w-0">
                 <p className={`text-[0.82rem] font-semibold truncate ${done ? "text-muted" : "text-cream"}`}>{ch.title}</p>
-                <p className="font-mono text-[0.65rem] text-muted">{ch.type} · {ch.duration}</p>
+                <p className="font-mono text-[0.65rem] text-muted">{ch.type} · {Math.floor(ch.duration / 60)}min</p>
               </div>
               <span className={`font-mono text-[0.7rem] font-bold flex-shrink-0 ${active ? "text-acid" : "text-muted"}`}>
-                +{ch.points}
+                +{ch.maxPoints}
               </span>
             </div>
           );
@@ -176,19 +315,31 @@ function CountdownBlock({ targetIso, label }: { targetIso: string; label: string
   );
 }
 
-
 function RegisterModal({ contest, onClose }: { contest: Contest; onClose: () => void }) {
+  const router = useRouter();
   const [step, setStep] = useState<"form" | "success">("form");
   const [form, setForm] = useState({ name: "", email: "", handle: "" });
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const { h, m, s } = useCountdown(contest.startTime);
 
   const handleSubmit = async () => {
     if (!form.name || !form.email || !form.handle) return;
     setLoading(true);
-    await new Promise(r => setTimeout(r, 1400));
+    setError("");
+
+    const result = await registerForContest(contest.id);
+
     setLoading(false);
-    setStep("success");
+    if (result.ok) {
+      setStep("success");
+    } else {
+      setError(result.message || "Registration failed");
+    }
+  };
+
+  const handleEnterArena = () => {
+    router.push(`/contests/${contest.id}/challenges/${contest.challenges[0]?.id}`);
   };
 
   return (
@@ -198,7 +349,6 @@ function RegisterModal({ contest, onClose }: { contest: Contest; onClose: () => 
         className="relative w-full max-w-lg bg-[#111113] border border-white/[0.12] rounded-xl overflow-hidden shadow-[0_40px_100px_rgba(0,0,0,0.8)]"
         onClick={e => e.stopPropagation()}
       >
-        {/* Modal header */}
         <div className="bg-acid/[0.06] border-b border-acid/[0.12] px-6 py-4 flex items-center justify-between">
           <div>
             <p className="font-mono text-[0.65rem] text-acid tracking-[2px] uppercase mb-1">Register for Contest</p>
@@ -209,10 +359,9 @@ function RegisterModal({ contest, onClose }: { contest: Contest; onClose: () => 
 
         {step === "form" ? (
           <>
-            {/* Prize + timing info */}
             <div className="px-6 pt-5 pb-4 grid grid-cols-3 gap-3 border-b border-white/[0.06]">
               {[
-                { label: "Prize Pool", value: contest.prize },
+                { label: "Prize Pool", value: `$${contest.prize.toLocaleString()}` },
                 { label: "Difficulty", value: contest.difficulty },
                 { label: "Participants", value: `${contest.participants.toLocaleString()}` },
               ].map(({ label, value }) => (
@@ -223,14 +372,12 @@ function RegisterModal({ contest, onClose }: { contest: Contest; onClose: () => 
               ))}
             </div>
 
-            {/* Countdown if upcoming */}
             {contest.status === "upcoming" && (
               <div className="px-6 pt-5">
                 <CountdownBlock targetIso={contest.startTime} label="Starts in" />
               </div>
             )}
 
-            {/* Form */}
             <div className="px-6 pt-5 pb-6 space-y-4">
               {[
                 { id: "name", label: "Full Name", placeholder: "Your full name", type: "text" },
@@ -248,6 +395,12 @@ function RegisterModal({ contest, onClose }: { contest: Contest; onClose: () => 
                   />
                 </div>
               ))}
+
+              {error && (
+                <div className="bg-red-500/10 border border-red-500/30 rounded px-4 py-3 text-red-400 text-sm">
+                  {error}
+                </div>
+              )}
 
               <button
                 onClick={handleSubmit}
@@ -267,7 +420,6 @@ function RegisterModal({ contest, onClose }: { contest: Contest; onClose: () => 
             </div>
           </>
         ) : (
-          /* Success state */
           <div className="px-8 py-12 text-center">
             <div className="w-16 h-16 bg-acid rounded-full flex items-center justify-center text-2xl mx-auto mb-5">✓</div>
             <h3 className="text-cream font-extrabold text-xl mb-2">You&apos;re registered!</h3>
@@ -279,7 +431,7 @@ function RegisterModal({ contest, onClose }: { contest: Contest; onClose: () => 
             </p>
             {contest.status === "live" ? (
               <button
-                onClick={onClose}
+                onClick={handleEnterArena}
                 className="bg-acid text-black font-extrabold text-[0.82rem] tracking-[2px] uppercase px-10 py-4 rounded hover:opacity-90 transition-opacity"
               >
                 Enter Contest Arena →
@@ -301,11 +453,10 @@ function RegisterModal({ contest, onClose }: { contest: Contest; onClose: () => 
 
 function ContestDetailPanel({ contest, onRegister }: { contest: Contest; onRegister: () => void }) {
   const fillPct = Math.round((contest.participants / contest.maxParticipants) * 100);
-  const totalPts = contest.challenges.reduce((a, c) => a + c.points, 0);
+  const totalPts = contest.challenges.reduce((a, c) => a + c.maxPoints, 0);
 
   return (
     <div className="h-full flex flex-col bg-[#111113] border-l border-white/[0.06] overflow-y-auto">
-      {/* Panel header */}
       <div className="px-6 pt-6 pb-5 border-b border-white/[0.06] sticky top-0 bg-[#111113] z-10">
         <div className="flex items-start justify-between gap-3 mb-3">
           <div>
@@ -314,7 +465,7 @@ function ContestDetailPanel({ contest, onRegister }: { contest: Contest; onRegis
             <p className="font-mono text-[0.68rem] text-muted mt-1">by {contest.host}</p>
           </div>
           <div className="text-right flex-shrink-0">
-            <div className="text-acid font-extrabold text-2xl" style={{ fontFamily: "'Bebas Neue', cursive" }}>{contest.prize}</div>
+            <div className="text-acid font-extrabold text-2xl" style={{ fontFamily: "'Bebas Neue', cursive" }}>${contest.prize.toLocaleString()}</div>
             <div className="font-mono text-[0.62rem] text-muted tracking-widest uppercase">Prize Pool</div>
           </div>
         </div>
@@ -326,7 +477,6 @@ function ContestDetailPanel({ contest, onRegister }: { contest: Contest; onRegis
         </div>
       </div>
 
-      {/* Stats row */}
       <div className="grid grid-cols-3 gap-px bg-white/[0.04] border-b border-white/[0.06]">
         {[
           { label: "Participants", value: contest.participants.toLocaleString() },
@@ -340,7 +490,6 @@ function ContestDetailPanel({ contest, onRegister }: { contest: Contest; onRegis
         ))}
       </div>
 
-      {/* Participation bar */}
       <div className="px-6 py-4 border-b border-white/[0.06]">
         <div className="flex justify-between font-mono text-[0.65rem] text-muted mb-2">
           <span>Spots filled</span>
@@ -351,26 +500,22 @@ function ContestDetailPanel({ contest, onRegister }: { contest: Contest; onRegis
         </div>
       </div>
 
-      {/* Countdown (upcoming) or elapsed (live) */}
       <div className="px-6 py-5 border-b border-white/[0.06]">
         {contest.status === "upcoming" && <CountdownBlock targetIso={contest.startTime} label="Starts in" />}
-        {contest.status === "live"     && <CountdownBlock targetIso={contest.endTime}   label="Time remaining" />}
+        {contest.status === "live" && <CountdownBlock targetIso={contest.endTime} label="Time remaining" />}
         {contest.status === "completed" && (
           <div className="font-mono text-[0.72rem] text-muted">Contest ended · Results finalised</div>
         )}
       </div>
 
-      {/* Challenge timeline */}
       <div className="px-6 py-5 border-b border-white/[0.06]">
         <ChallengeTimeline contest={contest} />
       </div>
 
-      {/* Activity feed */}
       <div className="px-6 py-5 flex-1 min-h-[260px] border-b border-white/[0.06]">
         <ActivityFeed contest={contest} />
       </div>
 
-      {/* CTA */}
       <div className="px-6 py-5 sticky bottom-0 bg-[#111113] border-t border-white/[0.06]">
         {contest.status !== "completed" ? (
           <button
@@ -381,7 +526,7 @@ function ContestDetailPanel({ contest, onRegister }: { contest: Contest; onRegis
           </button>
         ) : (
           <div className="text-center font-mono text-[0.72rem] text-muted py-2">
-            This contest has ended. <Link href="#" className="text-acid hover:underline">View results →</Link>
+            This contest has ended. <Link href={`/leaderboard?contestId=${contest.id}`} className="text-acid hover:underline">View results →</Link>
           </div>
         )}
       </div>
@@ -394,9 +539,8 @@ function ContestRow({ contest, selected, onClick }: { contest: Contest; selected
   return (
     <button
       onClick={onClick}
-      className={`w-full text-left px-5 py-4 border-b border-white/[0.05] transition-all duration-200 group ${
-        selected ? "bg-acid/[0.07] border-l-2 border-l-acid" : "hover:bg-white/[0.03] border-l-2 border-l-transparent"
-      }`}
+      className={`w-full text-left px-5 py-4 border-b border-white/[0.05] transition-all duration-200 group ${selected ? "bg-acid/[0.07] border-l-2 border-l-acid" : "hover:bg-white/[0.03] border-l-2 border-l-transparent"
+        }`}
     >
       <div className="flex items-start justify-between gap-2 mb-2">
         <div className="flex-1 min-w-0">
@@ -412,9 +556,8 @@ function ContestRow({ contest, selected, onClick }: { contest: Contest; selected
           <DifficultyPip level={contest.difficulty} />
           <span className="font-mono text-[0.65rem] text-muted">{contest.participants.toLocaleString()} competing</span>
         </div>
-        <span className="font-mono text-[0.72rem] text-acid font-bold">{contest.prize}</span>
+        <span className="font-mono text-[0.72rem] text-acid font-bold">${contest.prize.toLocaleString()}</span>
       </div>
-      {/* Mini progress bar */}
       <div className="h-0.5 bg-white/[0.06] rounded-full mt-3 overflow-hidden">
         <div className="h-full bg-acid/50 rounded-full" style={{ width: `${fillPct}%` }} />
       </div>
@@ -422,38 +565,58 @@ function ContestRow({ contest, selected, onClick }: { contest: Contest; selected
   );
 }
 
-
-const CATEGORIES: ContestCategory[] = ["All", "Math & Logic", "Writing", "General Knowledge", "Tech & Coding"];
 const STATUS_TABS: { label: string; value: ContestStatus | "all" }[] = [
-  { label: "All",       value: "all" },
-  { label: "🔴 Live",    value: "live" },
+  { label: "All", value: "all" },
+  { label: "🔴 Live", value: "live" },
   { label: "◷ Upcoming", value: "upcoming" },
-  { label: "✓ Completed",value: "completed" },
+  { label: "✓ Completed", value: "completed" },
 ];
 
 export default function ContestsPage() {
+  const [contests, setContests] = useState<Contest[]>([]);
+  const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<ContestStatus | "all">("all");
-  const [categoryFilter, setCategoryFilter] = useState<ContestCategory>("All");
-  const [selectedId, setSelectedId] = useState<string>(CONTESTS[0].id);
+  const [selectedId, setSelectedId] = useState<string>("");
+  const [selectedContest, setSelectedContest] = useState<Contest | null>(null);
   const [registerContest, setRegisterContest] = useState<Contest | null>(null);
   const [search, setSearch] = useState("");
 
-  const filtered = CONTESTS.filter(c => {
-    const matchStatus   = statusFilter === "all" || c.status === statusFilter;
-    const matchCategory = categoryFilter === "All" || c.category === categoryFilter;
-    const matchSearch   = !search || c.title.toLowerCase().includes(search.toLowerCase());
-    return matchStatus && matchCategory && matchSearch;
+  useEffect(() => {
+    fetchContests().then(data => {
+      setContests(data);
+      setLoading(false);
+      if (data.length > 0) {
+        setSelectedId(data[0].id);
+        fetchContestDetails(data[0].id).then(setSelectedContest);
+      }
+    });
+  }, []);
+
+  useEffect(() => {
+    if (selectedId) {
+      fetchContestDetails(selectedId).then(setSelectedContest);
+    }
+  }, [selectedId]);
+
+  const filtered = contests.filter(c => {
+    const matchStatus = statusFilter === "all" || c.status === statusFilter;
+    const matchSearch = !search || c.title.toLowerCase().includes(search.toLowerCase());
+    return matchStatus && matchSearch;
   });
 
-  const selected = CONTESTS.find(c => c.id === selectedId) ?? CONTESTS[0];
+  const liveCnt = contests.filter(c => c.status === "live").length;
+  const upcomingCnt = contests.filter(c => c.status === "upcoming").length;
 
-  const liveCnt     = CONTESTS.filter(c => c.status === "live").length;
-  const upcomingCnt = CONTESTS.filter(c => c.status === "upcoming").length;
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
+        <div className="text-acid text-xl font-mono">Loading contests...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-cream flex flex-col" style={{ fontFamily: "'Syne', sans-serif" }}>
-
-      {/* ── Top bar ── */}
       <header className="border-b border-white/[0.06] px-6 py-4 flex items-center gap-4 bg-black/60 backdrop-blur-sm sticky top-0 z-50">
         <Link href="/" className="font-bebas text-[1.6rem] tracking-[3px] text-cream no-underline flex-shrink-0 hover:text-acid transition-colors" style={{ fontFamily: "'Bebas Neue', cursive" }}>
           Arena<span className="text-acid">X</span>
@@ -475,54 +638,30 @@ export default function ContestsPage() {
       </header>
 
       <div className="flex flex-1 overflow-hidden" style={{ height: "calc(100vh - 61px)" }}>
-
-        {/* ── Left panel: list ── */}
         <div className="w-full md:w-[380px] lg:w-[420px] flex-shrink-0 flex flex-col border-r border-white/[0.06] overflow-hidden">
-
-          {/* Filters */}
           <div className="px-4 pt-4 pb-3 border-b border-white/[0.06] space-y-3 bg-[#0d0d0f]">
-            {/* Search */}
             <input
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Search contests…"
               className="w-full bg-white/[0.05] border border-white/[0.08] rounded px-3 py-2 text-cream text-[0.85rem] outline-none focus:border-acid/40 placeholder:text-muted font-mono text-[0.78rem] transition-colors"
             />
-            {/* Status tabs */}
             <div className="flex gap-1 flex-wrap">
               {STATUS_TABS.map(t => (
                 <button
                   key={t.value}
                   onClick={() => setStatusFilter(t.value)}
-                  className={`font-mono text-[0.62rem] tracking-[1.5px] uppercase px-2.5 py-1 rounded-sm border transition-all duration-150 ${
-                    statusFilter === t.value
-                      ? "bg-acid text-black border-acid"
-                      : "text-muted border-white/[0.08] hover:border-white/20 hover:text-cream"
-                  }`}
+                  className={`font-mono text-[0.62rem] tracking-[1.5px] uppercase px-2.5 py-1 rounded-sm border transition-all duration-150 ${statusFilter === t.value
+                    ? "bg-acid text-black border-acid"
+                    : "text-muted border-white/[0.08] hover:border-white/20 hover:text-cream"
+                    }`}
                 >
                   {t.label}
                 </button>
               ))}
             </div>
-            {/* Category chips */}
-            <div className="flex gap-1 flex-wrap">
-              {CATEGORIES.map(cat => (
-                <button
-                  key={cat}
-                  onClick={() => setCategoryFilter(cat)}
-                  className={`font-mono text-[0.6rem] tracking-[1px] uppercase px-2 py-0.5 rounded-sm border transition-all duration-150 ${
-                    categoryFilter === cat
-                      ? "bg-white/15 text-cream border-white/30"
-                      : "text-muted border-white/[0.06] hover:border-white/15 hover:text-cream/80"
-                  }`}
-                >
-                  {cat}
-                </button>
-              ))}
-            </div>
           </div>
 
-          {/* Contest list */}
           <div className="flex-1 overflow-y-auto">
             {filtered.length === 0 ? (
               <div className="py-16 text-center font-mono text-[0.78rem] text-muted">No contests found</div>
@@ -539,18 +678,22 @@ export default function ContestsPage() {
           </div>
         </div>
 
-        {/* ── Right panel: detail ── */}
         <div className="hidden md:flex flex-1 overflow-hidden">
-          <div className="flex-1 overflow-y-auto">
-            <ContestDetailPanel
-              contest={selected}
-              onRegister={() => setRegisterContest(selected)}
-            />
-          </div>
+          {selectedContest ? (
+            <div className="flex-1 overflow-y-auto">
+              <ContestDetailPanel
+                contest={selectedContest}
+                onRegister={() => setRegisterContest(selectedContest)}
+              />
+            </div>
+          ) : (
+            <div className="flex-1 flex items-center justify-center text-muted">
+              Select a contest to view details
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Register Modal */}
       {registerContest && (
         <RegisterModal
           contest={registerContest}
