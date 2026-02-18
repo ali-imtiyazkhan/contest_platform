@@ -6,9 +6,7 @@ type JwtPayload = {
   exp?: number;
 };
 
-/**
- * ✅ Refresh token using backend (SSR or client)
- */
+
 export const getAuthStateSSR = async () => {
   try {
     const response = await axios.post(
