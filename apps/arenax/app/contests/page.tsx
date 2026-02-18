@@ -4,9 +4,6 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { CONTESTS, Contest, ContestStatus, ContestCategory } from "@/lib/contestData";
 
-// ─────────────────────────────────────────────
-// Utility helpers
-// ─────────────────────────────────────────────
 function useCountdown(targetIso: string) {
   const calc = () => Math.max(0, Math.floor((new Date(targetIso).getTime() - Date.now()) / 1000));
   const [secs, setSecs] = useState(calc);
@@ -44,9 +41,6 @@ function DifficultyPip({ level }: { level: Contest["difficulty"] }) {
   return <span className={`font-mono text-[0.68rem] font-bold tracking-widest ${colors[level]}`}>{level}</span>;
 }
 
-// ─────────────────────────────────────────────
-// Live Activity Feed
-// ─────────────────────────────────────────────
 function ActivityFeed({ contest }: { contest: Contest }) {
   const [events, setEvents] = useState(contest.activity);
   const [pulse, setPulse] = useState(false);
@@ -121,9 +115,7 @@ function ActivityFeed({ contest }: { contest: Contest }) {
   );
 }
 
-// ─────────────────────────────────────────────
-// Challenge Timeline (steps inside a contest)
-// ─────────────────────────────────────────────
+
 function ChallengeTimeline({ contest }: { contest: Contest }) {
   const completedCount = contest.status === "completed" ? contest.challenges.length
     : contest.status === "live" ? Math.floor(contest.challenges.length / 2)
@@ -167,9 +159,6 @@ function ChallengeTimeline({ contest }: { contest: Contest }) {
   );
 }
 
-// ─────────────────────────────────────────────
-// Countdown Block
-// ─────────────────────────────────────────────
 function CountdownBlock({ targetIso, label }: { targetIso: string; label: string }) {
   const { h, m, s } = useCountdown(targetIso);
   return (
@@ -187,9 +176,7 @@ function CountdownBlock({ targetIso, label }: { targetIso: string; label: string
   );
 }
 
-// ─────────────────────────────────────────────
-// Register Modal
-// ─────────────────────────────────────────────
+
 function RegisterModal({ contest, onClose }: { contest: Contest; onClose: () => void }) {
   const [step, setStep] = useState<"form" | "success">("form");
   const [form, setForm] = useState({ name: "", email: "", handle: "" });
@@ -312,9 +299,6 @@ function RegisterModal({ contest, onClose }: { contest: Contest; onClose: () => 
   );
 }
 
-// ─────────────────────────────────────────────
-// Contest Card (expanded panel on the right)
-// ─────────────────────────────────────────────
 function ContestDetailPanel({ contest, onRegister }: { contest: Contest; onRegister: () => void }) {
   const fillPct = Math.round((contest.participants / contest.maxParticipants) * 100);
   const totalPts = contest.challenges.reduce((a, c) => a + c.points, 0);
@@ -405,9 +389,6 @@ function ContestDetailPanel({ contest, onRegister }: { contest: Contest; onRegis
   );
 }
 
-// ─────────────────────────────────────────────
-// Contest Row (left list item)
-// ─────────────────────────────────────────────
 function ContestRow({ contest, selected, onClick }: { contest: Contest; selected: boolean; onClick: () => void }) {
   const fillPct = Math.round((contest.participants / contest.maxParticipants) * 100);
   return (
@@ -441,9 +422,7 @@ function ContestRow({ contest, selected, onClick }: { contest: Contest; selected
   );
 }
 
-// ─────────────────────────────────────────────
-// Main Page
-// ─────────────────────────────────────────────
+
 const CATEGORIES: ContestCategory[] = ["All", "Math & Logic", "Writing", "General Knowledge", "Tech & Coding"];
 const STATUS_TABS: { label: string; value: ContestStatus | "all" }[] = [
   { label: "All",       value: "all" },
