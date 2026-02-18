@@ -1,0 +1,145 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url("https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@400;600;700;800&family=DM+Mono:ital,wght@0,400;0,500;1,400&display=swap");
+
+:root {
+  --font-bebas: "Bebas Neue";
+  --font-syne: "Syne";
+  --font-dm-mono: "DM Mono";
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: #0a0a0a;
+  color: #f5f2eb;
+  font-family: "Syne", sans-serif;
+  overflow-x: hidden;
+  cursor: none;
+}
+
+/* ── Cursor ── */
+.custom-cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 14px;
+  height: 14px;
+  background: #c8f135;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  transition: transform 0.15s ease;
+  mix-blend-mode: difference;
+}
+
+.cursor-ring {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 40px;
+  height: 40px;
+  border: 1.5px solid #c8f135;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9998;
+  transition: transform 0.35s ease;
+  mix-blend-mode: difference;
+}
+
+/* ── Scroll Reveal ── */
+.reveal {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── Hero animations (opacity starts at 0) ── */
+.hero-animate {
+  opacity: 0;
+}
+
+/* ── Step bar hover ── */
+.step-card:hover .step-bar {
+  width: 80px;
+}
+
+/* ── Type card top border hover ── */
+.type-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: #c8f135;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.4s ease;
+}
+
+.type-card:hover::before {
+  transform: scaleX(1);
+}
+
+/* ── Demo textarea blink ── */
+.demo-textarea {
+  animation: blink 2s infinite;
+}
+
+@keyframes blink {
+  0%,
+  90%,
+  100% {
+    border-color: rgba(200, 241, 53, 0.3);
+  }
+  95% {
+    border-color: rgba(200, 241, 53, 0.8);
+  }
+}
+
+/* ── CTA watermark ── */
+.cta-watermark::before {
+  content: "COMPETE";
+  position: absolute;
+  font-family: "Bebas Neue", cursive;
+  font-size: 22vw;
+  color: rgba(255, 255, 255, 0.03);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* ── Hero diagonal overlay ── */
+/* ── Thin scrollbar ── */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.12) transparent;
+}
+.scrollbar-thin::-webkit-scrollbar { width: 4px; }
+.scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+.scrollbar-thin::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 2px; }
+
+/* ── Hero divider ── */
+.hero-divider::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 48%;
+  width: 4%;
+  height: 100%;
+  background: linear-gradient(to right, #0a0a0a, #1c1c1e);
+  z-index: 1;
+  pointer-events: none;
+}
