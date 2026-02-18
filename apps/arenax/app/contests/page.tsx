@@ -89,7 +89,7 @@ async function fetchContests(): Promise<Contest[]> {
 
 async function fetchContestDetails(contestId: string): Promise<Contest | null> {
   try {
-    const res = await fetch(`${API_BASE}/${contestId}`);
+    const res = await fetch(`${API_BASE}/contest/${contestId}`);
     const json = await res.json();
     if (!json.ok) return null;
 
@@ -135,7 +135,7 @@ async function fetchContestDetails(contestId: string): Promise<Contest | null> {
 async function registerForContest(contestId: string): Promise<{ ok: boolean; message?: string }> {
   try {
     const token = localStorage.getItem("token");
-    const res = await fetch(`${API_BASE}/${contestId}/register`, {
+    const res = await fetch(`${API_BASE}/contest/${contestId}/register`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -644,7 +644,7 @@ export default function ContestsPage() {
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Search contests…"
-              className="w-full bg-white/[0.05] border border-white/[0.08] rounded px-3 py-2 text-cream text-[0.85rem] outline-none focus:border-acid/40 placeholder:text-muted font-mono text-[0.78rem] transition-colors"
+              className="w-full bg-white/[0.05] border border-white/[0.08] rounded px-3 py-2 text-cream text-[0.78rem] outline-none focus:border-acid/40 placeholder:text-muted font-mono transition-colors"
             />
             <div className="flex gap-1 flex-wrap">
               {STATUS_TABS.map(t => (

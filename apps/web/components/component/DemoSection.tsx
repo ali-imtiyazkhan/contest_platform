@@ -11,7 +11,7 @@ const metaItems: MetaItem[] = [
 
 export default function DemoSection() {
   return (
-    <section className="bg-slate px-16 py-[120px]">
+    <section className="bg-slate px-16 py-30">
       <p
         className="reveal text-acid text-[0.72rem] tracking-[3px] uppercase mb-4 text-center"
         style={{ fontFamily: "'DM Mono', monospace" }}
@@ -19,7 +19,7 @@ export default function DemoSection() {
         // The Interface
       </p>
       <h2
-        className="reveal text-center max-w-[600px] mx-auto mb-14 leading-none"
+        className="reveal text-center max-w-150 mx-auto mb-14 leading-none"
         style={{
           fontFamily: "'Bebas Neue', cursive",
           fontSize: "clamp(3rem, 5vw, 5rem)",
@@ -31,7 +31,7 @@ export default function DemoSection() {
       </h2>
 
       {/* Browser-style window */}
-      <div className="reveal max-w-[900px] mx-auto bg-black rounded-[10px] border border-white/[0.08] overflow-hidden shadow-[0_60px_120px_rgba(0,0,0,0.6)]">
+      <div className="reveal max-w-225 mx-auto bg-black rounded-[10px] border border-white/8 overflow-hidden shadow-[0_60px_120px_rgba(0,0,0,0.6)]">
         {/* Window bar */}
         <div className="bg-mid px-5 py-3 flex items-center gap-2">
           <span className="w-3 h-3 rounded-full bg-[#ff5f57]" />
@@ -46,9 +46,9 @@ export default function DemoSection() {
         </div>
 
         {/* Split body */}
-        <div className="grid grid-cols-1 md:grid-cols-2 min-h-[400px]">
+        <div className="grid grid-cols-1 md:grid-cols-2 min-h-100">
           {/* Question side */}
-          <div className="p-10 border-b md:border-b-0 md:border-r border-white/[0.06]">
+          <div className="p-10 border-b md:border-b-0 md:border-r border-white/6">
             <span
               className="block text-acid text-[0.65rem] tracking-[2px] uppercase mb-5"
               style={{ fontFamily: "'DM Mono', monospace" }}
@@ -82,7 +82,7 @@ export default function DemoSection() {
               ✏️ Your Answer
             </span>
             <textarea
-              className="demo-textarea flex-1 bg-white/[0.04] border border-acid/30 rounded-md p-4.5 text-[0.82rem] text-cream leading-[1.6] resize-none outline-none placeholder:text-muted"
+              className="demo-textarea flex-1 bg-white/4 border border-acid/30 rounded-md p-4.5 text-[0.82rem] text-cream leading-[1.6] resize-none outline-none placeholder:text-muted"
               style={{ fontFamily: "'DM Mono', monospace" }}
               defaultValue="The Industrial Revolution fundamentally shifted..."
             />

@@ -12,7 +12,7 @@ export default function CTASection() {
   };
 
   return (
-    <section className="cta-watermark bg-slate px-16 py-[160px] text-center relative overflow-hidden">
+    <section className="cta-watermark bg-slate px-16 py-40 text-center relative overflow-hidden">
       <p
         className="reveal text-acid text-[0.72rem] tracking-[3px] uppercase mb-4"
         style={{ fontFamily: "'DM Mono', monospace" }}
@@ -31,19 +31,19 @@ export default function CTASection() {
         <span className="text-acid">Compete?</span>
       </h2>
 
-      <p className="reveal text-[1.05rem] text-muted max-w-[500px] mx-auto mb-12">
+      <p className="reveal text-[1.05rem] text-muted max-w-125 mx-auto mb-12">
         Drop your email and we&apos;ll notify you when the next contest opens.
         First 500 signups get free Pro access for 30 days.
       </p>
 
-      <div className="reveal flex flex-col sm:flex-row gap-3 justify-center max-w-[480px] mx-auto">
+      <div className="reveal flex flex-col sm:flex-row gap-3 justify-center max-w-120 mx-auto">
         <input
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
           placeholder="your@email.com"
-          className="flex-1 bg-white/[0.06] border border-white/[0.12] rounded text-cream px-5 py-4 text-[0.9rem] outline-none focus:border-acid placeholder:text-muted transition-colors"
+          className="flex-1 bg-white/6 border border-white/12 rounded text-cream px-5 py-4 text-[0.9rem] outline-none focus:border-acid placeholder:text-muted transition-colors"
           style={{ fontFamily: "'Syne', sans-serif" }}
         />
         <button
