@@ -49,10 +49,10 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api/v
 
 async function fetchContests(): Promise<Contest[]> {
   const [all, active, upcoming, finished] = await Promise.all([
-    fetch(`${API_BASE}/`).then(r => r.json()),
-    fetch(`${API_BASE}/active`).then(r => r.json()),
-    fetch(`${API_BASE}/upcoming`).then(r => r.json()),
-    fetch(`${API_BASE}/finished`).then(r => r.json()),
+    fetch(`${API_BASE}/contest/`).then(r => r.json()),
+    fetch(`${API_BASE}/contest/active`).then(r => r.json()),
+    fetch(`${API_BASE}/contest/upcoming`).then(r => r.json()),
+    fetch(`${API_BASE}/contest/finished`).then(r => r.json()),
   ]);
 
   const contests: Contest[] = [];
@@ -135,6 +135,7 @@ async function fetchContestDetails(contestId: string): Promise<Contest | null> {
 async function registerForContest(contestId: string): Promise<{ ok: boolean; message?: string }> {
   try {
     const token = localStorage.getItem("token");
+    console.log("token is : ", token)
     const res = await fetch(`${API_BASE}/contest/${contestId}/register`, {
       method: "POST",
       headers: {

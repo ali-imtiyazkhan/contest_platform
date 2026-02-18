@@ -111,7 +111,7 @@ router.post("/verify-otp", async (req, res) => {
     const userData: any = {
       email: email.toLowerCase(),
       password: hashedPassword,
-      role: "User", // change -- for admin signups bhayia
+      role: "User",
     };
 
     const user = await client.user.create({
