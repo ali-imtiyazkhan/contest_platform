@@ -19,6 +19,34 @@ enum Type {
   Hard
 }
 
+enum ContestCategory {
+  MathLogic
+  Writing
+  GeneralKnowledge
+  TechCoding
+}
+
+enum Difficulty {
+  Beginner
+  Intermediate
+  Advanced
+  Elite
+}
+
+enum ContextStatus {
+  Pending
+  Generating
+  Completed
+  Failed
+}
+
+enum SubmissionStatus {
+  Pending
+  Judging
+  Accepted
+  Rejected
+}
+
 model User {
   id       String  @id @default(uuid())
   email    String  @unique
@@ -49,17 +77,29 @@ model Contest {
   endTime     DateTime
   createdAt   DateTime @default(now())
 
+  category        ContestCategory @default(MathLogic)
+  difficulty      Difficulty      @default(Beginner)
+  prize           Int             @default(0)
+  maxParticipants Int             @default(1000)
+  host            String?
+  tags            String[]        @default([])
+
   contestToChallengeMapping ContestToChallengeMapping[]
   leaderboard               Leaderboard[]
   ratingHistories           RatingHistory[]
   contestParticipants       ContestParticipant[]
+
+  @@index([startTime])
+  @@index([endTime])
 }
 
 model Challenge {
   id            String        @id @default(uuid())
   title         String
-  notionDocId   String
+  question      String        @default("")
+  hint          String?
   maxPoints     Int
+  duration      Int           @default(0)
   description   String?
   createdAt     DateTime      @default(now())
   contextStatus ContextStatus @default(Pending)
@@ -68,6 +108,8 @@ model Challenge {
   type      Type?
 
   contestToChallengeMapping ContestToChallengeMapping[]
+
+  @@index([createdAt])
 }
 
 model ContestToChallengeMapping {
@@ -82,13 +124,6 @@ model ContestToChallengeMapping {
   submissions ContestSubmission[]
 
   @@unique([contestId, challengeId])
-}
-
-enum ContextStatus {
-  Pending
-  Generating
-  Completed
-  Failed
 }
 
 model ContestSubmission {
@@ -120,13 +155,6 @@ model Leaderboard {
 
   @@unique([contestId, userId])
   @@index([contestId, score])
-}
-
-enum SubmissionStatus {
-  Pending
-  Judging
-  Accepted
-  Rejected
 }
 
 model RatingHistory {
