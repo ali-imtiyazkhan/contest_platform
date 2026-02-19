@@ -1,7 +1,6 @@
 "use client";
 
-import React from "react";
-
+import type React from "react";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion, Reorder } from "framer-motion";
@@ -39,7 +38,7 @@ interface Challenge {
     question: string;
     hint: string;
     maxPoints: number;
-    duration: number;
+    duration: number; // in seconds
     type: Difficulty;
 }
 
@@ -59,7 +58,8 @@ interface ContestForm {
 
 export default function AdminPage() {
     const { toast } = useToast();
-    const { accessToken, user } = useAuth();
+    const { accessToken, user, authReady } = useAuth();
+
     const router = useRouter();
 
     const [loading, setLoading] = useState(false);
@@ -94,15 +94,15 @@ export default function AdminPage() {
     ]);
 
     useEffect(() => {
+
+        if (!authReady) return;
+
         if (!accessToken || user?.role !== "Admin") {
-            toast({
-                title: "⛔ Access Denied",
-                description: "Admin privileges required",
-                variant: "destructive",
-            });
             router.push("/signin");
         }
-    }, [accessToken, user, router, toast]);
+
+    }, [authReady, accessToken, user]);
+
 
     const updateForm = (field: keyof ContestForm, value: any) => {
         setForm((f) => ({ ...f, [field]: value }));
@@ -326,9 +326,7 @@ export default function AdminPage() {
                 <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-lg bg-acid/10 border border-acid/30 flex items-center justify-center">
-                            {React.createElement(ShieldCheck as any, {
-                                className: "w-6 h-6 text-acid",
-                            })}
+                            <ShieldCheck className="w-6 h-6 text-acid" />
                         </div>
                         <div>
                             <h1
@@ -348,10 +346,7 @@ export default function AdminPage() {
                             onClick={() => setPreviewMode(!previewMode)}
                             className="flex items-center gap-2 px-4 py-2 rounded-lg border border-white/[0.1] text-sm font-semibold hover:bg-white/[0.05] transition-colors"
                         >
-                            {React.createElement(Eye as any, {
-                                className: "w-4 h-4",
-                            })}
-
+                            <Eye className="w-4 h-4" />
                             {previewMode ? "Edit Mode" : "Preview"}
                         </button>
                         <button
@@ -361,18 +356,12 @@ export default function AdminPage() {
                         >
                             {loading ? (
                                 <>
-                                    {React.createElement(Loader2 as any, {
-                                        className: "w-4 h-4 animate-spin",
-                                    })}
-
+                                    <Loader2 className="w-4 h-4 animate-spin" />
                                     Publishing...
                                 </>
                             ) : (
                                 <>
-                                    {React.createElement(Zap as any, {
-                                        className: "w-4 h-4",
-                                    })}
-
+                                    <Zap className="w-4 h-4" />
                                     Publish Contest
                                 </>
                             )}
@@ -418,10 +407,7 @@ export default function AdminPage() {
                             className="bg-white/[0.02] border border-white/[0.06] rounded-xl p-4"
                         >
                             <div className="flex items-center justify-between mb-2">
-                                {React.createElement(stat.icon as any, {
-                                    className: `w-5 h-5 ${stat.color}`,
-                                })}
-
+                                <stat.icon className={`w-5 h-5 ${stat.color}`} />
                                 <span
                                     className={`font-extrabold text-2xl ${stat.color}`}
                                     style={{ fontFamily: "'Bebas Neue', cursive" }}
@@ -443,10 +429,7 @@ export default function AdminPage() {
                     className="bg-[#111113]/80 backdrop-blur-xl border border-white/[0.08] rounded-2xl p-6"
                 >
                     <div className="flex items-center gap-3 mb-6">
-                        {React.createElement(Settings2 as any, {
-                            className: "w-5 h-5 text-acid",
-                        })}
-
+                        <Settings2 className="w-5 h-5 text-acid" />
                         <h2
                             className="text-xl font-extrabold"
                             style={{ fontFamily: "'Bebas Neue', cursive" }}
@@ -609,10 +592,7 @@ export default function AdminPage() {
                         <div className="border-t border-white/[0.06] pt-6">
                             <div className="flex items-center justify-between p-4 bg-white/[0.02] border border-white/[0.06] rounded-lg">
                                 <div className="flex items-center gap-3">
-                                    {React.createElement(Calendar as any, {
-                                        className: "w-5 h-5 text-acid",
-                                    })}
-
+                                    <Calendar className="w-5 h-5 text-acid" />
                                     <div>
                                         <p className="font-semibold text-sm">Enable Scheduling</p>
                                         <p className="text-[0.7rem] text-muted">
@@ -680,10 +660,7 @@ export default function AdminPage() {
                             onClick={addChallenge}
                             className="flex items-center gap-2 px-4 py-2 bg-white/[0.05] border border-white/[0.1] rounded-lg text-sm font-semibold hover:bg-white/[0.08] transition-colors"
                         >
-                            {React.createElement(Plus as any, {
-                                className: "w-4 h-4",
-                            })}
-
+                            <Plus className="w-4 h-4" />
                             Add Challenge
                         </button>
                     </div>
@@ -702,10 +679,7 @@ export default function AdminPage() {
                                 >
                                     <div className="flex items-start gap-4">
                                         <div className="flex items-center gap-3 flex-shrink-0">
-                                            {React.createElement(GripVertical as any, {
-                                                className: "w-5 h-5 text-muted cursor-grab active:cursor-grabbing",
-                                            })}
-
+                                            <GripVertical className="w-5 h-5 text-muted cursor-grab active:cursor-grabbing" />
                                             <div className="w-10 h-10 rounded-lg bg-acid/10 border border-acid/30 flex items-center justify-center">
                                                 <span
                                                     className="text-acid font-extrabold"
@@ -829,10 +803,7 @@ export default function AdminPage() {
                                             onClick={() => removeChallenge(ch.id)}
                                             className="flex-shrink-0 p-2 text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
                                         >
-                                            {React.createElement(Trash2 as any, {
-                                                className: "w-5 h-5",
-                                            })}
-
+                                            <Trash2 className="w-5 h-5" />
                                         </button>
                                     </div>
                                 </motion.div>
@@ -851,10 +822,7 @@ export default function AdminPage() {
                                 animate={{ opacity: 1, y: 0 }}
                                 className="flex items-start gap-3 bg-orange/10 border border-orange/30 rounded-xl p-4"
                             >
-                                {React.createElement(AlertCircle as any, {
-                                    className: "w-5 h-5 text-orange flex-shrink-0 mt-0.5",
-                                })}
-
+                                <AlertCircle className="w-5 h-5 text-orange flex-shrink-0 mt-0.5" />
                                 <div>
                                     <p className="font-semibold text-sm text-orange">
                                         Validation Error
@@ -870,11 +838,8 @@ export default function AdminPage() {
                                 animate={{ opacity: 1, y: 0 }}
                                 className="flex items-start gap-3 bg-acid/10 border border-acid/30 rounded-xl p-4"
                             >
-                                {React.createElement(CheckCircle2 as any, {
-                                    className: "w-5 h-5 text-acid flex-shrink-0 mt-0.5",
-                                })}
+                                <CheckCircle2 className="w-5 h-5 text-acid flex-shrink-0 mt-0.5" />
                                 <div>
-
                                     <p className="font-semibold text-sm text-acid">
                                         Ready to Publish
                                     </p>
