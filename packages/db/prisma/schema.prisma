@@ -13,12 +13,6 @@ enum Role {
   Admin
 }
 
-enum Type {
-  Easy
-  Medium
-  Hard
-}
-
 enum ContestCategory {
   MathLogic
   Writing
@@ -105,7 +99,7 @@ model Challenge {
   contextStatus ContextStatus @default(Pending)
 
   aiContext String?
-  type      Type?
+  type      Difficulty?
 
   contestToChallengeMapping ContestToChallengeMapping[]
 
