@@ -55,7 +55,7 @@ export default function LoginPage() {
                 }
             }
 
-            router.push("/contests");
+            router.push("/dashboard");
         } catch (err: any) {
             setError(err.message || "Invalid credentials");
         } finally {
