@@ -26,10 +26,14 @@ import {
 import { useAuth } from "@/context/AuthProvider";
 import { useToast } from "@/hooks/use-toast";
 
-const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3000";
+const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000";
 
 type Difficulty = "Beginner" | "Intermediate" | "Advanced" | "Elite";
-type ContestCategory = "MATH" | "WRITING" | "GENERAL_KNOWLEDGE" | "TECH";
+type ContestCategory =
+    | "MathLogic"
+    | "Writing"
+    | "GeneralKnowledge"
+    | "TechCoding";
 
 interface Challenge {
     id: string;
@@ -38,7 +42,7 @@ interface Challenge {
     question: string;
     hint: string;
     maxPoints: number;
-    duration: number; // in seconds
+    duration: number;
     type: Difficulty;
 }
 
@@ -69,7 +73,7 @@ export default function AdminPage() {
     const [form, setForm] = useState<ContestForm>({
         title: "",
         description: "",
-        category: "GENERAL_KNOWLEDGE",
+        category: "GeneralKnowledge",
         difficulty: "Intermediate",
         prize: 1000,
         maxParticipants: 1000,
@@ -274,7 +278,7 @@ export default function AdminPage() {
             setForm({
                 title: "",
                 description: "",
-                category: "GENERAL_KNOWLEDGE",
+                category: "GeneralKnowledge",
                 difficulty: "Intermediate",
                 prize: 1000,
                 maxParticipants: 1000,
@@ -480,10 +484,11 @@ export default function AdminPage() {
                                     }
                                     className="w-full bg-black/40 border border-white/[0.08] rounded-lg px-4 py-3 text-cream text-sm outline-none focus:border-acid/50 transition-all"
                                 >
-                                    <option value="MATH">Math & Logic</option>
-                                    <option value="WRITING">Writing</option>
-                                    <option value="GENERAL_KNOWLEDGE">General Knowledge</option>
-                                    <option value="TECH">Tech & Coding</option>
+                                    <option value="MathLogic">Math & Logic</option>
+                                    <option value="Writing">Writing</option>
+                                    <option value="GeneralKnowledge">General Knowledge</option>
+                                    <option value="TechCoding">Tech & Coding</option>
+
                                 </select>
                             </div>
 
