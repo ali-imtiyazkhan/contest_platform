@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { ToastProvider } from "@/hooks/use-toast";
+import { AuthProvider } from "@/context/AuthProvider";
+
 
 export const metadata: Metadata = {
   title: "ArenaX — Where Minds Compete",
@@ -14,7 +17,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <AuthProvider>
+        <ToastProvider> <body>{children}</body></ToastProvider></AuthProvider>
+
     </html>
   );
 }
