@@ -4,9 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-// ─────────────────────────────────────────────
-// Types matching your backend
-// ─────────────────────────────────────────────
+
 type ContestStatus = "live" | "upcoming" | "completed";
 type ContestCategory = "MATH" | "WRITING" | "GENERAL_KNOWLEDGE" | "TECH" | "All";
 

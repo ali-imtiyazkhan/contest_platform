@@ -5,7 +5,6 @@ import { client } from "db/client";
 import {
   ContestCategory,
   Difficulty,
-  Type,
 } from "../../../packages/db/generated/prisma";
 import { checkSubmissionRateLimit } from "../lib/redis";
 import { aiQueue, submissionQueue } from "../lib/queue";
@@ -76,7 +75,7 @@ router.post("/admin/challenge", adminMiddleware, async (req, res) => {
         hint,
         maxPoints: Number(maxPoints),
         duration: Number(duration || 0),
-        type: type as Type,
+        type: type as Difficulty,
         contextStatus: "Generating",
         aiContext: "",
       },
