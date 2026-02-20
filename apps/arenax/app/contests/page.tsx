@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-
 type ContestStatus = "live" | "upcoming" | "completed";
 
 interface Challenge {

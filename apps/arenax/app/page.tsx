@@ -1,29 +1,18 @@
-import Navbar from "@/components/Navbar";
-import Hero from "@/components/Hero";
-import HowItWorks from "@/components/HowItWorks";
-import ChallengeTypes from "@/components/ChallengeTypes";
-import DemoSection from "@/components/DemoSection";
-import Prizes from "@/components/Prizes";
-import CTASection from "@/components/CTASection";
-import Footer from "@/components/Footer";
-import CustomCursor from "@/components/CustomCursor";
-import ScrollReveal from "@/components/ScrollReveal";
+"use client"
 
-export default function Home() {
+import { useRouter } from 'next/navigation';
+
+const page = () => {
+
+  const router = useRouter();
+
+  const token = localStorage.getItem("token");
+  if (!token) {
+    router.push("/signin")
+  }
   return (
-    <>
-      <CustomCursor />
-      <ScrollReveal />
-      <Navbar />
-      <main>
-        <Hero />
-        <HowItWorks />
-        <ChallengeTypes />
-        <DemoSection />
-        <Prizes />
-        <CTASection />
-      </main>
-      <Footer />
-    </>
-  );
+    router.push("/dashboard")
+  )
 }
+
+export default page
