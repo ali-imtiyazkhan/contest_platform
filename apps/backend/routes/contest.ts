@@ -195,9 +195,12 @@ router.get("/finished", async (req, res) => {
   res.json({ ok: true, data, pagination: { offset, limit, total } });
 });
 
-router.get("/:contestId", async (req, res) => {
+router.get("/:contestId", userMiddleware, async (req: any, res) => {
+  const { contestId } = req.params;
+  const userId = req.userId;
+
   const contest = await client.contest.findUnique({
-    where: { id: req.params.contestId },
+    where: { id: contestId },
     include: {
       contestToChallengeMapping: {
         include: { challenge: true },
@@ -206,11 +209,56 @@ router.get("/:contestId", async (req, res) => {
     },
   });
 
-  if (!contest) return res.status(404).json({ ok: false });
+  if (!contest) {
+    return res.status(404).json({ ok: false });
+  }
 
-  res.json({ ok: true, data: contest });
+  // CHECK REGISTRATION
+  const membership = await client.contestParticipant.findUnique({
+    where: {
+      contestId_userId: {
+        contestId,
+        userId,
+      },
+    },
+  });
+
+  return res.json({
+    ok: true,
+    data: {
+      ...contest,
+      isRegistered: !!membership,
+    },
+  });
 });
 
+// check-registeration
+router.get(
+  "/:contestId/check-registration",
+  userMiddleware,
+  async (req: any, res) => {
+    try {
+      const { contestId } = req.params;
+      const userId = req.userId;
+
+      const participant = await client.contestParticipant.findUnique({
+        where: {
+          contestId_userId: {
+            contestId,
+            userId,
+          },
+        },
+      });
+
+      res.json({ ok: true, isRegistered: !!participant });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ ok: false, isRegistered: false });
+    }
+  },
+);
+
+// register for a contest
 router.post("/:contestId/register", userMiddleware, async (req: any, res) => {
   try {
     const { contestId } = req.params;
@@ -221,23 +269,33 @@ router.post("/:contestId/register", userMiddleware, async (req: any, res) => {
       where: { id: contestId },
     });
 
-    if (!contest) return res.status(404).json({ ok: false });
+    if (!contest)
+      return res.status(404).json({ ok: false, message: "Contest not found" });
 
-    if (now >= contest.startTime)
-      return res
-        .status(403)
-        .json({ ok: false, message: "Registration closed" });
+    if (now > contest.endTime) {
+      return res.status(403).json({ ok: false, message: "Contest has ended" });
+    }
 
     await client.contestParticipant.create({
       data: { contestId, userId },
     });
 
-    res.json({ ok: true, message: "Registered" });
+    return res.json({
+      ok: true,
+      alreadyRegistered: false,
+      message: "Registered successfully",
+    });
   } catch (error: any) {
-    if (error.code === "P2002")
-      return res.status(409).json({ ok: false, message: "Already registered" });
 
-    res.status(500).json({ ok: false });
+    if (error.code === "P2002") {
+      return res.json({
+        ok: true,
+        alreadyRegistered: true,
+        message: "Already registered",
+      });
+    }
+
+    return res.status(500).json({ ok: false });
   }
 });
 
