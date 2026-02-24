@@ -108,7 +108,7 @@ async function submitAnswer(
                 },
                 body: JSON.stringify({
                     submission,
-                    aiApiKey: process.env.NEXT_PUBLIC_ANTHROPIC_API_KEY || "", // Optional: for client-side scoring
+                    aiApiKey: process.env.NEXT_PUBLIC_ANTHROPIC_API_KEY || "",
                 }),
             }
         );

@@ -286,7 +286,6 @@ router.post("/:contestId/register", userMiddleware, async (req: any, res) => {
       message: "Registered successfully",
     });
   } catch (error: any) {
-
     if (error.code === "P2002") {
       return res.json({
         ok: true,
