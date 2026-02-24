@@ -114,11 +114,6 @@ async function submitAnswer(
     }
 }
 
-/**
- * Polls the backend for a judged submission result.
- * Maps backend ContestSubmission → ScoreResult.
- * Returns null if still pending / not found.
- */
 async function fetchSubmissionResult(
     contestId: string,
     challengeId: string
@@ -168,7 +163,7 @@ async function fetchSubmissionResult(
     }
 }
 
-// ─── Sub-components ───────────────────────────────────────────────────────────
+// Sub-components
 
 function ScoreBar({ score, max, color }: { score: number; max: number; color: string }) {
     return (
@@ -429,10 +424,9 @@ function ScoringResults({
     );
 }
 
-// ─── Main Page ────────────────────────────────────────────────────────────────
-
-const POLL_INTERVAL_MS = 2500; // poll every 2.5 s
-const POLL_TIMEOUT_MS = 120_000; // give up after 2 min
+// Main Page 
+const POLL_INTERVAL_MS = 2500;
+const POLL_TIMEOUT_MS = 120_000; 
 
 export default function ChallengePage() {
     const params = useParams();
