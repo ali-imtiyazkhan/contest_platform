@@ -411,6 +411,64 @@ router.post(
   },
 );
 
+router.get(
+  "/:contestId/challenge/:challengeId/result",
+  userMiddleware,
+  async (req: any, res) => {
+    try {
+      const { contestId, challengeId } = req.params;
+      const userId = req.userId;
+
+      const mapping = await client.contestToChallengeMapping.findFirst({
+        where: { contestId, challengeId },
+      });
+
+      if (!mapping) {
+        return res
+          .status(404)
+          .json({ ok: false, message: "Challenge not in contest" });
+      }
+
+      const submission = await client.contestSubmission.findUnique({
+        where: {
+          contestToChallengeMappingId_userId: {
+            contestToChallengeMappingId: mapping.id,
+            userId,
+          },
+        },
+        include: {
+          contestToChallengeMapping: {
+            include: {
+              challenge: true,
+            },
+          },
+        },
+      });
+
+      if (!submission) {
+        return res
+          .status(404)
+          .json({ ok: false, message: "No submission found" });
+      }
+
+      return res.json({
+        ok: true,
+        data: {
+          status: submission.status,
+          score: submission.points,
+          maxPoints: submission.contestToChallengeMapping.challenge.maxPoints,
+          aiVerdict: submission.aiVerdict,
+          aiReason: submission.aiReason,
+          submittedAt: submission.createdAt,
+        },
+      });
+    } catch (error) {
+      console.error("Error fetching submission result:", error);
+      res.status(500).json({ ok: false, message: "Internal server error" });
+    }
+  },
+);
+
 router.get("/:contestId/leaderboard", async (req, res) => {
   const entries = await client.leaderboard.findMany({
     where: { contestId: req.params.contestId },
