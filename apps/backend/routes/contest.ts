@@ -119,6 +119,7 @@ router.post(
     }
   },
 );
+// All contest
 
 router.get("/", async (_, res) => {
   const contests = await client.contest.findMany({
@@ -194,6 +195,7 @@ router.get("/finished", async (req, res) => {
 
   res.json({ ok: true, data, pagination: { offset, limit, total } });
 });
+// contest detail
 
 router.get("/:contestId", userMiddleware, async (req: any, res) => {
   const { contestId } = req.params;
@@ -342,12 +344,12 @@ router.post(
         });
       }
 
-      if (now > contest.endTime) {
-        return res.status(403).json({
-          ok: false,
-          message: "Contest has ended",
-        });
-      }
+      // if (now > contest.endTime) {
+      //   return res.status(403).json({
+      //     ok: false,
+      //     message: "Contest has ended",
+      //   });
+      // }
 
       const participant = await client.contestParticipant.findUnique({
         where: {

@@ -26,15 +26,14 @@ new Worker(
 
     console.log("Processing submission:", submissionId);
 
-    if (!aiApiKey) {
-      console.log("No API key provided");
-      return;
-    }
+    const userKey = aiApiKey;
+    const fallbackKey = process.env.GEMINI_API_KEY;
 
-    // Basic key validation
-    if (!aiApiKey.startsWith("AIza")) {
-      console.log("Invalid API key format");
-      return;
+    const finalKey =
+      userKey && userKey.startsWith("AIza") ? userKey : fallbackKey;
+
+    if (!finalKey) {
+      throw new Error("No Gemini API key available");
     }
 
     const submission = await client.contestSubmission.findUnique({

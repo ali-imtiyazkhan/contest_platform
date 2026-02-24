@@ -82,6 +82,8 @@ ${code}
     contents: prompt,
   });
 
+  console.log("res is : ", res);
+
   let text = res.text ?? "{}";
 
   let parsed: any = {};
@@ -94,5 +96,6 @@ ${code}
 
   parsed.marks = Math.max(0, Math.min(parsed.marks ?? 0, maxPoints));
 
+  console.log("parsred data is : ", parsed);
   return parsed;
 }

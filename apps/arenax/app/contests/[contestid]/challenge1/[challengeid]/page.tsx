@@ -96,6 +96,10 @@ async function submitAnswer(
     submission: string
 ): Promise<{ ok: boolean; message?: string }> {
     try {
+
+        const aiApiKey = "AIzaSyAClYCUomHdtsyqu7yREP0HSBCA6WDhEUE"
+        localStorage.setItem("aiApiKey", aiApiKey);
+
         const token = localStorage.getItem("token");
         const res = await fetch(
             `${API_BASE}/contest/${contestId}/challenge/${challengeId}/submit`,
@@ -105,7 +109,7 @@ async function submitAnswer(
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
                 },
-                body: JSON.stringify({ submission }),
+                body: JSON.stringify({ submission, aiApiKey }),
             }
         );
         return await res.json();
@@ -122,7 +126,7 @@ async function fetchSubmissionResult(
         const token = localStorage.getItem("token");
 
         const res = await fetch(
-            `${API_BASE}/contest/${contestId}/challenge/${challengeId}/result`,
+            `http://localhost:4000/api/v1/contest/${contestId}/challenge/${challengeId}/result`,
             {
                 headers: {
                     "Content-Type": "application/json",
@@ -139,18 +143,31 @@ async function fetchSubmissionResult(
 
         const s = json.data;
 
-        // Still judging → poll again
+        // ⏳ Still judging → keep polling
         if (s.status === "Pending" || s.status === "Judging") {
             return null;
+        }
+
+        // 🔥 VERY IMPORTANT: Map backend verdict → UI verdict
+        let mappedVerdict: "full" | "partial" | "zero" = "zero";
+
+        if (s.aiVerdict === "Correct") {
+            mappedVerdict = "full";
+        } else if (s.aiVerdict === "Partially Correct") {
+            mappedVerdict = "partial";
+        } else if (s.aiVerdict === "Wrong") {
+            mappedVerdict = "zero";
+        } else {
+            // fallback (if AI fails)
+            mappedVerdict =
+                s.score >= 85 ? "full" : s.score >= 20 ? "partial" : "zero";
         }
 
         return {
             score: s.score ?? 0,
             pointsAwarded: s.score ?? 0,
             maxPoints: s.maxPoints ?? 0,
-            verdict:
-                s.aiVerdict ??
-                (s.score >= 85 ? "full" : s.score >= 20 ? "partial" : "zero"),
+            verdict: mappedVerdict,
             summary: s.aiReason ?? "Judging complete.",
             breakdown: [],
             strengths: [],
@@ -162,7 +179,6 @@ async function fetchSubmissionResult(
         return null;
     }
 }
-
 // Sub-components
 
 function ScoreBar({ score, max, color }: { score: number; max: number; color: string }) {
@@ -426,7 +442,7 @@ function ScoringResults({
 
 // Main Page 
 const POLL_INTERVAL_MS = 2500;
-const POLL_TIMEOUT_MS = 120_000; 
+const POLL_TIMEOUT_MS = 120_000;
 
 export default function ChallengePage() {
     const params = useParams();
