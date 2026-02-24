@@ -35,10 +35,7 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api/v
 
 async function fetchContestDetails(contestId: string): Promise<Contest | null> {
   try {
-    console.log("Fetching contest:", contestId);
-
     const token = localStorage.getItem("token");
-
     const res = await fetch(`${API_BASE}/contest/${contestId}`, {
       method: "GET",
       headers: {
@@ -48,23 +45,14 @@ async function fetchContestDetails(contestId: string): Promise<Contest | null> {
       credentials: "include",
     });
     const json = await res.json();
-
-    console.log("API Response:", json);
-
-    if (!json.ok || !json.data) {
-      console.error("Invalid response structure");
-      return null;
-    }
+    if (!json.ok || !json.data) return null;
 
     const c = json.data;
     const now = new Date();
     const start = new Date(c.startTime);
     const end = new Date(c.endTime);
     const status: ContestStatus =
-      now >= start && now <= end ? "live"
-        : now < start ? "upcoming"
-          : "completed";
-
+      now >= start && now <= end ? "live" : now < start ? "upcoming" : "completed";
 
     const challenges = (c.contestToChallengeMapping || []).map((m: any) => ({
       id: m.challenge?.id || m.challengeId,
@@ -74,19 +62,14 @@ async function fetchContestDetails(contestId: string): Promise<Contest | null> {
       duration: m.challenge?.duration || 0,
     }));
 
-    console.log("Mapped challenges:", challenges);
-
-
     let participantCount = 0;
     try {
       const countRes = await fetch(`${API_BASE}/contest/${contestId}/participants/count`);
       const countJson = await countRes.json();
       participantCount = countJson.ok ? countJson.count : 0;
-    } catch (e) {
-      console.warn("Could not fetch participant count");
-    }
+    } catch (e) {}
 
-    const contestDetails: Contest = {
+    return {
       id: c.id,
       title: c.title || "Untitled Contest",
       category: c.category || "GENERAL_KNOWLEDGE",
@@ -102,12 +85,7 @@ async function fetchContestDetails(contestId: string): Promise<Contest | null> {
       description: c.description || "No description available",
       tags: Array.isArray(c.tags) ? c.tags : [],
     };
-
-    console.log("Returning contest details:", contestDetails);
-    return contestDetails;
-
   } catch (e) {
-    console.error("Error in fetchContestDetails:", e);
     return null;
   }
 }
@@ -116,18 +94,14 @@ async function fetchContests(): Promise<Contest[]> {
   try {
     const res = await fetch(`${API_BASE}/contest/`);
     const json = await res.json();
-
     if (!json.ok || !json.data) return [];
 
     const now = new Date();
-    const contests: Contest[] = json.data.map((c: any) => {
+    return json.data.map((c: any) => {
       const start = new Date(c.startTime);
       const end = new Date(c.endTime);
       const status: ContestStatus =
-        now >= start && now <= end ? "live"
-          : now < start ? "upcoming"
-            : "completed";
-
+        now >= start && now <= end ? "live" : now < start ? "upcoming" : "completed";
       return {
         id: c.id,
         title: c.title || "Untitled Contest",
@@ -145,10 +119,7 @@ async function fetchContests(): Promise<Contest[]> {
         tags: Array.isArray(c.tags) ? c.tags : [],
       };
     });
-
-    return contests;
   } catch (e) {
-    console.error("Error fetching contests:", e);
     return [];
   }
 }
@@ -163,8 +134,7 @@ async function registerForContest(contestId: string): Promise<{ ok: boolean; mes
         Authorization: `Bearer ${token}`,
       },
     });
-    const json = await res.json();
-    return json;
+    return await res.json();
   } catch (e) {
     return { ok: false, message: "Network error" };
   }
@@ -177,14 +147,94 @@ function useCountdown(targetIso: string) {
     const id = setInterval(() => setSecs(calc()), 1000);
     return () => clearInterval(id);
   }, [targetIso]);
-  const h = Math.floor(secs / 3600);
+  const days = Math.floor(secs / 86400);
+  const h = Math.floor((secs % 86400) / 3600);
   const m = Math.floor((secs % 3600) / 60);
   const s = secs % 60;
-  return { h, m, s, done: secs === 0 };
+  return { days, h, m, s, done: secs === 0 };
 }
 
 function pad(n: number) {
   return String(n).padStart(2, "0");
+}
+
+/** Compact inline countdown for the list row */
+function InlineCountdown({ startTime }: { startTime: string }) {
+  const { days, h, m, s, done } = useCountdown(startTime);
+  if (done) return <span className="font-mono text-[0.62rem] text-acid">Starting...</span>;
+  if (days > 0)
+    return (
+      <span className="font-mono text-[0.62rem] text-orange-400">
+        {days}d {pad(h)}h left
+      </span>
+    );
+  return (
+    <span className="font-mono text-[0.62rem] text-orange-400 tabular-nums">
+      {pad(h)}:{pad(m)}:{pad(s)} left
+    </span>
+  );
+}
+
+/** Large countdown banner shown in the detail panel */
+function CountdownBanner({ startTime }: { startTime: string }) {
+  const { days, h, m, s, done } = useCountdown(startTime);
+
+  if (done) {
+    return (
+      <div className="mx-6 my-4 rounded border border-acid/30 bg-acid/10 px-4 py-3 text-center">
+        <span className="font-mono text-[0.7rem] tracking-[2px] uppercase text-acid">
+          Starting now…
+        </span>
+      </div>
+    );
+  }
+
+  const units =
+    days > 0
+      ? [
+          { label: "Days", value: pad(days) },
+          { label: "Hours", value: pad(h) },
+          { label: "Mins", value: pad(m) },
+          { label: "Secs", value: pad(s) },
+        ]
+      : [
+          { label: "Hours", value: pad(h) },
+          { label: "Mins", value: pad(m) },
+          { label: "Secs", value: pad(s) },
+        ];
+
+  return (
+    <div className="mx-6 my-4 rounded border border-orange-500/25 bg-orange-500/[0.06] px-4 py-4">
+      <p className="font-mono text-[0.6rem] tracking-[2.5px] uppercase text-orange-400 mb-3 text-center">
+        ◷ Contest Starts In
+      </p>
+      <div className="flex items-center justify-center gap-3">
+        {units.map(({ label, value }, i) => (
+          <div key={label} className="flex items-center gap-3">
+            <div className="text-center">
+              <div
+                className="text-orange-300 font-extrabold tabular-nums leading-none"
+                style={{ fontFamily: "'Bebas Neue', cursive", fontSize: "2rem" }}
+              >
+                {value}
+              </div>
+              <div className="font-mono text-[0.55rem] tracking-[1.5px] uppercase text-muted mt-0.5">
+                {label}
+              </div>
+            </div>
+            {i < units.length - 1 && (
+              <span
+                className="text-orange-500/50 font-bold pb-3"
+                style={{ fontFamily: "'Bebas Neue', cursive", fontSize: "1.5rem" }}
+              >
+                :
+              </span>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 function StatusBadge({ status }: { status: ContestStatus }) {
@@ -234,6 +284,9 @@ function ContestDetailPanel({ contest, onRegister }: { contest: Contest; onRegis
         )}
       </div>
 
+      {/* ── Countdown Banner (upcoming only) ── */}
+      {contest.status === "upcoming" && <CountdownBanner startTime={contest.startTime} />}
+
       {/* Stats Grid */}
       <div className="grid grid-cols-3 gap-px bg-white/[0.04] border-b border-white/[0.06]">
         {[
@@ -269,10 +322,7 @@ function ContestDetailPanel({ contest, onRegister }: { contest: Contest; onRegis
         ) : (
           <div className="space-y-2">
             {contest.challenges.map((ch, i) => (
-              <div
-                key={ch.id}
-                className="flex items-center gap-3 p-3 rounded border border-white/[0.04] bg-white/[0.02]"
-              >
+              <div key={ch.id} className="flex items-center gap-3 p-3 rounded border border-white/[0.04] bg-white/[0.02]">
                 <div className="w-6 h-6 rounded-full flex items-center justify-center text-[0.65rem] font-bold flex-shrink-0 bg-white/[0.06] text-muted">
                   {i + 1}
                 </div>
@@ -321,12 +371,9 @@ function RegisterModal({ contest, onClose }: { contest: Contest; onClose: () => 
   const handleSubmit = async () => {
     setLoading(true);
     setError("");
-
     const result = await registerForContest(contest.id);
-
     setLoading(false);
     if (result.ok) {
-
       if (contest.status === "live" && contest.challenges.length > 0) {
         router.push(`/contests/${contest.id}/challenge1/${contest.challenges[0].id}`);
       } else {
@@ -347,7 +394,14 @@ function RegisterModal({ contest, onClose }: { contest: Contest; onClose: () => 
         <h3 className="text-cream font-extrabold text-xl mb-4">
           {contest.status === "live" ? "Join Contest" : "Register"}
         </h3>
-        <p className="text-muted text-sm mb-6">{contest.title}</p>
+        <p className="text-muted text-sm mb-2">{contest.title}</p>
+
+        {/* Show countdown in modal too for upcoming */}
+        {contest.status === "upcoming" && (
+          <div className="mb-4">
+            <CountdownBanner startTime={contest.startTime} />
+          </div>
+        )}
 
         {error && (
           <div className="mb-4 bg-red-500/10 border border-red-500/30 rounded px-4 py-3 text-red-400 text-sm">
@@ -371,8 +425,9 @@ function ContestRow({ contest, selected, onClick }: { contest: Contest; selected
   return (
     <button
       onClick={onClick}
-      className={`w-full text-left px-5 py-4 border-b border-white/[0.05] transition-all duration-200 ${selected ? "bg-acid/[0.07] border-l-2 border-l-acid" : "hover:bg-white/[0.03] border-l-2 border-l-transparent"
-        }`}
+      className={`w-full text-left px-5 py-4 border-b border-white/[0.05] transition-all duration-200 ${
+        selected ? "bg-acid/[0.07] border-l-2 border-l-acid" : "hover:bg-white/[0.03] border-l-2 border-l-transparent"
+      }`}
     >
       <div className="flex items-start justify-between gap-2 mb-2">
         <div className="flex-1 min-w-0">
@@ -384,7 +439,16 @@ function ContestRow({ contest, selected, onClick }: { contest: Contest; selected
         <StatusBadge status={contest.status} />
       </div>
       <div className="flex items-center justify-between mt-2">
-        <span className="font-mono text-[0.65rem] text-muted">{contest.difficulty}</span>
+        <div className="flex items-center gap-2">
+          <span className="font-mono text-[0.65rem] text-muted">{contest.difficulty}</span>
+          {/* ── Inline countdown for upcoming contests in the row ── */}
+          {contest.status === "upcoming" && (
+            <>
+              <span className="text-white/20 text-[0.6rem]">·</span>
+              <InlineCountdown startTime={contest.startTime} />
+            </>
+          )}
+        </div>
         <span className="font-mono text-[0.72rem] text-acid font-bold">${contest.prize.toLocaleString()}</span>
       </div>
     </button>
@@ -410,23 +474,17 @@ export default function ContestsPage() {
 
   useEffect(() => {
     fetchContests().then((data) => {
-      console.log("Fetched contests:", data);
       setContests(data);
       setLoading(false);
-      if (data.length > 0) {
-        setSelectedId(data[0].id);
-      }
+      if (data.length > 0) setSelectedId(data[0].id);
     });
   }, []);
 
   useEffect(() => {
     if (selectedId) {
-      console.log("Selected contest ID changed:", selectedId);
       setDetailsLoading(true);
       setSelectedContest(null);
-
       fetchContestDetails(selectedId).then((details) => {
-        console.log("Fetched details:", details);
         setSelectedContest(details);
         setDetailsLoading(false);
       });
@@ -492,10 +550,11 @@ export default function ContestsPage() {
                 <button
                   key={t.value}
                   onClick={() => setStatusFilter(t.value)}
-                  className={`font-mono text-[0.62rem] tracking-[1.5px] uppercase px-2.5 py-1 rounded-sm border transition-all duration-150 ${statusFilter === t.value
-                    ? "bg-acid text-black border-acid"
-                    : "text-muted border-white/[0.08] hover:border-white/20 hover:text-cream"
-                    }`}
+                  className={`font-mono text-[0.62rem] tracking-[1.5px] uppercase px-2.5 py-1 rounded-sm border transition-all duration-150 ${
+                    statusFilter === t.value
+                      ? "bg-acid text-black border-acid"
+                      : "text-muted border-white/[0.08] hover:border-white/20 hover:text-cream"
+                  }`}
                 >
                   {t.label}
                 </button>
