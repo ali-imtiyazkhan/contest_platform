@@ -3,6 +3,8 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
+import { env } from "process";
+import next from "next";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api/v1";
 
@@ -97,8 +99,10 @@ async function submitAnswer(
 ): Promise<{ ok: boolean; message?: string }> {
     try {
 
-        const aiApiKey = "AIzaSyAClYCUomHdtsyqu7yREP0HSBCA6WDhEUE"
+        const aiApiKey = process.env.NEXT_PUBLIC_ANTHROPIC_API_KEY || ""
         localStorage.setItem("aiApiKey", aiApiKey);
+
+        const aiApiKey1 = localStorage.getItem("aiApiKey");
 
         const token = localStorage.getItem("token");
         const res = await fetch(
@@ -109,7 +113,7 @@ async function submitAnswer(
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
                 },
-                body: JSON.stringify({ submission, aiApiKey }),
+                body: JSON.stringify({ submission, aiApiKey1 }),
             }
         );
         return await res.json();
