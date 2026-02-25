@@ -522,7 +522,7 @@ router.get("/:contestId/leaderboard", async (req, res) => {
 
       // Most recent activity (updatedAt from newest submission)
       const userSubTimestamps = allSubs
-        .filter((s) => s.userId === entry.userId)
+        .filter((s) => s.userId === entry.userId && s.updatedAt != null)
         .map((s) => s.updatedAt!.getTime());
       const lastActivityAt =
         userSubTimestamps.length > 0
