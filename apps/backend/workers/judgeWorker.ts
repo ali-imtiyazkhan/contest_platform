@@ -53,14 +53,14 @@ new Worker(
       return;
     }
 
-    // Set status to Judging
+    //Set status to Judging
     await client.contestSubmission.update({
       where: { id: submissionId },
       data: { status: "Judging" },
     });
 
     try {
-      // Create dynamic AI instance (BYOK)
+      //Create dynamic AI instance (BYOK)
       const userKey = aiApiKey;
       const fallbackKey = process.env.GEMINI_API_KEY;
 
@@ -86,7 +86,7 @@ new Worker(
       const finalPoints = result.marks;
       const finalStatus = finalPoints > 0 ? "Accepted" : "Rejected";
 
-      // Update submission
+      //Update submission
       await client.contestSubmission.update({
         where: { id: submissionId },
         data: {
@@ -97,7 +97,7 @@ new Worker(
         },
       });
 
-      // Calculate total score
+      //Calculate total score
       const total = await client.contestSubmission.aggregate({
         where: {
           userId: submission.userId,

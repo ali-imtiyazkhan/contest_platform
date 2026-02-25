@@ -8,8 +8,7 @@ import next from "next";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api/v1";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
+//Types
 interface Challenge {
     id: string;
     title: string;
@@ -55,7 +54,7 @@ interface SubmissionState {
     error: string | null;
 }
 
-// ─── API helpers ──────────────────────────────────────────────────────────────
+//API helpers
 
 async function fetchContestWithChallenges(contestId: string): Promise<Contest | null> {
     try {
@@ -152,7 +151,7 @@ async function fetchSubmissionResult(
             return null;
         }
 
-        // 🔥 VERY IMPORTANT: Map backend verdict → UI verdict
+        // VERY IMPORTANT: Map backend verdict → UI verdict
         let mappedVerdict: "full" | "partial" | "zero" = "zero";
 
         if (s.aiVerdict === "Correct") {
@@ -183,8 +182,8 @@ async function fetchSubmissionResult(
         return null;
     }
 }
-// Sub-components
 
+// Sub-components
 function ScoreBar({ score, max, color }: { score: number; max: number; color: string }) {
     return (
         <div className="flex items-center gap-3">
