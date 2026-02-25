@@ -13,7 +13,6 @@ import { aiQueue, submissionQueue } from "../lib/queue";
 const router = Router();
 
 //Helpers
-
 function parsePagination(req: Request) {
   const offset = Math.max(0, Number(req.query.offset) || 0);
   const limit = Math.min(50, Math.max(1, Number(req.query.limit) || 10));
@@ -33,7 +32,6 @@ function toVerdict(
 }
 
 // Admin
-
 router.post("/admin/contest", adminMiddleware, async (req, res) => {
   try {
     const {
@@ -72,6 +70,7 @@ router.post("/admin/contest", adminMiddleware, async (req, res) => {
   }
 });
 
+// create challenge
 router.post("/admin/challenge", adminMiddleware, async (req, res) => {
   try {
     const { title, description, question, hint, maxPoints, duration, type } =
@@ -121,7 +120,6 @@ router.post(
     }
   },
 );
-
 
 // Contest lists
 router.get("/", async (_, res) => {
@@ -184,7 +182,6 @@ router.get("/finished", async (req, res) => {
 });
 
 // Contest detail
-
 router.get("/:contestId", userMiddleware, async (req: any, res) => {
   const { contestId } = req.params;
   const userId = req.userId;
@@ -225,6 +222,7 @@ router.get(
   },
 );
 
+// register to contest
 router.post("/:contestId/register", userMiddleware, async (req: any, res) => {
   try {
     const { contestId } = req.params;
@@ -254,7 +252,7 @@ router.post("/:contestId/register", userMiddleware, async (req: any, res) => {
   }
 });
 
-//  Submit 
+// Submit
 router.post(
   "/:contestId/challenge/:challengeId/submit",
   userMiddleware,
@@ -338,7 +336,7 @@ router.post(
   },
 );
 
-// Result 
+//Result
 router.get(
   "/:contestId/challenge/:challengeId/result",
   userMiddleware,
@@ -394,7 +392,7 @@ router.get(
   },
 );
 
-
+// leaderboard of a contest
 router.get("/:contestId/leaderboard", async (req, res) => {
   try {
     const { contestId } = req.params;
@@ -471,7 +469,7 @@ router.get("/:contestId/leaderboard", async (req, res) => {
 
     const userIds = entries.map((e) => e.userId);
 
-    // All submission
+    //All submission
     const allSubs = await client.contestSubmission.findMany({
       where: {
         userId: { in: userIds },
@@ -490,14 +488,13 @@ router.get("/:contestId/leaderboard", async (req, res) => {
       },
     });
 
-
     type Sub = (typeof allSubs)[number];
     const subIndex = new Map<string, Sub>();
     for (const s of allSubs) {
       subIndex.set(`${s.userId}:${s.contestToChallengeMapping.challengeId}`, s);
     }
 
-    // Enrich each row
+    //Enrich each row
     const leaderboard = entries.map((entry, i) => {
       const challengeScores = challenges.map((ch) => {
         const sub = subIndex.get(`${entry.userId}:${ch.id}`);

@@ -4,8 +4,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 
-// ─── Types — mirror the backend response exactly ──────────────────────────────
-
+//Types — mirror the backend response exactly
 interface Contest {
   id: string;
   title: string;
@@ -19,7 +18,6 @@ interface Contest {
   tags: string[];
 }
 
-// "full"|"partial"|"zero"|"judging"|"unattempted" — exactly what toVerdict() returns
 type Verdict = "full" | "partial" | "zero" | "judging" | "unattempted";
 
 interface ChallengeScore {
@@ -37,10 +35,10 @@ interface LeaderboardRow {
   rank: number;
   userId: string;
   email: string;
-  displayName: string | null;    // User.displayName from schema
-  country: string | null;         // User.country from schema
-  avatarColor: string;            // User.avatarColor from schema
-  rating: number;                 // User.rating from schema
+  displayName: string | null;
+  country: string | null;
+  avatarColor: string;
+  rating: number;
   totalScore: number;
   maxPossible: number;
   scorePct: number;
@@ -91,8 +89,8 @@ interface ToastItem {
   points: number;
 }
 
-// Constants
 
+// Constants
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/v1/api";
 const POLL_INTERVAL_MS = 8000;
 
@@ -120,8 +118,7 @@ const DIFFICULTY_COLOR: Record<string, string> = {
   Elite: "#a855f7",
 };
 
-// ─── API helpers ──────────────────────────────────────────────────────────────
-
+// API helpers
 async function apiFetchContests(): Promise<Contest[]> {
 
   const token = localStorage.getItem("token")
@@ -170,7 +167,7 @@ function relativeTime(iso: string): string {
   return `${Math.floor(m / 60)}h ago`;
 }
 
-// ─── Sub-components ───────────────────────────────────────────────────────────
+//Sub-components
 
 function RankBadge({ rank }: { rank: number }) {
   if (rank === 1) return <span className="text-lg select-none">🥇</span>;
@@ -378,8 +375,9 @@ function ScoreDistribution({ rows, maxPossible }: { rows: LeaderboardRow[]; maxP
   );
 }
 
-// ─── Live solve toast ─────────────────────────────────────────────────────────
 
+
+//Live solve toast 
 function SolveToast({ item, onExpire }: { item: ToastItem; onExpire: () => void }) {
   useEffect(() => {
     const t = setTimeout(onExpire, 5000);
@@ -414,7 +412,8 @@ function SolveToast({ item, onExpire }: { item: ToastItem; onExpire: () => void 
   );
 }
 
-// ─── Contest selector ─────────────────────────────────────────────────────────
+
+//Contest selector 
 
 function ContestPill({
   contest,
@@ -444,8 +443,8 @@ function ContestPill({
   );
 }
 
-// ─── Main page ────────────────────────────────────────────────────────────────
 
+//Main page
 export default function LeaderboardPage() {
   const searchParams = useSearchParams();
 
