@@ -12,7 +12,7 @@ import { aiQueue, submissionQueue } from "../lib/queue";
 
 const router = Router();
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+//Helpers
 
 function parsePagination(req: Request) {
   const offset = Math.max(0, Number(req.query.offset) || 0);
@@ -122,8 +122,8 @@ router.post(
   },
 );
 
-//  Contest lists
 
+// Contest lists
 router.get("/", async (_, res) => {
   const contests = await client.contest.findMany({
     orderBy: { startTime: "desc" },
@@ -254,8 +254,7 @@ router.post("/:contestId/register", userMiddleware, async (req: any, res) => {
   }
 });
 
-// ─── Submit ───────────────────────────────────────────────────────────────────
-
+//  Submit 
 router.post(
   "/:contestId/challenge/:challengeId/submit",
   userMiddleware,
@@ -395,29 +394,13 @@ router.get(
   },
 );
 
-// ─── ADVANCED LEADERBOARD ─────────────────────────────────────────────────────
-//
-// GET /:contestId/leaderboard?limit=50
-//
-// All fields are sourced from real schema models.
-// New schema fields used: User.displayName, User.country, User.avatarColor,
-//                         ContestSubmission.updatedAt, Leaderboard.lastUpdated
-//
-// Response shape:
-// {
-//   ok: true,
-//   challenges: ChallengeInfo[],
-//   leaderboard: LeaderboardRow[],
-//   recentSolves: RecentSolve[],
-//   stats: Stats,
-// }
 
 router.get("/:contestId/leaderboard", async (req, res) => {
   try {
     const { contestId } = req.params;
     const limit = Math.min(200, Math.max(1, Number(req.query.limit) || 50));
 
-    // 1. Challenges in this contest
+    // Challenges in this contest
     const mappings = await client.contestToChallengeMapping.findMany({
       where: { contestId },
       include: { challenge: true },
@@ -442,7 +425,7 @@ router.get("/:contestId/leaderboard", async (req, res) => {
 
     const challenges = mappings.map((m) => ({
       id: m.challenge.id,
-      _mappingId: m.id, // internal only — stripped from response
+      _mappingId: m.id,
       title: m.challenge.title,
       maxPoints: m.challenge.maxPoints,
       index: m.index,
@@ -451,7 +434,7 @@ router.get("/:contestId/leaderboard", async (req, res) => {
     const maxPossible = challenges.reduce((s, c) => s + c.maxPoints, 0);
     const mappingIds = mappings.map((m) => m.id);
 
-    // 2. Top N leaderboard entries, score desc
+    // Top N leaderboard entries, score desc
     const entries = await client.leaderboard.findMany({
       where: { contestId },
       orderBy: { score: "desc" },
@@ -488,7 +471,7 @@ router.get("/:contestId/leaderboard", async (req, res) => {
 
     const userIds = entries.map((e) => e.userId);
 
-    // 3. All submissions for these users × these challenges — single query
+    // All submission
     const allSubs = await client.contestSubmission.findMany({
       where: {
         userId: { in: userIds },
@@ -507,14 +490,14 @@ router.get("/:contestId/leaderboard", async (req, res) => {
       },
     });
 
-    // 4. Index for O(1) lookup
+
     type Sub = (typeof allSubs)[number];
     const subIndex = new Map<string, Sub>();
     for (const s of allSubs) {
       subIndex.set(`${s.userId}:${s.contestToChallengeMapping.challengeId}`, s);
     }
 
-    // 5. Enrich each row
+    // Enrich each row
     const leaderboard = entries.map((entry, i) => {
       const challengeScores = challenges.map((ch) => {
         const sub = subIndex.get(`${entry.userId}:${ch.id}`);
@@ -569,7 +552,7 @@ router.get("/:contestId/leaderboard", async (req, res) => {
       };
     });
 
-    // 6. Recent solves in the last 60 s → live toast notifications
+    // Recent solves in the last 60 s → live toast notifications
     const oneMinuteAgo = new Date(Date.now() - 60_000);
     const recentSolveRecords = await client.contestSubmission.findMany({
       where: {
@@ -602,7 +585,7 @@ router.get("/:contestId/leaderboard", async (req, res) => {
       solvedAt: r.updatedAt!.toISOString(),
     }));
 
-    // 7. Stats
+    //Stats
     const totalParticipants = await client.leaderboard.count({
       where: { contestId },
     });
