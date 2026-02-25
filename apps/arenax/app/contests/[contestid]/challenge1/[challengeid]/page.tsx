@@ -3,8 +3,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { env } from "process";
-import next from "next";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api/v1";
 
@@ -97,12 +95,7 @@ async function submitAnswer(
     submission: string
 ): Promise<{ ok: boolean; message?: string }> {
     try {
-
-        const aiApiKey = process.env.NEXT_PUBLIC_ANTHROPIC_API_KEY || ""
-        localStorage.setItem("aiApiKey", aiApiKey);
-
-        const aiApiKey1 = localStorage.getItem("aiApiKey");
-
+        const aiApiKey = localStorage.getItem("aiApiKey") || "";
         const token = localStorage.getItem("token");
         const res = await fetch(
             `${API_BASE}/contest/${contestId}/challenge/${challengeId}/submit`,
@@ -112,7 +105,7 @@ async function submitAnswer(
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
                 },
-                body: JSON.stringify({ submission, aiApiKey1 }),
+                body: JSON.stringify({ submission, aiApiKey }),
             }
         );
         return await res.json();
@@ -463,6 +456,34 @@ export default function ChallengePage() {
         error: null,
     });
 
+    // Theme toggle
+    const [theme, setTheme] = useState<"dark" | "light">("dark");
+    useEffect(() => {
+        const saved = localStorage.getItem("theme") as "dark" | "light" | null;
+        if (saved) {
+            setTheme(saved);
+            document.documentElement.setAttribute("data-theme", saved);
+        }
+    }, []);
+    const toggleTheme = () => {
+        const next = theme === "dark" ? "light" : "dark";
+        setTheme(next);
+        localStorage.setItem("theme", next);
+        document.documentElement.setAttribute("data-theme", next);
+    };
+
+    // API key
+    const [apiKey, setApiKey] = useState("");
+    const [showApiInput, setShowApiInput] = useState(false);
+    useEffect(() => {
+        const saved = localStorage.getItem("aiApiKey");
+        if (saved) setApiKey(saved);
+    }, []);
+    const handleApiKeyChange = (val: string) => {
+        setApiKey(val);
+        localStorage.setItem("aiApiKey", val);
+    };
+
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const pollStartRef = useRef<number>(0);
@@ -548,7 +569,7 @@ export default function ChallengePage() {
         if (next) {
             router.push(`/contests/${contest.id}/challenges/${next.id}`);
         } else {
-            router.push(`/leaderboard?contestId=${contestId}`);
+            router.push(`/contests/${contestId}/leaderboard`);
         }
     };
 
@@ -584,19 +605,19 @@ export default function ChallengePage() {
 
     return (
         <div
-            className="h-screen flex flex-col bg-[#0a0a0a] text-cream overflow-hidden"
-            style={{ fontFamily: "'Syne', sans-serif" }}
+            className="h-screen flex flex-col overflow-hidden"
+            style={{ fontFamily: "'Syne', sans-serif", background: "var(--bg-primary)", color: "var(--text-primary)" }}
         >
             {/* ── Top bar ── */}
-            <header className="h-12 flex items-center justify-between px-5 border-b border-white/[0.07] bg-black/80 backdrop-blur-sm flex-shrink-0">
-                <div className="flex items-center gap-2 font-mono text-[0.7rem] text-muted min-w-0">
-                    <Link href="/contests" className="hover:text-cream transition-colors no-underline flex-shrink-0">
+            <header className="h-12 flex items-center justify-between px-5 flex-shrink-0" style={{ borderBottom: "1px solid var(--border-primary)", background: "var(--header-bg)", backdropFilter: "blur(8px)" }}>
+                <div className="flex items-center gap-2 font-mono text-[0.7rem] min-w-0" style={{ color: "var(--text-muted)" }}>
+                    <Link href="/contests" className="hover:opacity-80 transition-colors no-underline flex-shrink-0" style={{ color: "var(--text-muted)" }}>
                         Contests
                     </Link>
-                    <span className="text-white/20">/</span>
-                    <span className="text-cream/60 truncate hidden sm:block">{contest.title}</span>
-                    <span className="text-white/20 hidden sm:block">/</span>
-                    <span className="text-acid truncate">{challenge.title}</span>
+                    <span style={{ color: "var(--text-dimmer)" }}>/</span>
+                    <span className="truncate hidden sm:block" style={{ color: "var(--text-secondary)" }}>{contest.title}</span>
+                    <span className="hidden sm:block" style={{ color: "var(--text-dimmer)" }}>/</span>
+                    <span className="truncate" style={{ color: "var(--accent)" }}>{challenge.title}</span>
                 </div>
 
                 {/* Progress dots */}
@@ -604,30 +625,82 @@ export default function ChallengePage() {
                     {contest.challenges.map((_, i) => (
                         <div
                             key={i}
-                            className={`rounded-full transition-all duration-300 ${i < challengeIndex
-                                ? "w-2 h-2 bg-acid/60"
-                                : i === challengeIndex
-                                    ? "w-2.5 h-2.5 bg-acid"
-                                    : "w-2 h-2 bg-white/[0.1]"
-                                }`}
+                            className="rounded-full transition-all duration-300"
+                            style={{
+                                width: i === challengeIndex ? 10 : 8,
+                                height: i === challengeIndex ? 10 : 8,
+                                background: i < challengeIndex ? "var(--accent)" : i === challengeIndex ? "var(--accent)" : "var(--border-primary)",
+                                opacity: i < challengeIndex ? 0.6 : 1,
+                            }}
                         />
                     ))}
                 </div>
 
-                <div className="flex items-center gap-3 flex-shrink-0">
-                    <span className="font-mono text-[0.68rem] text-muted">
-                        <span className="text-cream font-bold">{challengeIndex + 1}</span>
-                        <span className="text-white/20"> / </span>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                    {/* Theme toggle */}
+                    <button
+                        onClick={toggleTheme}
+                        className="w-8 h-8 rounded-lg flex items-center justify-center text-sm transition-all hover:opacity-80"
+                        style={{ background: "var(--bg-card)", border: "1px solid var(--border-secondary)" }}
+                        title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+                    >
+                        {theme === "dark" ? "☀" : "🌙"}
+                    </button>
+
+                    {/* API key toggle */}
+                    <button
+                        onClick={() => setShowApiInput(!showApiInput)}
+                        className="font-mono text-[0.6rem] px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5"
+                        style={{
+                            background: apiKey ? "var(--accent-bg)" : "var(--bg-card)",
+                            border: `1px solid ${apiKey ? "var(--accent-border)" : "var(--border-secondary)"}`,
+                            color: apiKey ? "var(--accent)" : "var(--text-muted)",
+                        }}
+                        title="Set Gemini API key"
+                    >
+                        🔑 {apiKey ? "Key Set" : "API Key"}
+                    </button>
+
+                    <span className="font-mono text-[0.68rem]" style={{ color: "var(--text-muted)" }}>
+                        <span className="font-bold" style={{ color: "var(--text-primary)" }}>{challengeIndex + 1}</span>
+                        <span style={{ color: "var(--text-dimmer)" }}> / </span>
                         {contest.challenges.length}
                     </span>
                     <Link
-                        href={`/leaderboard?contestId=${contestId}`}
-                        className="font-mono text-[0.62rem] text-muted border border-white/[0.08] px-2.5 py-1 rounded hover:border-acid/40 hover:text-acid transition-colors no-underline hidden sm:flex items-center gap-1.5"
+                        href={`/contests/${contestId}/leaderboard`}
+                        className="font-mono text-[0.62rem] px-2.5 py-1 rounded transition-colors no-underline hidden sm:flex items-center gap-1.5"
+                        style={{ color: "var(--text-muted)", border: "1px solid var(--border-secondary)" }}
                     >
                         🏆 Leaderboard
                     </Link>
                 </div>
             </header>
+
+            {/* ── API Key Input Panel ── */}
+            {showApiInput && (
+                <div className="px-5 py-3 flex items-center gap-3" style={{ background: "var(--bg-tertiary)", borderBottom: "1px solid var(--border-primary)" }}>
+                    <span className="font-mono text-[0.62rem] tracking-[1.5px] uppercase flex-shrink-0" style={{ color: "var(--text-muted)" }}>🔑 Gemini API Key</span>
+                    <input
+                        type="password"
+                        value={apiKey}
+                        onChange={(e) => handleApiKeyChange(e.target.value)}
+                        placeholder="Paste your Gemini API key (AIza...)"
+                        className="flex-1 h-8 rounded-lg px-3 text-[0.78rem] font-mono outline-none transition-all"
+                        style={{
+                            background: "var(--input-bg)",
+                            border: "1px solid var(--border-secondary)",
+                            color: "var(--text-primary)",
+                        }}
+                    />
+                    <button
+                        onClick={() => setShowApiInput(false)}
+                        className="font-mono text-[0.62rem] px-3 py-1.5 rounded-lg transition-all"
+                        style={{ background: "var(--accent)", color: "var(--accent-text-on)", fontWeight: 700 }}
+                    >
+                        Save
+                    </button>
+                </div>
+            )}
 
             {/* ── Split screen ── */}
             <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 overflow-hidden">
