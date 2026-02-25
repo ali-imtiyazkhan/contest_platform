@@ -5,17 +5,34 @@ import { client } from "db/client";
 import {
   ContestCategory,
   Difficulty,
+  SubmissionStatus,
 } from "../../../packages/db/generated/prisma";
 import { checkSubmissionRateLimit } from "../lib/redis";
 import { aiQueue, submissionQueue } from "../lib/queue";
 
 const router = Router();
 
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
 function parsePagination(req: Request) {
   const offset = Math.max(0, Number(req.query.offset) || 0);
   const limit = Math.min(50, Math.max(1, Number(req.query.limit) || 10));
   return { offset, limit };
 }
+
+function toVerdict(
+  status: SubmissionStatus | null | undefined,
+  points: number,
+  maxPoints: number,
+): "full" | "partial" | "zero" | "judging" | "unattempted" {
+  if (!status) return "unattempted";
+  if (status === "Pending" || status === "Judging") return "judging";
+  if (points >= maxPoints) return "full";
+  if (points > 0) return "partial";
+  return "zero";
+}
+
+// Admin
 
 router.post("/admin/contest", adminMiddleware, async (req, res) => {
   try {
@@ -31,10 +48,8 @@ router.post("/admin/contest", adminMiddleware, async (req, res) => {
       host,
       tags,
     } = req.body;
-
-    if (!title || !startTime || !endTime) {
+    if (!title || !startTime || !endTime)
       return res.status(400).json({ ok: false, message: "Missing fields" });
-    }
 
     const contest = await client.contest.create({
       data: {
@@ -50,7 +65,6 @@ router.post("/admin/contest", adminMiddleware, async (req, res) => {
         tags: tags || [],
       },
     });
-
     res.status(201).json({ ok: true, contest });
   } catch (e) {
     console.error(e);
@@ -62,10 +76,8 @@ router.post("/admin/challenge", adminMiddleware, async (req, res) => {
   try {
     const { title, description, question, hint, maxPoints, duration, type } =
       req.body;
-
-    if (!title || !question || isNaN(Number(maxPoints))) {
+    if (!title || !question || isNaN(Number(maxPoints)))
       return res.status(400).json({ ok: false });
-    }
 
     const challenge = await client.challenge.create({
       data: {
@@ -80,11 +92,7 @@ router.post("/admin/challenge", adminMiddleware, async (req, res) => {
         aiContext: "",
       },
     });
-
-    await aiQueue.add("generate-context", {
-      challengeId: challenge.id,
-    });
-
+    await aiQueue.add("generate-context", { challengeId: challenge.id });
     res.status(201).json({
       ok: true,
       challenge,
@@ -103,15 +111,9 @@ router.post(
     try {
       const { contestId } = req.params;
       const { challengeId, index } = req.body;
-
       const mapping = await client.contestToChallengeMapping.create({
-        data: {
-          contestId,
-          challengeId,
-          index: Number(index ?? 0),
-        },
+        data: { contestId, challengeId, index: Number(index ?? 0) },
       });
-
       res.status(201).json({ ok: true, mapping });
     } catch (e: any) {
       if (e.code === "P2002") return res.status(409).json({ ok: false });
@@ -119,7 +121,8 @@ router.post(
     }
   },
 );
-// All contest
+
+//  Contest lists
 
 router.get("/", async (_, res) => {
   const contests = await client.contest.findMany({
@@ -138,7 +141,6 @@ router.get("/:contestId/participants/count", async (req, res) => {
 router.get("/upcoming", async (req, res) => {
   const { offset, limit } = parsePagination(req);
   const now = new Date();
-
   const [data, total] = await Promise.all([
     client.contest.findMany({
       where: { startTime: { gt: now } },
@@ -146,61 +148,46 @@ router.get("/upcoming", async (req, res) => {
       take: limit,
       orderBy: { startTime: "asc" },
     }),
-    client.contest.count({
-      where: { startTime: { gt: now } },
-    }),
+    client.contest.count({ where: { startTime: { gt: now } } }),
   ]);
-
   res.json({ ok: true, data, pagination: { offset, limit, total } });
 });
 
 router.get("/active", async (req, res) => {
   const { offset, limit } = parsePagination(req);
   const now = new Date();
-
   const [data, total] = await Promise.all([
     client.contest.findMany({
-      where: {
-        startTime: { lte: now },
-        endTime: { gte: now },
-      },
+      where: { startTime: { lte: now }, endTime: { gte: now } },
       skip: offset,
       take: limit,
     }),
     client.contest.count({
-      where: {
-        startTime: { lte: now },
-        endTime: { gte: now },
-      },
+      where: { startTime: { lte: now }, endTime: { gte: now } },
     }),
   ]);
-
   res.json({ ok: true, data, pagination: { offset, limit, total } });
 });
 
 router.get("/finished", async (req, res) => {
   const { offset, limit } = parsePagination(req);
   const now = new Date();
-
   const [data, total] = await Promise.all([
     client.contest.findMany({
       where: { endTime: { lt: now } },
       skip: offset,
       take: limit,
     }),
-    client.contest.count({
-      where: { endTime: { lt: now } },
-    }),
+    client.contest.count({ where: { endTime: { lt: now } } }),
   ]);
-
   res.json({ ok: true, data, pagination: { offset, limit, total } });
 });
-// contest detail
+
+// Contest detail
 
 router.get("/:contestId", userMiddleware, async (req: any, res) => {
   const { contestId } = req.params;
   const userId = req.userId;
-
   const contest = await client.contest.findUnique({
     where: { id: contestId },
     include: {
@@ -210,31 +197,16 @@ router.get("/:contestId", userMiddleware, async (req: any, res) => {
       },
     },
   });
-
-  if (!contest) {
-    return res.status(404).json({ ok: false });
-  }
-
-  // CHECK REGISTRATION
+  if (!contest) return res.status(404).json({ ok: false });
   const membership = await client.contestParticipant.findUnique({
-    where: {
-      contestId_userId: {
-        contestId,
-        userId,
-      },
-    },
+    where: { contestId_userId: { contestId, userId } },
   });
-
   return res.json({
     ok: true,
-    data: {
-      ...contest,
-      isRegistered: !!membership,
-    },
+    data: { ...contest, isRegistered: !!membership },
   });
 });
 
-// check-registeration
 router.get(
   "/:contestId/check-registration",
   userMiddleware,
@@ -242,16 +214,9 @@ router.get(
     try {
       const { contestId } = req.params;
       const userId = req.userId;
-
       const participant = await client.contestParticipant.findUnique({
-        where: {
-          contestId_userId: {
-            contestId,
-            userId,
-          },
-        },
+        where: { contestId_userId: { contestId, userId } },
       });
-
       res.json({ ok: true, isRegistered: !!participant });
     } catch (error) {
       console.error(error);
@@ -260,45 +225,36 @@ router.get(
   },
 );
 
-// register for a contest
 router.post("/:contestId/register", userMiddleware, async (req: any, res) => {
   try {
     const { contestId } = req.params;
     const userId = req.userId;
     const now = new Date();
-
     const contest = await client.contest.findUnique({
       where: { id: contestId },
     });
-
     if (!contest)
       return res.status(404).json({ ok: false, message: "Contest not found" });
-
-    if (now > contest.endTime) {
+    if (now > contest.endTime)
       return res.status(403).json({ ok: false, message: "Contest has ended" });
-    }
-
-    await client.contestParticipant.create({
-      data: { contestId, userId },
-    });
-
+    await client.contestParticipant.create({ data: { contestId, userId } });
     return res.json({
       ok: true,
       alreadyRegistered: false,
       message: "Registered successfully",
     });
   } catch (error: any) {
-    if (error.code === "P2002") {
+    if (error.code === "P2002")
       return res.json({
         ok: true,
         alreadyRegistered: true,
         message: "Already registered",
       });
-    }
-
     return res.status(500).json({ ok: false });
   }
 });
+
+// ─── Submit ───────────────────────────────────────────────────────────────────
 
 router.post(
   "/:contestId/challenge/:challengeId/submit",
@@ -309,74 +265,48 @@ router.post(
       const userId = req.userId;
       const { contestId, challengeId } = req.params;
 
-      if (!submission) {
-        return res.status(400).json({
-          ok: false,
-          message: "Submission is required",
-        });
-      }
+      if (!submission)
+        return res
+          .status(400)
+          .json({ ok: false, message: "Submission is required" });
 
       const allowed = await checkSubmissionRateLimit(userId);
-      if (!allowed) {
+      if (!allowed)
         return res.status(429).json({
           ok: false,
           message: "Too many submissions. Please slow down.",
         });
-      }
 
       const contest = await client.contest.findUnique({
         where: { id: contestId },
       });
-
-      if (!contest) {
-        return res.status(404).json({
-          ok: false,
-          message: "Contest not found",
-        });
-      }
+      if (!contest)
+        return res
+          .status(404)
+          .json({ ok: false, message: "Contest not found" });
 
       const now = new Date();
-
-      if (now < contest.startTime) {
-        return res.status(403).json({
-          ok: false,
-          message: "Contest has not started yet",
-        });
-      }
-
-      // if (now > contest.endTime) {
-      //   return res.status(403).json({
-      //     ok: false,
-      //     message: "Contest has ended",
-      //   });
-      // }
+      if (now < contest.startTime)
+        return res
+          .status(403)
+          .json({ ok: false, message: "Contest has not started yet" });
 
       const participant = await client.contestParticipant.findUnique({
-        where: {
-          contestId_userId: {
-            contestId,
-            userId,
-          },
-        },
+        where: { contestId_userId: { contestId, userId } },
       });
-
-      if (!participant) {
+      if (!participant)
         return res.status(403).json({
           ok: false,
           message: "You are not registered for this contest",
         });
-      }
 
       const mapping = await client.contestToChallengeMapping.findFirst({
         where: { contestId, challengeId },
       });
-
-      if (!mapping) {
-        return res.status(404).json({
-          ok: false,
-          message: "Challenge not found in contest",
-        });
-      }
+      if (!mapping)
+        return res
+          .status(404)
+          .json({ ok: false, message: "Challenge not found in contest" });
 
       const submissionRecord = await client.contestSubmission.upsert({
         where: {
@@ -385,10 +315,7 @@ router.post(
             userId,
           },
         },
-        update: {
-          submission,
-          status: "Pending",
-        },
+        update: { submission, status: "Pending" },
         create: {
           submission,
           userId,
@@ -401,7 +328,6 @@ router.post(
         submissionId: submissionRecord.id,
         aiApiKey,
       });
-
       return res.status(201).json({
         ok: true,
         message: "Submission received. Judging in progress.",
@@ -413,6 +339,7 @@ router.post(
   },
 );
 
+// Result 
 router.get(
   "/:contestId/challenge/:challengeId/result",
   userMiddleware,
@@ -420,16 +347,13 @@ router.get(
     try {
       const { contestId, challengeId } = req.params;
       const userId = req.userId;
-
       const mapping = await client.contestToChallengeMapping.findFirst({
         where: { contestId, challengeId },
       });
-
-      if (!mapping) {
+      if (!mapping)
         return res
           .status(404)
           .json({ ok: false, message: "Challenge not in contest" });
-      }
 
       const submission = await client.contestSubmission.findUnique({
         where: {
@@ -439,19 +363,13 @@ router.get(
           },
         },
         include: {
-          contestToChallengeMapping: {
-            include: {
-              challenge: true,
-            },
-          },
+          contestToChallengeMapping: { include: { challenge: true } },
         },
       });
-
-      if (!submission) {
+      if (!submission)
         return res
           .status(404)
           .json({ ok: false, message: "No submission found" });
-      }
 
       return res.json({
         ok: true,
@@ -462,6 +380,12 @@ router.get(
           aiVerdict: submission.aiVerdict,
           aiReason: submission.aiReason,
           submittedAt: submission.createdAt,
+          updatedAt: submission.updatedAt,
+          verdict: toVerdict(
+            submission.status,
+            submission.points,
+            submission.contestToChallengeMapping.challenge.maxPoints,
+          ),
         },
       });
     } catch (error) {
@@ -471,21 +395,246 @@ router.get(
   },
 );
 
+// ─── ADVANCED LEADERBOARD ─────────────────────────────────────────────────────
+//
+// GET /:contestId/leaderboard?limit=50
+//
+// All fields are sourced from real schema models.
+// New schema fields used: User.displayName, User.country, User.avatarColor,
+//                         ContestSubmission.updatedAt, Leaderboard.lastUpdated
+//
+// Response shape:
+// {
+//   ok: true,
+//   challenges: ChallengeInfo[],
+//   leaderboard: LeaderboardRow[],
+//   recentSolves: RecentSolve[],
+//   stats: Stats,
+// }
+
 router.get("/:contestId/leaderboard", async (req, res) => {
-  const entries = await client.leaderboard.findMany({
-    where: { contestId: req.params.contestId },
-    orderBy: { score: "desc" },
-    include: { user: { select: { email: true } } },
-  });
+  try {
+    const { contestId } = req.params;
+    const limit = Math.min(200, Math.max(1, Number(req.query.limit) || 50));
 
-  const leaderboard = entries.map((e, i) => ({
-    rank: i + 1,
-    userId: e.userId,
-    email: e.user.email,
-    score: e.score,
-  }));
+    // 1. Challenges in this contest
+    const mappings = await client.contestToChallengeMapping.findMany({
+      where: { contestId },
+      include: { challenge: true },
+      orderBy: { index: "asc" },
+    });
 
-  res.json({ ok: true, leaderboard });
+    if (mappings.length === 0) {
+      return res.json({
+        ok: true,
+        challenges: [],
+        leaderboard: [],
+        recentSolves: [],
+        stats: {
+          totalParticipants: 0,
+          avgScorePct: 0,
+          topScore: 0,
+          maxPossible: 0,
+          fullSolveCount: 0,
+        },
+      });
+    }
+
+    const challenges = mappings.map((m) => ({
+      id: m.challenge.id,
+      _mappingId: m.id, // internal only — stripped from response
+      title: m.challenge.title,
+      maxPoints: m.challenge.maxPoints,
+      index: m.index,
+    }));
+
+    const maxPossible = challenges.reduce((s, c) => s + c.maxPoints, 0);
+    const mappingIds = mappings.map((m) => m.id);
+
+    // 2. Top N leaderboard entries, score desc
+    const entries = await client.leaderboard.findMany({
+      where: { contestId },
+      orderBy: { score: "desc" },
+      take: limit,
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            displayName: true,
+            country: true,
+            avatarColor: true,
+            rating: true,
+          },
+        },
+      },
+    });
+
+    if (entries.length === 0) {
+      return res.json({
+        ok: true,
+        challenges: challenges.map(({ _mappingId: _, ...c }) => c),
+        leaderboard: [],
+        recentSolves: [],
+        stats: {
+          totalParticipants: 0,
+          avgScorePct: 0,
+          topScore: 0,
+          maxPossible,
+          fullSolveCount: 0,
+        },
+      });
+    }
+
+    const userIds = entries.map((e) => e.userId);
+
+    // 3. All submissions for these users × these challenges — single query
+    const allSubs = await client.contestSubmission.findMany({
+      where: {
+        userId: { in: userIds },
+        contestToChallengeMappingId: { in: mappingIds },
+      },
+      select: {
+        userId: true,
+        contestToChallengeMappingId: true,
+        points: true,
+        status: true,
+        createdAt: true,
+        updatedAt: true,
+        contestToChallengeMapping: {
+          select: { challengeId: true },
+        },
+      },
+    });
+
+    // 4. Index for O(1) lookup
+    type Sub = (typeof allSubs)[number];
+    const subIndex = new Map<string, Sub>();
+    for (const s of allSubs) {
+      subIndex.set(`${s.userId}:${s.contestToChallengeMapping.challengeId}`, s);
+    }
+
+    // 5. Enrich each row
+    const leaderboard = entries.map((entry, i) => {
+      const challengeScores = challenges.map((ch) => {
+        const sub = subIndex.get(`${entry.userId}:${ch.id}`);
+        return {
+          challengeId: ch.id,
+          title: ch.title,
+          maxPoints: ch.maxPoints,
+          awarded: sub?.points ?? 0,
+          // raw status sent so frontend can show "Pending" badge if desired
+          status: (sub?.status ?? null) as SubmissionStatus | null,
+          verdict: toVerdict(sub?.status, sub?.points ?? 0, ch.maxPoints),
+          submittedAt: sub?.createdAt?.toISOString() ?? null,
+          updatedAt: sub?.updatedAt?.toISOString() ?? null,
+        };
+      });
+
+      // Earliest accepted submission → shown as "First solve"
+      const acceptedTimestamps = allSubs
+        .filter((s) => s.userId === entry.userId && s.status === "Accepted")
+        .map((s) => s.createdAt.getTime());
+      const firstSolveAt =
+        acceptedTimestamps.length > 0
+          ? new Date(Math.min(...acceptedTimestamps)).toISOString()
+          : null;
+
+      // Most recent activity (updatedAt from newest submission)
+      const userSubTimestamps = allSubs
+        .filter((s) => s.userId === entry.userId)
+        .map((s) => s.updatedAt!.getTime());
+      const lastActivityAt =
+        userSubTimestamps.length > 0
+          ? new Date(Math.max(...userSubTimestamps)).toISOString()
+          : null;
+
+      const scorePct =
+        maxPossible > 0 ? Math.round((entry.score / maxPossible) * 100) : 0;
+
+      return {
+        rank: i + 1,
+        userId: entry.userId,
+        email: entry.user.email,
+        displayName: entry.user.displayName ?? null,
+        country: entry.user.country ?? null,
+        avatarColor: entry.user.avatarColor,
+        rating: entry.user.rating,
+        totalScore: entry.score,
+        maxPossible,
+        scorePct,
+        challengeScores,
+        firstSolveAt,
+        lastActivityAt,
+      };
+    });
+
+    // 6. Recent solves in the last 60 s → live toast notifications
+    const oneMinuteAgo = new Date(Date.now() - 60_000);
+    const recentSolveRecords = await client.contestSubmission.findMany({
+      where: {
+        contestToChallengeMappingId: { in: mappingIds },
+        status: "Accepted",
+        updatedAt: { gte: oneMinuteAgo },
+      },
+      orderBy: { updatedAt: "desc" },
+      take: 15,
+      select: {
+        userId: true,
+        points: true,
+        updatedAt: true,
+        contestToChallengeMapping: {
+          select: { challenge: { select: { title: true } } },
+        },
+        user: {
+          select: { email: true, displayName: true, avatarColor: true },
+        },
+      },
+    });
+
+    const recentSolves = recentSolveRecords.map((r) => ({
+      userId: r.userId,
+      email: r.user.email,
+      displayName: r.user.displayName ?? null,
+      avatarColor: r.user.avatarColor,
+      challengeTitle: r.contestToChallengeMapping.challenge.title,
+      points: r.points,
+      solvedAt: r.updatedAt!.toISOString(),
+    }));
+
+    // 7. Stats
+    const totalParticipants = await client.leaderboard.count({
+      where: { contestId },
+    });
+    const avgScorePct =
+      leaderboard.length > 0
+        ? Math.round(
+            leaderboard.reduce((s, e) => s + e.scorePct, 0) /
+              leaderboard.length,
+          )
+        : 0;
+    const topScore = leaderboard[0]?.totalScore ?? 0;
+    const fullSolveCount = leaderboard.filter((e) =>
+      e.challengeScores.some((cs) => cs.verdict === "full"),
+    ).length;
+
+    return res.json({
+      ok: true,
+      challenges: challenges.map(({ _mappingId: _, ...c }) => c),
+      leaderboard,
+      recentSolves,
+      stats: {
+        totalParticipants,
+        avgScorePct,
+        topScore,
+        maxPossible,
+        fullSolveCount,
+      },
+    });
+  } catch (error) {
+    console.error("Leaderboard error:", error);
+    res.status(500).json({ ok: false, message: "Internal server error" });
+  }
 });
 
 export default router;
