@@ -66,7 +66,7 @@ export default function LoginPage() {
 
     return (
         <div
-            className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] flex overflow-hidden relative"
+            className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] flex overflow-hidden relative selection:bg-[var(--accent-bg)] selection:text-[var(--accent)]"
             style={{ fontFamily: "'Syne', sans-serif" }}
         >
             {/* Animated gradient */}

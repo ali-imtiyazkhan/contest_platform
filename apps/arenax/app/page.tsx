@@ -1,18 +1,21 @@
 "use client"
 
 import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
-const page = () => {
-
+const Page = () => {
   const router = useRouter();
 
-  const token = localStorage.getItem("token");
-  if (!token) {
-    router.push("/signin")
-  }
-  return (
-    router.push("/dashboard")
-  )
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      router.push("/signin");
+    } else {
+      router.push("/dashboard");
+    }
+  }, [router]);
+
+  return null;
 }
 
-export default page
+export default Page
