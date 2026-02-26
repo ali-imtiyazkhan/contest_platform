@@ -602,7 +602,7 @@ export default function ContestsPage() {
           className="font-bebas text-[1.6rem] tracking-[3px] text-[var(--text-primary)] no-underline flex-shrink-0 hover:text-[var(--accent)] transition-colors"
           style={{ fontFamily: "'Bebas Neue', cursive" }}
         >
-          Arena<span className="text-[var(--accent)]">X</span>
+          100x<span className="text-[var(--accent)]">Contest</span>
         </Link>
         <span className="text-[var(--border-secondary)] hidden md:block">|</span>
         <h1 className="font-extrabold text-[1rem] hidden md:block">Contests</h1>

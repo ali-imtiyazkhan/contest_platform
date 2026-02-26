@@ -121,7 +121,7 @@ async function fetchSubmissionResult(
         const token = localStorage.getItem("token");
 
         const res = await fetch(
-            `http://localhost:4000/api/v1/contest/${contestId}/challenge/${challengeId}/result`,
+            `${API_BASE}/contest/${contestId}/challenge/${challengeId}/result`,
             {
                 headers: {
                     "Content-Type": "application/json",

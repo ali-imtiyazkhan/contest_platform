@@ -1,0 +1,83 @@
+$ next build
+  ▲ Next.js 14.2.5
+  - Environments: .env
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/13) ...
+   Generating static pages (3/13) 
+ ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/leaderboard". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at i (C:\Users\my\Downloads\contest-platform\apps\arenax\.next\server\chunks\593.js:11:23674)
+    at u (C:\Users\my\Downloads\contest-platform\apps\arenax\.next\server\chunks\593.js:11:34631)
+    at N (C:\Users\my\Downloads\contest-platform\apps\arenax\.next\server\app\leaderboard\page.js:1:12668)
+    at nj (C:\Users\my\Downloads\contest-platform\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:46251)
+    at nM (C:\Users\my\Downloads\contest-platform\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:47571)
+    at nN (C:\Users\my\Downloads\contest-platform\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64546)
+    at nI (C:\Users\my\Downloads\contest-platform\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:47010)
+    at nM (C:\Users\my\Downloads\contest-platform\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:47717)
+    at nM (C:\Users\my\Downloads\contest-platform\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:61546)
+    at nN (C:\Users\my\Downloads\contest-platform\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64546)
+
+Error occurred prerendering page "/leaderboard". Read more: https://nextjs.org/docs/messages/prerender-error
+
+   Generating static pages (6/13) 
+   Generating static pages (9/13) 
+TypeError: Cannot read properties of null (reading 'useContext')
+    at exports.useContext (C:\Users\my\Downloads\contest-platform\node_modules\react\cjs\react.production.js:491:33)
+    at StyleRegistry (C:\Users\my\Downloads\contest-platform\node_modules\styled-jsx\dist\index\index.js:450:30)
+    at Wc (C:\Users\my\Downloads\contest-platform\node_modules\next\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:68:44)
+    at Zc (C:\Users\my\Downloads\contest-platform\node_modules\next\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:70:253)
+    at Z (C:\Users\my\Downloads\contest-platform\node_modules\next\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:76:89)
+    at Zc (C:\Users\my\Downloads\contest-platform\node_modules\next\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:74:209)
+    at Z (C:\Users\my\Downloads\contest-platform\node_modules\next\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:76:89)
+    at Zc (C:\Users\my\Downloads\contest-platform\node_modules\next\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:74:209)
+    at Z (C:\Users\my\Downloads\contest-platform\node_modules\next\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:76:89)
+    at Zc (C:\Users\my\Downloads\contest-platform\node_modules\next\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:74:209)
+
+Error occurred prerendering page "/404". Read more: https://nextjs.org/docs/messages/prerender-error
+
+TypeError: Cannot read properties of null (reading 'useContext')
+    at exports.useContext (C:\Users\my\Downloads\contest-platform\node_modules\react\cjs\react.production.js:491:33)
+    at StyleRegistry (C:\Users\my\Downloads\contest-platform\node_modules\styled-jsx\dist\index\index.js:450:30)
+    at Wc (C:\Users\my\Downloads\contest-platform\node_modules\next\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:68:44)
+    at Zc (C:\Users\my\Downloads\contest-platform\node_modules\next\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:70:253)
+    at Z (C:\Users\my\Downloads\contest-platform\node_modules\next\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:76:89)
+    at Zc (C:\Users\my\Downloads\contest-platform\node_modules\next\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:74:209)
+    at Z (C:\Users\my\Downloads\contest-platform\node_modules\next\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:76:89)
+    at Zc (C:\Users\my\Downloads\contest-platform\node_modules\next\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:74:209)
+    at Z (C:\Users\my\Downloads\contest-platform\node_modules\next\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:76:89)
+    at Zc (C:\Users\my\Downloads\contest-platform\node_modules\next\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:74:209)
+TypeError: Cannot read properties of null (reading 'useContext')
+    at exports.useContext (C:\Users\my\Downloads\contest-platform\node_modules\react\cjs\react.production.js:491:33)
+    at StyleRegistry (C:\Users\my\Downloads\contest-platform\node_modules\styled-jsx\dist\index\index.js:450:30)
+    at Wc (C:\Users\my\Downloads\contest-platform\node_modules\next\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:68:44)
+    at Zc (C:\Users\my\Downloads\contest-platform\node_modules\next\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:70:253)
+    at Z (C:\Users\my\Downloads\contest-platform\node_modules\next\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:76:89)
+    at Zc (C:\Users\my\Downloads\contest-platform\node_modules\next\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:74:209)
+    at Z (C:\Users\my\Downloads\contest-platform\node_modules\next\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:76:89)
+    at Zc (C:\Users\my\Downloads\contest-platform\node_modules\next\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:74:209)
+    at Z (C:\Users\my\Downloads\contest-platform\node_modules\next\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:76:89)
+    at Zc (C:\Users\my\Downloads\contest-platform\node_modules\next\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:74:209)
+
+Error occurred prerendering page "/500". Read more: https://nextjs.org/docs/messages/prerender-error
+
+TypeError: Cannot read properties of null (reading 'useContext')
+    at exports.useContext (C:\Users\my\Downloads\contest-platform\node_modules\react\cjs\react.production.js:491:33)
+    at StyleRegistry (C:\Users\my\Downloads\contest-platform\node_modules\styled-jsx\dist\index\index.js:450:30)
+    at Wc (C:\Users\my\Downloads\contest-platform\node_modules\next\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:68:44)
+    at Zc (C:\Users\my\Downloads\contest-platform\node_modules\next\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:70:253)
+    at Z (C:\Users\my\Downloads\contest-platform\node_modules\next\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:76:89)
+    at Zc (C:\Users\my\Downloads\contest-platform\node_modules\next\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:74:209)
+    at Z (C:\Users\my\Downloads\contest-platform\node_modules\next\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:76:89)
+    at Zc (C:\Users\my\Downloads\contest-platform\node_modules\next\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:74:209)
+    at Z (C:\Users\my\Downloads\contest-platform\node_modules\next\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:76:89)
+    at Zc (C:\Users\my\Downloads\contest-platform\node_modules\next\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:74:209)
+ ✓ Generating static pages (13/13)
+
+> Export encountered errors on following paths:
+	/_error: /404
+	/_error: /500
+	/leaderboard/page: /leaderboard
+error: script "build" exited with code 1

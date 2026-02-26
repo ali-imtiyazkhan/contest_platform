@@ -16,7 +16,7 @@ export default function Footer() {
         className="text-[var(--text-primary)] text-[1.5rem] tracking-[3px]"
         style={{ fontFamily: "'Bebas Neue', cursive" }}
       >
-        Arena<span className="text-[var(--accent)]">X</span>
+        100x<span className="text-[var(--accent)]">Contest</span>
       </div>
 
       <div className="flex flex-wrap justify-center gap-7">
