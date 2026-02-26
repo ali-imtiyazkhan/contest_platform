@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTheme } from "@/context/ThemeContext";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -95,14 +96,14 @@ export default function SignUpPage() {
 
     return (
         <div
-            className="min-h-screen bg-black text-cream flex overflow-hidden relative"
+            className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] flex overflow-hidden relative"
             style={{ fontFamily: "'Syne', sans-serif" }}
         >
             {/* Animated gradient background */}
             <div
                 className="absolute inset-0 opacity-30 pointer-events-none"
                 style={{
-                    background: `radial-gradient(600px circle at ${mousePos.x}px ${mousePos.y}px, rgba(200,241,53,0.15), transparent 40%)`,
+                    background: `radial-gradient(600px circle at ${mousePos.x}px ${mousePos.y}px, var(--accent-bg), transparent 40%)`,
                 }}
             />
 
@@ -115,20 +116,20 @@ export default function SignUpPage() {
             />
 
             {/* Left panel — Hero / Branding */}
-            <div className="hidden lg:flex lg:w-[45%] flex-col justify-between p-16 relative bg-gradient-to-br from-black via-slate to-black border-r border-white/[0.06]">
+            <div className="hidden lg:flex lg:w-[45%] flex-col justify-between p-16 relative bg-gradient-to-br from-[var(--bg-primary)] via-[var(--bg-secondary)] to-[var(--bg-primary)] border-r border-[var(--border-primary)]">
                 <div className="relative z-10">
                     <Link
                         href="/"
-                        className="inline-flex items-baseline gap-1 text-cream hover:text-acid transition-colors no-underline group"
+                        className="inline-flex items-baseline gap-1 text-[var(--text-primary)] hover:text-[var(--accent)] transition-colors no-underline group"
                     >
                         <span
                             className="text-[3.5rem] font-extrabold tracking-[4px] leading-none"
                             style={{ fontFamily: "'Bebas Neue', cursive" }}
                         >
-                            Arena<span className="text-acid">X</span>
+                            Arena<span className="text-[var(--accent)]">X</span>
                         </span>
                     </Link>
-                    <p className="text-muted text-sm mt-3 max-w-md leading-relaxed">
+                    <p className="text-[var(--text-muted)] text-sm mt-3 max-w-md leading-relaxed">
                         The ultimate competitive platform for coders, writers, and problem-solvers.
                         Join thousands competing for glory.
                     </p>
@@ -147,12 +148,12 @@ export default function SignUpPage() {
                             style={{ animationDelay: `${stat.delay}ms`, animationFillMode: "forwards" }}
                         >
                             <div
-                                className="text-acid font-extrabold text-4xl leading-none"
+                                className="text-[var(--accent)] font-extrabold text-4xl leading-none"
                                 style={{ fontFamily: "'Bebas Neue', cursive" }}
                             >
                                 {stat.num}
                             </div>
-                            <div className="text-muted text-sm font-mono tracking-wider uppercase">
+                            <div className="text-[var(--text-muted)] text-sm font-mono tracking-wider uppercase">
                                 {stat.label}
                             </div>
                         </div>
@@ -160,7 +161,7 @@ export default function SignUpPage() {
                 </div>
 
                 {/* Decorative element */}
-                <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-acid/5 rounded-full blur-[120px]" />
+                <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-[var(--accent)] opacity-5 rounded-full blur-[120px]" />
             </div>
 
             {/* Right panel — Form */}
@@ -170,10 +171,10 @@ export default function SignUpPage() {
                     <div className="lg:hidden text-center mb-8">
                         <Link href="/" className="inline-block">
                             <span
-                                className="text-[2.5rem] font-extrabold tracking-[3px] text-cream"
+                                className="text-[2.5rem] font-extrabold tracking-[3px] text-[var(--text-primary)]"
                                 style={{ fontFamily: "'Bebas Neue', cursive" }}
                             >
-                                Arena<span className="text-acid">X</span>
+                                Arena<span className="text-[var(--accent)]">X</span>
                             </span>
                         </Link>
                     </div>
@@ -181,14 +182,14 @@ export default function SignUpPage() {
                     {/* Header */}
                     <div className="text-center space-y-2">
                         <h1
-                            className="text-cream font-extrabold leading-tight"
+                            className="text-[var(--text-primary)] font-extrabold leading-tight"
                             style={{ fontFamily: "'Bebas Neue', cursive", fontSize: "clamp(2.5rem, 5vw, 3.5rem)" }}
                         >
                             Create Account
                         </h1>
-                        <p className="text-muted text-sm">
+                        <p className="text-[var(--text-muted)] text-sm">
                             Already have an account?{" "}
-                            <Link href="/login" className="text-acid hover:underline font-semibold">
+                            <Link href="/login" className="text-[var(--accent)] hover:underline font-semibold">
                                 Sign in
                             </Link>
                         </p>
@@ -200,7 +201,7 @@ export default function SignUpPage() {
                         <div className="space-y-2">
                             <label
                                 htmlFor="email"
-                                className="block font-mono text-[0.7rem] text-muted tracking-[2px] uppercase"
+                                className="block font-mono text-[0.7rem] text-[var(--text-muted)] tracking-[2px] uppercase"
                             >
                                 Email Address
                             </label>
@@ -210,7 +211,7 @@ export default function SignUpPage() {
                                 required
                                 value={form.email}
                                 onChange={(e) => setForm({ ...form, email: e.target.value })}
-                                className="w-full bg-white/[0.04] border border-white/[0.12] rounded-lg px-4 py-3.5 text-cream text-sm outline-none focus:border-acid/50 focus:bg-white/[0.06] transition-all placeholder:text-muted/40"
+                                className="w-full bg-[var(--bg-secondary)] border border-[var(--border-secondary)] rounded-lg px-4 py-3.5 text-[var(--text-primary)] text-sm outline-none focus:border-[var(--accent-border)] focus:bg-[var(--bg-card)] transition-all placeholder:text-[var(--text-muted)] placeholder:opacity-40"
                                 placeholder="you@example.com"
                             />
                         </div>
@@ -219,12 +220,12 @@ export default function SignUpPage() {
                         <div className="space-y-2">
                             <label
                                 htmlFor="handle"
-                                className="block font-mono text-[0.7rem] text-muted tracking-[2px] uppercase"
+                                className="block font-mono text-[0.7rem] text-[var(--text-muted)] tracking-[2px] uppercase"
                             >
                                 Arena Handle
                             </label>
                             <div className="relative">
-                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-acid font-mono text-sm">
+                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--accent)] font-mono text-sm">
                                     @
                                 </span>
                                 <input
@@ -235,11 +236,11 @@ export default function SignUpPage() {
                                     onChange={(e) =>
                                         setForm({ ...form, handle: e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, "") })
                                     }
-                                    className="w-full bg-white/[0.04] border border-white/[0.12] rounded-lg pl-9 pr-4 py-3.5 text-cream text-sm outline-none focus:border-acid/50 focus:bg-white/[0.06] transition-all placeholder:text-muted/40"
+                                    className="w-full bg-[var(--bg-secondary)] border border-[var(--border-secondary)] rounded-lg pl-9 pr-4 py-3.5 text-[var(--text-primary)] text-sm outline-none focus:border-[var(--accent-border)] focus:bg-[var(--bg-card)] transition-all placeholder:text-[var(--text-muted)] placeholder:opacity-40"
                                     placeholder="yourhandle"
                                 />
                             </div>
-                            <p className="text-[0.7rem] text-muted/60 font-mono">
+                            <p className="text-[0.7rem] text-[var(--text-muted)] opacity-60 font-mono">
                                 Lowercase letters, numbers, and underscores only
                             </p>
                         </div>
@@ -248,7 +249,7 @@ export default function SignUpPage() {
                         <div className="space-y-2">
                             <label
                                 htmlFor="password"
-                                className="block font-mono text-[0.7rem] text-muted tracking-[2px] uppercase"
+                                className="block font-mono text-[0.7rem] text-[var(--text-muted)] tracking-[2px] uppercase"
                             >
                                 Password
                             </label>
@@ -258,7 +259,7 @@ export default function SignUpPage() {
                                 required
                                 value={form.password}
                                 onChange={(e) => setForm({ ...form, password: e.target.value })}
-                                className="w-full bg-white/[0.04] border border-white/[0.12] rounded-lg px-4 py-3.5 text-cream text-sm outline-none focus:border-acid/50 focus:bg-white/[0.06] transition-all placeholder:text-muted/40"
+                                className="w-full bg-[var(--bg-secondary)] border border-[var(--border-secondary)] rounded-lg px-4 py-3.5 text-[var(--text-primary)] text-sm outline-none focus:border-[var(--accent-border)] focus:bg-[var(--bg-card)] transition-all placeholder:text-[var(--text-muted)] placeholder:opacity-40"
                                 placeholder="••••••••"
                             />
                             {/* Password strength */}
@@ -268,7 +269,7 @@ export default function SignUpPage() {
                                         {[0, 1, 2, 3, 4].map((i) => (
                                             <div
                                                 key={i}
-                                                className="h-1 flex-1 rounded-full bg-white/[0.08] overflow-hidden"
+                                                className="h-1 flex-1 rounded-full bg-[var(--bg-secondary)] overflow-hidden"
                                             >
                                                 <div
                                                     className="h-full rounded-full transition-all duration-300"
@@ -294,7 +295,7 @@ export default function SignUpPage() {
                         <div className="space-y-2">
                             <label
                                 htmlFor="confirmPassword"
-                                className="block font-mono text-[0.7rem] text-muted tracking-[2px] uppercase"
+                                className="block font-mono text-[0.7rem] text-[var(--text-muted)] tracking-[2px] uppercase"
                             >
                                 Confirm Password
                             </label>
@@ -304,7 +305,7 @@ export default function SignUpPage() {
                                 required
                                 value={form.confirmPassword}
                                 onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })}
-                                className="w-full bg-white/[0.04] border border-white/[0.12] rounded-lg px-4 py-3.5 text-cream text-sm outline-none focus:border-acid/50 focus:bg-white/[0.06] transition-all placeholder:text-muted/40"
+                                className="w-full bg-[var(--bg-secondary)] border border-[var(--border-secondary)] rounded-lg px-4 py-3.5 text-[var(--text-primary)] text-sm outline-none focus:border-[var(--accent-border)] focus:bg-[var(--bg-card)] transition-all placeholder:text-[var(--text-muted)] placeholder:opacity-40"
                                 placeholder="••••••••"
                             />
                             {form.confirmPassword && form.password !== form.confirmPassword && (
@@ -323,7 +324,7 @@ export default function SignUpPage() {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full bg-acid text-black font-extrabold text-sm tracking-[2px] uppercase py-4 rounded-lg hover:opacity-90 hover:-translate-y-0.5 disabled:opacity-40 disabled:cursor-not-allowed disabled:translate-y-0 transition-all duration-200 shadow-[0_8px_24px_rgba(200,241,53,0.3)] flex items-center justify-center gap-2"
+                            className="w-full bg-[var(--accent)] text-[var(--accent-text-on)] font-extrabold text-sm tracking-[2px] uppercase py-4 rounded-lg hover:opacity-90 hover:-translate-y-0.5 disabled:opacity-40 disabled:cursor-not-allowed disabled:translate-y-0 transition-all duration-200"
                         >
                             {loading ? (
                                 <>
@@ -336,13 +337,13 @@ export default function SignUpPage() {
                         </button>
 
                         {/* Terms */}
-                        <p className="text-center text-[0.7rem] text-muted/60 leading-relaxed">
+                        <p className="text-center text-[0.7rem] text-[var(--text-muted)] opacity-60 leading-relaxed">
                             By signing up, you agree to our{" "}
-                            <Link href="/terms" className="text-cream hover:text-acid transition-colors">
+                            <Link href="/terms" className="text-[var(--text-primary)] hover:text-[var(--accent)] transition-colors">
                                 Terms of Service
                             </Link>{" "}
                             and{" "}
-                            <Link href="/privacy" className="text-cream hover:text-acid transition-colors">
+                            <Link href="/privacy" className="text-[var(--text-primary)] hover:text-[var(--accent)] transition-colors">
                                 Privacy Policy
                             </Link>
                         </p>

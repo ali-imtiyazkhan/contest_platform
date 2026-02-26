@@ -39,13 +39,13 @@ export default function Prizes() {
   return (
     <section className="px-16 py-[120px]">
       <p
-        className="reveal text-acid text-[0.72rem] tracking-[3px] uppercase mb-4"
+        className="reveal text-[var(--accent)] text-[0.72rem] tracking-[3px] uppercase mb-4"
         style={{ fontFamily: "'DM Mono', monospace" }}
       >
         // Rewards
       </p>
       <h2
-        className="reveal mb-[60px] leading-none"
+        className="reveal mb-[60px] leading-none text-[var(--text-primary)]"
         style={{
           fontFamily: "'Bebas Neue', cursive",
           fontSize: "clamp(3rem, 5vw, 5rem)",
@@ -58,40 +58,35 @@ export default function Prizes() {
         {prizes.map((prize) => (
           <div
             key={prize.position}
-            className={`reveal p-11 rounded-md border transition-all duration-300 hover:-translate-y-1.5 ${
-              prize.featured
-                ? "bg-acid border-transparent text-black"
-                : "bg-transparent border-white/[0.08] hover:border-acid/30"
-            }`}
+            className={`reveal p-11 rounded-md border transition-all duration-300 hover:-translate-y-1.5 ${prize.featured
+                ? "bg-[var(--accent)] border-transparent text-[var(--accent-text-on)] shadow-[0_20px_50px_rgba(200,241,53,0.25)]"
+                : "bg-transparent border-[var(--border-secondary)] hover:border-[var(--accent-border)]"
+              }`}
           >
             <div className="text-[2rem] mb-5">{prize.trophy}</div>
             <p
-              className={`text-[0.7rem] tracking-[2px] uppercase mb-4 ${
-                prize.featured ? "text-black/50" : "text-muted"
-              }`}
+              className={`text-[0.7rem] tracking-[2px] uppercase mb-4 ${prize.featured ? "opacity-60" : "text-[var(--text-muted)]"
+                }`}
               style={{ fontFamily: "'DM Mono', monospace" }}
             >
               {prize.position}
             </p>
             <div
-              className={`text-[4rem] leading-none mb-3 ${
-                prize.featured ? "text-black" : "text-cream"
-              }`}
+              className={`text-[4rem] leading-none mb-3 ${prize.featured ? "text-[var(--accent-text-on)]" : "text-[var(--text-primary)]"
+                }`}
               style={{ fontFamily: "'Bebas Neue', cursive" }}
             >
               {prize.amount}
             </div>
             <p
-              className={`font-bold text-base mb-2.5 ${
-                prize.featured ? "text-black" : "text-cream"
-              }`}
+              className={`font-bold text-base mb-2.5 ${prize.featured ? "text-[var(--accent-text-on)]" : "text-[var(--text-primary)]"
+                }`}
             >
               {prize.title}
             </p>
             <p
-              className={`text-[0.82rem] leading-[1.6] ${
-                prize.featured ? "text-black/60" : "text-muted"
-              }`}
+              className={`text-[0.82rem] leading-[1.6] ${prize.featured ? "opacity-70" : "text-[var(--text-muted)]"
+                }`}
             >
               {prize.description}
             </p>

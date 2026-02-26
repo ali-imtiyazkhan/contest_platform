@@ -13,21 +13,21 @@
   --bg-primary: #0a0a0a;
   --bg-secondary: #111113;
   --bg-tertiary: #0d0d0f;
-  --bg-card: rgba(255,255,255,0.025);
-  --bg-card-hover: rgba(255,255,255,0.03);
-  --border-primary: rgba(255,255,255,0.06);
-  --border-secondary: rgba(255,255,255,0.08);
+  --bg-card: rgba(255, 255, 255, 0.025);
+  --bg-card-hover: rgba(255, 255, 255, 0.03);
+  --border-primary: rgba(255, 255, 255, 0.06);
+  --border-secondary: rgba(255, 255, 255, 0.08);
   --text-primary: #f5f2eb;
   --text-secondary: #e8e8e8;
   --text-muted: #6b6b72;
   --text-dim: #444;
   --text-dimmer: #333;
   --accent: #c8f135;
-  --accent-bg: rgba(200,241,53,0.08);
-  --accent-border: rgba(200,241,53,0.2);
+  --accent-bg: rgba(200, 241, 53, 0.08);
+  --accent-border: rgba(200, 241, 53, 0.2);
   --accent-text-on: #000;
-  --header-bg: rgba(10,10,10,0.9);
-  --input-bg: rgba(255,255,255,0.04);
+  --header-bg: rgba(10, 10, 10, 0.9);
+  --input-bg: rgba(255, 255, 255, 0.04);
   --cursor-display: block;
 }
 
@@ -35,21 +35,21 @@
   --bg-primary: #f8f9fa;
   --bg-secondary: #ffffff;
   --bg-tertiary: #f1f3f5;
-  --bg-card: rgba(0,0,0,0.03);
-  --bg-card-hover: rgba(0,0,0,0.05);
-  --border-primary: rgba(0,0,0,0.1);
-  --border-secondary: rgba(0,0,0,0.12);
+  --bg-card: rgba(0, 0, 0, 0.03);
+  --bg-card-hover: rgba(0, 0, 0, 0.05);
+  --border-primary: rgba(0, 0, 0, 0.1);
+  --border-secondary: rgba(0, 0, 0, 0.12);
   --text-primary: #1a1a2e;
   --text-secondary: #2d2d3f;
   --text-muted: #6b7280;
   --text-dim: #9ca3af;
   --text-dimmer: #d1d5db;
   --accent: #65a30d;
-  --accent-bg: rgba(101,163,13,0.1);
-  --accent-border: rgba(101,163,13,0.3);
+  --accent-bg: rgba(101, 163, 13, 0.1);
+  --accent-border: rgba(101, 163, 13, 0.3);
   --accent-text-on: #fff;
-  --header-bg: rgba(255,255,255,0.92);
-  --input-bg: rgba(0,0,0,0.04);
+  --header-bg: rgba(255, 255, 255, 0.92);
+  --input-bg: rgba(0, 0, 0, 0.04);
   --cursor-display: none;
 }
 
@@ -63,12 +63,18 @@ body {
   font-family: "Syne", sans-serif;
   overflow-x: hidden;
   cursor: none;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Hide custom cursor in light mode */
-[data-theme="light"] body { cursor: auto; }
+[data-theme="light"] body {
+  cursor: auto;
+}
+
 [data-theme="light"] .custom-cursor,
-[data-theme="light"] .cursor-ring { display: none; }
+[data-theme="light"] .cursor-ring {
+  display: none;
+}
 
 /* ── Cursor ── */
 .custom-cursor {
@@ -77,7 +83,7 @@ body {
   left: 0;
   width: 14px;
   height: 14px;
-  background: #c8f135;
+  background: var(--accent);
   border-radius: 50%;
   pointer-events: none;
   z-index: 9999;
@@ -91,7 +97,7 @@ body {
   left: 0;
   width: 40px;
   height: 40px;
-  border: 1.5px solid #c8f135;
+  border: 1.5px solid var(--accent);
   border-radius: 50%;
   pointer-events: none;
   z-index: 9998;
@@ -129,7 +135,7 @@ body {
   left: 0;
   right: 0;
   height: 3px;
-  background: #c8f135;
+  background: var(--accent);
   transform: scaleX(0);
   transform-origin: left;
   transition: transform 0.4s ease;
@@ -145,11 +151,13 @@ body {
 }
 
 @keyframes blink {
+
   0%,
   90%,
   100% {
-    border-color: rgba(200, 241, 53, 0.3);
+    border-color: var(--accent-border);
   }
+
   95% {
     border-color: rgba(200, 241, 53, 0.8);
   }
@@ -161,7 +169,7 @@ body {
   position: absolute;
   font-family: "Bebas Neue", cursive;
   font-size: 22vw;
-  color: rgba(255, 255, 255, 0.03);
+  color: var(--bg-card-hover);
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
@@ -173,11 +181,21 @@ body {
 /* ── Thin scrollbar ── */
 .scrollbar-thin {
   scrollbar-width: thin;
-  scrollbar-color: rgba(255,255,255,0.12) transparent;
+  scrollbar-color: var(--border-secondary) transparent;
 }
-.scrollbar-thin::-webkit-scrollbar { width: 4px; }
-.scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
-.scrollbar-thin::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 2px; }
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 4px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: var(--border-secondary);
+  border-radius: 2px;
+}
 
 /* ── Hero divider ── */
 .hero-divider::after {
@@ -187,7 +205,7 @@ body {
   left: 48%;
   width: 4%;
   height: 100%;
-  background: linear-gradient(to right, #0a0a0a, #1c1c1e);
+  background: linear-gradient(to right, var(--bg-primary), var(--bg-tertiary));
   z-index: 1;
   pointer-events: none;
 }

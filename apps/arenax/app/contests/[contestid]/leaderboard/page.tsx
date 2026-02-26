@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import { useTheme } from "@/context/ThemeContext";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 
@@ -199,7 +200,7 @@ function RankBadge({ rank }: { rank: number }) {
     if (rank === 2) return <span className="text-lg select-none">🥈</span>;
     if (rank === 3) return <span className="text-lg select-none">🥉</span>;
     return (
-        <span className="font-mono text-[0.72rem] text-[#555] w-6 text-center inline-block tabular-nums">
+        <span className="font-mono text-[0.72rem] text-[var(--text-muted)] w-6 text-center inline-block tabular-nums">
             {rank}
         </span>
     );
@@ -224,7 +225,7 @@ function Avatar({ row, size = 32 }: { row: LeaderboardRow; size?: number }) {
 
 function ScoreBar({ pct, color }: { pct: number; color: string }) {
     return (
-        <div className="h-[3px] bg-white/[0.07] rounded-full overflow-hidden w-full">
+        <div className="h-[3px] bg-[var(--border-secondary)] rounded-full overflow-hidden w-full">
             <div
                 className="h-full rounded-full transition-[width] duration-700 ease-out"
                 style={{
@@ -247,34 +248,34 @@ function VerdictPip({ cs }: { cs: ChallengeScore }) {
                 className={`w-3 h-3 rounded-sm cursor-default border ${isPending ? "animate-pulse" : ""}`}
                 style={{
                     background: isUnattempted ? "transparent" : color,
-                    borderColor: isUnattempted ? "#333" : color,
+                    borderColor: isUnattempted ? "var(--border-secondary)" : color,
                     opacity: isUnattempted ? 0.4 : 1,
                 }}
             />
             {/* Tooltip */}
             <div className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-50">
-                <div className="bg-[#181818] border border-white/10 rounded-md px-3 py-2 shadow-2xl whitespace-nowrap text-left min-w-[160px]">
-                    <p className="text-[#e8e8e8] text-[0.73rem] font-semibold mb-0.5">
+                <div className="bg-[var(--bg-card)] border border-[var(--border-primary)] rounded-md px-3 py-2 shadow-2xl whitespace-nowrap text-left min-w-[160px]">
+                    <p className="text-[var(--text-primary)] text-[0.73rem] font-semibold mb-0.5">
                         {cs.title}
                     </p>
                     <p
                         className="text-[0.63rem] mb-1"
-                        style={{ color: isUnattempted ? "#555" : color }}
+                        style={{ color: isUnattempted ? "var(--text-muted)" : color }}
                     >
                         {VERDICT_LABELS[cs.verdict]}
                     </p>
                     {cs.verdict !== "unattempted" && cs.verdict !== "judging" && (
-                        <p className="font-mono text-[0.63rem] text-[#c8f135]">
+                        <p className="font-mono text-[0.63rem] text-[var(--accent)]">
                             {cs.awarded} / {cs.maxPoints} pts
                         </p>
                     )}
                     {cs.submittedAt && (
-                        <p className="font-mono text-[0.58rem] text-[#555] mt-0.5">
+                        <p className="font-mono text-[0.58rem] text-[var(--text-muted)] mt-0.5">
                             {relativeTime(cs.submittedAt)}
                         </p>
                     )}
                 </div>
-                <div className="w-2 h-2 bg-[#181818] border-r border-b border-white/10 rotate-45 mx-auto -mt-1" />
+                <div className="w-2 h-2 bg-[var(--bg-card)] border-r border-b border-[var(--border-primary)] rotate-45 mx-auto -mt-1" />
             </div>
         </div>
     );
@@ -284,8 +285,8 @@ function ExpandedPanel({ row }: { row: LeaderboardRow }) {
     return (
         <tr>
             <td colSpan={7} className="px-4 pb-5 pt-1">
-                <div className="ml-12 bg-[#0e0e0e] border border-white/[0.07] rounded-xl p-4">
-                    <p className="font-mono text-[0.58rem] text-[#444] tracking-[2.5px] uppercase mb-3">
+                <div className="ml-12 bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-xl p-4">
+                    <p className="font-mono text-[0.58rem] text-[var(--text-muted)] tracking-[2.5px] uppercase mb-3">
                         Challenge breakdown
                     </p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
@@ -298,10 +299,10 @@ function ExpandedPanel({ row }: { row: LeaderboardRow }) {
                             return (
                                 <div
                                     key={cs.challengeId}
-                                    className="bg-white/[0.025] border border-white/[0.06] rounded-lg p-3"
+                                    className="bg-[var(--bg-card)] border border-[var(--border-secondary)] rounded-lg p-3"
                                 >
                                     <div className="flex items-center justify-between mb-2">
-                                        <span className="text-[#e8e8e8] text-[0.77rem] font-semibold truncate pr-2">
+                                        <span className="text-[var(--text-primary)] text-[0.77rem] font-semibold truncate pr-2">
                                             {cs.title}
                                         </span>
                                         <span
@@ -310,7 +311,7 @@ function ExpandedPanel({ row }: { row: LeaderboardRow }) {
                                                 color:
                                                     cs.verdict === "unattempted" ||
                                                         cs.verdict === "judging"
-                                                        ? "#444"
+                                                        ? "var(--text-muted)"
                                                         : color,
                                             }}
                                         >
@@ -331,13 +332,13 @@ function ExpandedPanel({ row }: { row: LeaderboardRow }) {
                                         <span
                                             className="font-mono text-[0.59rem]"
                                             style={{
-                                                color: cs.verdict === "unattempted" ? "#444" : color,
+                                                color: cs.verdict === "unattempted" ? "var(--text-muted)" : color,
                                             }}
                                         >
                                             {VERDICT_LABELS[cs.verdict]}
                                         </span>
                                         {cs.submittedAt && (
-                                            <span className="font-mono text-[0.57rem] text-[#444]">
+                                            <span className="font-mono text-[0.57rem] text-[var(--text-muted)]">
                                                 {relativeTime(cs.submittedAt)}
                                             </span>
                                         )}
@@ -348,41 +349,41 @@ function ExpandedPanel({ row }: { row: LeaderboardRow }) {
                     </div>
 
                     {/* Extra info row */}
-                    <div className="flex items-center gap-6 mt-3 pt-3 border-t border-white/[0.05] flex-wrap">
+                    <div className="flex items-center gap-6 mt-3 pt-3 border-t border-[var(--border-secondary)] flex-wrap">
                         <div>
-                            <p className="font-mono text-[0.57rem] text-[#444] tracking-widest uppercase">
+                            <p className="font-mono text-[0.57rem] text-[var(--text-muted)] tracking-widest uppercase">
                                 Rating
                             </p>
-                            <p className="font-mono text-[0.73rem] text-[#c8f135] font-bold">
+                            <p className="font-mono text-[0.73rem] text-[var(--accent)] font-bold">
                                 {row.rating}
                             </p>
                         </div>
                         {row.firstSolveAt && (
                             <div>
-                                <p className="font-mono text-[0.57rem] text-[#444] tracking-widest uppercase">
+                                <p className="font-mono text-[0.57rem] text-[var(--text-muted)] tracking-widest uppercase">
                                     First solve
                                 </p>
-                                <p className="font-mono text-[0.73rem] text-[#e8e8e8]">
+                                <p className="font-mono text-[0.73rem] text-[var(--text-primary)]">
                                     {relativeTime(row.firstSolveAt)}
                                 </p>
                             </div>
                         )}
                         {row.lastActivityAt && (
                             <div>
-                                <p className="font-mono text-[0.57rem] text-[#444] tracking-widest uppercase">
+                                <p className="font-mono text-[0.57rem] text-[var(--text-muted)] tracking-widest uppercase">
                                     Last activity
                                 </p>
-                                <p className="font-mono text-[0.73rem] text-[#e8e8e8]">
+                                <p className="font-mono text-[0.73rem] text-[var(--text-primary)]">
                                     {relativeTime(row.lastActivityAt)}
                                 </p>
                             </div>
                         )}
                         {row.country && (
                             <div>
-                                <p className="font-mono text-[0.57rem] text-[#444] tracking-widest uppercase">
+                                <p className="font-mono text-[0.57rem] text-[var(--text-muted)] tracking-widest uppercase">
                                     Country
                                 </p>
-                                <p className="font-mono text-[0.73rem] text-[#e8e8e8]">
+                                <p className="font-mono text-[0.73rem] text-[var(--text-primary)]">
                                     {row.country}
                                 </p>
                             </div>
@@ -406,21 +407,21 @@ function StatCard({
     accent?: string;
 }) {
     return (
-        <div className="bg-white/[0.025] border border-white/[0.06] rounded-xl px-5 py-4">
-            <p className="font-mono text-[0.57rem] text-[#444] tracking-[2.5px] uppercase mb-2">
+        <div className="bg-[var(--bg-card)] border border-[var(--border-secondary)] rounded-xl px-5 py-4">
+            <p className="font-mono text-[0.57rem] text-[var(--text-muted)] tracking-[2.5px] uppercase mb-2">
                 {label}
             </p>
             <p
                 className="font-extrabold text-2xl leading-none"
                 style={{
                     fontFamily: "'Bebas Neue', cursive",
-                    color: accent ?? "#e8e8e8",
+                    color: accent ?? "var(--text-primary)",
                 }}
             >
                 {value}
             </p>
             {sub && (
-                <p className="font-mono text-[0.6rem] text-[#444] mt-1">{sub}</p>
+                <p className="font-mono text-[0.6rem] text-[var(--text-muted)] mt-1">{sub}</p>
             )}
         </div>
     );
@@ -445,14 +446,14 @@ function ScoreDistribution({
     const labels = ["0–20", "20–40", "40–60", "60–80", "80–100"];
     const colors = ["#ef4444", "#f97316", "#f5a623", "#a3e635", "#c8f135"];
     return (
-        <div className="bg-white/[0.025] border border-white/[0.06] rounded-xl p-5">
-            <p className="font-mono text-[0.57rem] text-[#444] tracking-[2.5px] uppercase mb-4">
+        <div className="bg-[var(--bg-card)] border border-[var(--border-secondary)] rounded-xl p-5">
+            <p className="font-mono text-[0.57rem] text-[var(--text-muted)] tracking-[2.5px] uppercase mb-4">
                 Score distribution %
             </p>
             <div className="flex items-end gap-2 h-20">
                 {buckets.map((count, i) => (
                     <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                        <span className="font-mono text-[0.58rem] text-[#555]">
+                        <span className="font-mono text-[0.58rem] text-[var(--text-muted)]">
                             {count}
                         </span>
                         <div
@@ -464,7 +465,7 @@ function ScoreDistribution({
                                 transition: "height 0.6s ease-out",
                             }}
                         />
-                        <span className="font-mono text-[0.52rem] text-[#444]">
+                        <span className="font-mono text-[0.52rem] text-[var(--text-muted)]">
                             {labels[i]}
                         </span>
                     </div>
@@ -492,10 +493,10 @@ function SolveToast({
 
     return (
         <div
-            className="w-[300px] flex items-stretch gap-0 bg-[#111] border border-[#c8f135]/25 rounded-xl overflow-hidden shadow-2xl"
+            className="w-[300px] flex items-stretch gap-0 bg-[var(--bg-card)] border border-[var(--accent)] opacity-25 rounded-xl overflow-hidden shadow-2xl"
             style={{ animation: "toastIn 0.3s cubic-bezier(0.34,1.56,0.64,1)" }}
         >
-            <div className="w-1 bg-[#c8f135] flex-shrink-0" />
+            <div className="w-1 bg-[var(--accent)] flex-shrink-0" />
             <div className="flex items-start gap-3 p-3 flex-1">
                 <div
                     className="w-8 h-8 rounded-full flex items-center justify-center text-[0.7rem] font-bold text-black flex-shrink-0"
@@ -504,16 +505,16 @@ function SolveToast({
                     {(item.displayName ?? item.email)[0].toUpperCase()}
                 </div>
                 <div className="min-w-0">
-                    <p className="font-mono text-[0.58rem] text-[#c8f135] tracking-[2px] uppercase mb-0.5">
+                    <p className="font-mono text-[0.58rem] text-[var(--accent)] tracking-[2px] uppercase mb-0.5">
                         🔥 Challenge Solved
                     </p>
-                    <p className="text-[#e8e8e8] font-semibold text-[0.8rem] truncate">
+                    <p className="text-[var(--text-primary)] font-semibold text-[0.8rem] truncate">
                         @{handle}
                     </p>
-                    <p className="font-mono text-[0.67rem] text-[#888] truncate">
+                    <p className="font-mono text-[0.67rem] text-[var(--text-muted)] truncate">
                         {item.challengeTitle}
                     </p>
-                    <p className="font-mono text-[0.67rem] text-[#c8f135] font-bold mt-0.5">
+                    <p className="font-mono text-[0.67rem] text-[var(--accent)] font-bold mt-0.5">
                         +{item.points} pts
                     </p>
                 </div>
@@ -629,7 +630,7 @@ export default function ContestLeaderboardPage() {
 
     return (
         <div
-            className="min-h-screen bg-[#080808] text-[#e8e8e8]"
+            className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)]"
             style={{ fontFamily: "'Syne', 'DM Sans', sans-serif" }}
         >
             {/* Toast stack */}
@@ -644,29 +645,29 @@ export default function ContestLeaderboardPage() {
             </div>
 
             {/* ── Header ── */}
-            <header className="sticky top-0 z-50 border-b border-white/[0.05] bg-[#080808]/90 backdrop-blur-md px-6 py-3 flex items-center justify-between gap-4">
+            <header className="sticky top-0 z-50 border-b border-[var(--border-primary)] bg-[var(--bg-primary)] opacity-90 backdrop-blur-md px-6 py-3 flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
                     <Link
                         href="/"
-                        className="font-extrabold text-[1.35rem] tracking-[4px] text-[#e8e8e8] hover:text-[#c8f135] transition-colors no-underline"
+                        className="font-extrabold text-[1.35rem] tracking-[4px] text-[var(--text-primary)] hover:text-[var(--accent)] transition-colors no-underline"
                         style={{ fontFamily: "'Bebas Neue', cursive" }}
                     >
-                        Arena<span className="text-[#c8f135]">X</span>
+                        Arena<span className="text-[var(--accent)]">X</span>
                     </Link>
-                    <span className="text-white/10 hidden md:inline">|</span>
-                    <span className="font-mono text-[0.65rem] text-[#444] hidden md:inline tracking-widest uppercase">
+                    <span className="text-[var(--border-secondary)] hidden md:inline">|</span>
+                    <span className="font-mono text-[0.65rem] text-[var(--text-muted)] hidden md:inline tracking-widest uppercase">
                         Leaderboard
                     </span>
                 </div>
 
                 <div className="flex items-center gap-2">
                     {status === "live" && (
-                        <span className="flex items-center gap-1.5 font-mono text-[0.62rem] text-[#c8f135] bg-[#c8f135]/8 border border-[#c8f135]/20 px-2.5 py-1 rounded-md">
-                            <span className="w-1.5 h-1.5 rounded-full bg-[#c8f135] animate-ping" />
+                        <span className="flex items-center gap-1.5 font-mono text-[0.62rem] text-[var(--accent)] bg-[var(--accent-bg)] border border-[var(--accent-border)] px-2.5 py-1 rounded-md">
+                            <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)] animate-ping" />
                             Live
                         </span>
                     )}
-                    <span className="font-mono text-[0.6rem] text-[#333] hidden sm:block tabular-nums">
+                    <span className="font-mono text-[0.6rem] text-[var(--text-muted)] hidden sm:block tabular-nums">
                         {lastUpdate.toLocaleTimeString([], {
                             hour: "2-digit",
                             minute: "2-digit",
@@ -675,7 +676,7 @@ export default function ContestLeaderboardPage() {
                     </span>
                     <Link
                         href="/contests"
-                        className="font-mono text-[0.62rem] text-[#555] border border-white/[0.08] px-3 py-1.5 rounded-lg hover:border-[#c8f135]/30 hover:text-[#c8f135] transition-colors no-underline"
+                        className="font-mono text-[0.62rem] text-[var(--text-muted)] border border-[var(--border-secondary)] px-3 py-1.5 rounded-lg hover:border-[var(--accent-border)] hover:text-[var(--accent)] transition-colors no-underline"
                     >
                         ← Contests
                     </Link>
@@ -701,7 +702,7 @@ export default function ContestLeaderboardPage() {
                     <div className="flex items-start justify-between gap-6 flex-wrap">
                         <div>
                             <h1
-                                className="font-extrabold leading-none mb-2 text-[#e8e8e8]"
+                                className="font-extrabold leading-none mb-2 text-[var(--text-primary)]"
                                 style={{
                                     fontFamily: "'Bebas Neue', cursive",
                                     fontSize: "clamp(2.2rem, 5vw, 4rem)",
@@ -712,10 +713,10 @@ export default function ContestLeaderboardPage() {
                             <div className="flex items-center gap-2.5 flex-wrap">
                                 <span
                                     className={`font-mono text-[0.62rem] tracking-[2px] uppercase px-2.5 py-1 rounded-md border ${status === "live"
-                                            ? "text-[#c8f135] border-[#c8f135]/25 bg-[#c8f135]/8"
-                                            : status === "upcoming"
-                                                ? "text-orange-400 border-orange-400/25 bg-orange-400/8"
-                                                : "text-[#555] border-white/10 bg-white/[0.03]"
+                                        ? "text-[var(--accent)] border-[var(--accent-border)] bg-[var(--accent-bg)]"
+                                        : status === "upcoming"
+                                            ? "text-orange-400 border-orange-400/25 bg-orange-400/8"
+                                            : "text-[var(--text-muted)] border-[var(--border-secondary)] bg-[var(--bg-card)]"
                                         }`}
                                 >
                                     {status === "live"
@@ -735,12 +736,12 @@ export default function ContestLeaderboardPage() {
                                     {contest.difficulty}
                                 </span>
                                 {contest.prize > 0 && (
-                                    <span className="font-mono text-[0.62rem] text-[#c8f135] font-bold">
+                                    <span className="font-mono text-[0.62rem] text-[var(--accent)] font-bold">
                                         ${contest.prize.toLocaleString()} prize
                                     </span>
                                 )}
                                 {contest.host && (
-                                    <span className="font-mono text-[0.62rem] text-[#444]">
+                                    <span className="font-mono text-[0.62rem] text-[var(--text-muted)]">
                                         by {contest.host}
                                     </span>
                                 )}
@@ -761,13 +762,13 @@ export default function ContestLeaderboardPage() {
                             label="Avg Score"
                             value={`${data.stats.avgScorePct}%`}
                             sub="of max possible"
-                            accent="#c8f135"
+                            accent="var(--accent)"
                         />
                         <StatCard
                             label="Top Score"
                             value={data.stats.topScore.toString()}
                             sub={`of ${data.stats.maxPossible} pts`}
-                            accent="#c8f135"
+                            accent="var(--accent)"
                         />
                         <StatCard
                             label="Full Solves"
@@ -797,18 +798,18 @@ export default function ContestLeaderboardPage() {
                 {/* Challenge key */}
                 {data && data.challenges.length > 0 && (
                     <div className="flex items-center gap-3 flex-wrap">
-                        <p className="font-mono text-[0.57rem] text-[#333] tracking-[2.5px] uppercase">
+                        <p className="font-mono text-[0.57rem] text-[var(--text-muted)] tracking-[2.5px] uppercase">
                             Challenges:
                         </p>
                         {data.challenges.map((ch, i) => (
                             <div key={ch.id} className="flex items-center gap-1.5">
-                                <span className="font-mono text-[0.58rem] text-[#c8f135]/60 bg-[#c8f135]/8 border border-[#c8f135]/15 rounded px-1.5 py-0.5">
+                                <span className="font-mono text-[0.58rem] text-[var(--accent)] bg-[var(--accent-bg)] border border-[var(--accent-border)] rounded px-1.5 py-0.5">
                                     C{i + 1}
                                 </span>
-                                <span className="font-mono text-[0.6rem] text-[#555]">
+                                <span className="font-mono text-[0.6rem] text-[var(--text-muted)]">
                                     {ch.title}
                                 </span>
-                                <span className="font-mono text-[0.55rem] text-[#333]">
+                                <span className="font-mono text-[0.55rem] text-[var(--text-muted)] opacity-50">
                                     ({ch.maxPoints}p)
                                 </span>
                             </div>
@@ -818,7 +819,7 @@ export default function ContestLeaderboardPage() {
 
                 {/* Sort controls */}
                 <div className="flex items-center justify-between flex-wrap gap-3">
-                    <p className="font-mono text-[0.62rem] text-[#333] tracking-[2px] uppercase">
+                    <p className="font-mono text-[0.62rem] text-[var(--text-muted)] tracking-[2px] uppercase">
                         {rows.length} participants ranked
                     </p>
                     <div className="flex gap-1.5">
@@ -827,8 +828,8 @@ export default function ContestLeaderboardPage() {
                                 key={s}
                                 onClick={() => setSortBy(s)}
                                 className={`font-mono text-[0.6rem] tracking-[1.5px] uppercase px-3 py-1.5 rounded-lg border transition-all ${sortBy === s
-                                        ? "bg-[#c8f135] text-black border-[#c8f135]"
-                                        : "text-[#555] border-white/[0.07] hover:border-white/15 hover:text-[#e8e8e8]"
+                                    ? "bg-[var(--accent)] text-[var(--accent-text-on)] border-[var(--accent)]"
+                                    : "text-[var(--text-muted)] border-[var(--border-secondary)] hover:border-[var(--border-primary)] hover:text-[var(--text-primary)]"
                                     }`}
                             >
                                 {s === "score" ? "By Score" : "By Speed"}
@@ -838,10 +839,10 @@ export default function ContestLeaderboardPage() {
                 </div>
 
                 {/* Table */}
-                <div className="border border-white/[0.06] rounded-2xl overflow-hidden">
+                <div className="border border-[var(--border-primary)] rounded-2xl overflow-hidden">
                     <table className="w-full border-collapse">
                         <thead>
-                            <tr className="bg-white/[0.025] border-b border-white/[0.06]">
+                            <tr className="bg-[var(--bg-secondary)] border-b border-[var(--border-primary)]">
                                 {[
                                     "#",
                                     "Participant",
@@ -853,7 +854,7 @@ export default function ContestLeaderboardPage() {
                                 ].map((h) => (
                                     <th
                                         key={h}
-                                        className="font-mono text-[0.57rem] text-[#333] tracking-[2.5px] uppercase text-left px-4 py-3 whitespace-nowrap"
+                                        className="font-mono text-[0.57rem] text-[var(--text-muted)] tracking-[2.5px] uppercase text-left px-4 py-3 whitespace-nowrap"
                                     >
                                         {h}
                                     </th>
@@ -865,8 +866,8 @@ export default function ContestLeaderboardPage() {
                                 <tr>
                                     <td colSpan={7} className="px-4 py-16 text-center">
                                         <div className="flex flex-col items-center gap-3">
-                                            <div className="w-6 h-6 rounded-full border-2 border-[#c8f135]/30 border-t-[#c8f135] animate-spin" />
-                                            <span className="font-mono text-[0.7rem] text-[#333]">
+                                            <div className="w-6 h-6 rounded-full border-2 border-[var(--accent)] opacity-30 border-t-[var(--accent)] animate-spin" />
+                                            <span className="font-mono text-[0.7rem] text-[var(--text-muted)]">
                                                 Loading leaderboard…
                                             </span>
                                         </div>
@@ -875,10 +876,10 @@ export default function ContestLeaderboardPage() {
                             ) : rows.length === 0 ? (
                                 <tr>
                                     <td colSpan={7} className="px-4 py-16 text-center">
-                                        <p className="font-mono text-[0.7rem] text-[#333]">
+                                        <p className="font-mono text-[0.7rem] text-[var(--text-muted)]">
                                             No submissions yet.
                                         </p>
-                                        <p className="font-mono text-[0.62rem] text-[#222] mt-1">
+                                        <p className="font-mono text-[0.62rem] text-[var(--text-muted)] opacity-70 mt-1">
                                             Be the first to submit!
                                         </p>
                                     </td>
@@ -888,7 +889,7 @@ export default function ContestLeaderboardPage() {
                                     const isExpanded = expandedUserId === row.userId;
                                     const scoreColor =
                                         row.scorePct >= 85
-                                            ? "#c8f135"
+                                            ? "var(--accent)"
                                             : row.scorePct >= 50
                                                 ? "#f5a623"
                                                 : "#ef4444";
@@ -902,9 +903,14 @@ export default function ContestLeaderboardPage() {
                                                         isExpanded ? null : row.userId
                                                     )
                                                 }
-                                                className={`border-b border-white/[0.04] cursor-pointer transition-colors duration-100 group ${isExpanded
-                                                        ? "bg-white/[0.035]"
-                                                        : "hover:bg-white/[0.02]"
+                                                onKeyDown={(e) => {
+                                                    if (e.key === "Enter" || e.key === " ") {
+                                                        setExpandedUserId(isExpanded ? null : row.userId);
+                                                    }
+                                                }}
+                                                className={`border-b border-[var(--border-secondary)] cursor-pointer transition-colors duration-100 group ${isExpanded
+                                                    ? "bg-[var(--bg-card-hover)]"
+                                                    : "hover:bg-[var(--bg-card)]"
                                                     }`}
                                             >
                                                 {/* Rank */}
@@ -917,15 +923,15 @@ export default function ContestLeaderboardPage() {
                                                     <div className="flex items-center gap-3">
                                                         <Avatar row={row} />
                                                         <div className="min-w-0">
-                                                            <p className="text-[0.85rem] font-semibold text-[#e8e8e8] truncate">
+                                                            <p className="text-[0.85rem] font-semibold text-[var(--text-primary)] truncate">
                                                                 {displayHandle(row)}
                                                                 {row.country && (
-                                                                    <span className="ml-1.5 text-[0.7rem] text-[#444]">
+                                                                    <span className="ml-1.5 text-[0.7rem] text-[var(--text-muted)]">
                                                                         {row.country}
                                                                     </span>
                                                                 )}
                                                             </p>
-                                                            <p className="font-mono text-[0.62rem] text-[#444] truncate">
+                                                            <p className="font-mono text-[0.62rem] text-[var(--text-muted)] truncate">
                                                                 {row.email}
                                                             </p>
                                                         </div>
@@ -942,7 +948,7 @@ export default function ContestLeaderboardPage() {
                                                             />
                                                         ))}
                                                     </div>
-                                                    <p className="font-mono text-[0.57rem] text-[#333] mt-1">
+                                                    <p className="font-mono text-[0.57rem] text-[var(--text-muted)] mt-1">
                                                         {
                                                             row.challengeScores.filter(
                                                                 (c) =>
@@ -963,7 +969,7 @@ export default function ContestLeaderboardPage() {
                                                         >
                                                             {row.totalScore}
                                                         </span>
-                                                        <span className="font-mono text-[0.6rem] text-[#333]">
+                                                        <span className="font-mono text-[0.6rem] text-[var(--text-muted)]">
                                                             /{row.maxPossible}
                                                         </span>
                                                     </div>
@@ -981,14 +987,14 @@ export default function ContestLeaderboardPage() {
 
                                                 {/* Rating */}
                                                 <td className="px-4 py-3.5 hidden md:table-cell">
-                                                    <span className="font-mono text-[0.75rem] text-[#c8f135] font-bold">
+                                                    <span className="font-mono text-[0.75rem] text-[var(--accent)] font-bold">
                                                         {row.rating}
                                                     </span>
                                                 </td>
 
                                                 {/* Last activity */}
                                                 <td className="px-4 py-3.5 hidden lg:table-cell">
-                                                    <span className="font-mono text-[0.65rem] text-[#444]">
+                                                    <span className="font-mono text-[0.65rem] text-[var(--text-muted)]">
                                                         {row.lastActivityAt
                                                             ? relativeTime(row.lastActivityAt)
                                                             : "—"}
@@ -998,7 +1004,7 @@ export default function ContestLeaderboardPage() {
                                                 {/* Expand chevron */}
                                                 <td className="px-4 py-3.5">
                                                     <span
-                                                        className={`inline-block font-mono text-[0.58rem] text-[#333] group-hover:text-[#555] transition-all duration-200 ${isExpanded ? "rotate-180" : ""
+                                                        className={`inline-block font-mono text-[0.58rem] text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-all duration-200 ${isExpanded ? "rotate-180" : ""
                                                             }`}
                                                     >
                                                         ▼
@@ -1022,7 +1028,7 @@ export default function ContestLeaderboardPage() {
 
                 {/* Legend */}
                 <div className="flex items-center gap-4 flex-wrap pb-8">
-                    <p className="font-mono text-[0.57rem] text-[#333] tracking-[2px] uppercase">
+                    <p className="font-mono text-[0.57rem] text-[var(--text-muted)] tracking-[2px] uppercase">
                         Legend:
                     </p>
                     {(
@@ -1035,16 +1041,16 @@ export default function ContestLeaderboardPage() {
                                     background:
                                         v === "unattempted" ? "transparent" : VERDICT_COLORS[v],
                                     borderColor:
-                                        v === "unattempted" ? "#333" : VERDICT_COLORS[v],
+                                        v === "unattempted" ? "var(--border-secondary)" : VERDICT_COLORS[v],
                                     opacity: v === "unattempted" ? 0.4 : 1,
                                 }}
                             />
-                            <span className="font-mono text-[0.6rem] text-[#444]">
+                            <span className="font-mono text-[0.6rem] text-[var(--text-muted)]">
                                 {label}
                             </span>
                         </div>
                     ))}
-                    <p className="font-mono text-[0.57rem] text-[#222] ml-auto">
+                    <p className="font-mono text-[0.57rem] text-[var(--text-muted)] opacity-50 ml-auto">
                         Hover pips for details · Click rows to expand
                     </p>
                 </div>

@@ -40,13 +40,13 @@ export default function ChallengeTypes() {
   return (
     <section className="px-16 pb-[120px]">
       <p
-        className="reveal text-acid text-[0.72rem] tracking-[3px] uppercase mb-4"
+        className="reveal text-[var(--accent)] text-[0.72rem] tracking-[3px] uppercase mb-4"
         style={{ fontFamily: "'DM Mono', monospace" }}
       >
         // Challenge Types
       </p>
       <h2
-        className="reveal mb-[60px] leading-none"
+        className="reveal mb-[60px] leading-none text-[var(--text-primary)]"
         style={{
           fontFamily: "'Bebas Neue', cursive",
           fontSize: "clamp(3rem, 5vw, 5rem)",
@@ -60,15 +60,15 @@ export default function ChallengeTypes() {
         {challengeTypes.map((type) => (
           <div
             key={type.title}
-            className="reveal type-card bg-slate hover:bg-mid px-12 py-14 relative overflow-hidden cursor-pointer transition-colors duration-300"
+            className="reveal type-card bg-[var(--bg-tertiary)] hover:bg-[var(--bg-card-hover)] px-12 py-14 relative overflow-hidden cursor-pointer transition-colors duration-300"
           >
             <div className="text-[2.5rem] mb-5">{type.emoji}</div>
-            <h3 className="text-[1.5rem] font-extrabold mb-3">{type.title}</h3>
-            <p className="text-[0.88rem] text-muted leading-[1.7] max-w-[380px]">
+            <h3 className="text-[1.5rem] font-extrabold mb-3 text-[var(--text-primary)]">{type.title}</h3>
+            <p className="text-[0.88rem] text-[var(--text-muted)] leading-[1.7] max-w-[380px]">
               {type.description}
             </p>
             <span
-              className="inline-block mt-5 text-acid border border-acid/30 px-3 py-[5px] rounded-sm text-[0.65rem] tracking-[2px] uppercase"
+              className="inline-block mt-5 text-[var(--accent)] border border-[var(--accent-border)] px-3 py-[5px] rounded-sm text-[0.65rem] tracking-[2px] uppercase"
               style={{ fontFamily: "'DM Mono', monospace" }}
             >
               {type.tag}
