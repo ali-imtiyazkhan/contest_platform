@@ -1,11 +1,11 @@
-"use client";
+﻿"use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useTheme } from "@/context/ThemeContext";
 
-//Types — mirror the backend response exactly
+//Types â€” mirror the backend response exactly
 interface Contest {
   id: string;
   title: string;
@@ -108,7 +108,7 @@ const VERDICT_LABELS: Record<Verdict, string> = {
   full: "Full marks",
   partial: "Partial credit",
   zero: "No marks",
-  judging: "Judging…",
+  judging: "Judgingâ€¦",
   unattempted: "Not attempted",
 };
 
@@ -171,9 +171,9 @@ function relativeTime(iso: string): string {
 //Sub-components
 
 function RankBadge({ rank }: { rank: number }) {
-  if (rank === 1) return <span className="text-lg select-none">🥇</span>;
-  if (rank === 2) return <span className="text-lg select-none">🥈</span>;
-  if (rank === 3) return <span className="text-lg select-none">🥉</span>;
+  if (rank === 1) return <span className="text-lg select-none">ðŸ¥‡</span>;
+  if (rank === 2) return <span className="text-lg select-none">ðŸ¥ˆ</span>;
+  if (rank === 3) return <span className="text-lg select-none">ðŸ¥‰</span>;
   return (
     <span className="font-mono text-[0.72rem] text-[var(--text-muted)] w-6 text-center inline-block tabular-nums">
       {rank}
@@ -271,7 +271,7 @@ function ExpandedPanel({ row }: { row: LeaderboardRow }) {
                       style={{ color: cs.verdict === "unattempted" || cs.verdict === "judging" ? "var(--text-muted)" : color }}
                     >
                       {cs.verdict === "unattempted" || cs.verdict === "judging"
-                        ? "—"
+                        ? "â€”"
                         : `${cs.awarded}/${cs.maxPoints}`}
                     </span>
                   </div>
@@ -350,7 +350,7 @@ function ScoreDistribution({ rows, maxPossible }: { rows: LeaderboardRow[]; maxP
     buckets[Math.min(4, Math.floor(pct / 20))]++;
   });
   const maxB = Math.max(...buckets, 1);
-  const labels = ["0–20", "20–40", "40–60", "60–80", "80–100"];
+  const labels = ["0â€“20", "20â€“40", "40â€“60", "60â€“80", "80â€“100"];
   const colors = ["#ef4444", "#f97316", "#f5a623", "#a3e635", "var(--accent)"];
   return (
     <div className="bg-[var(--bg-secondary)] border border-[var(--border-secondary)] rounded-xl p-5">
@@ -402,7 +402,7 @@ function SolveToast({ item, onExpire }: { item: ToastItem; onExpire: () => void 
         </div>
         <div className="min-w-0">
           <p className="font-mono text-[0.58rem] text-[var(--accent)] tracking-[2px] uppercase mb-0.5">
-            🔥 Challenge Solved
+            ðŸ”¥ Challenge Solved
           </p>
           <p className="text-[var(--text-primary)] font-semibold text-[0.8rem] truncate">@{handle}</p>
           <p className="font-mono text-[0.67rem] text-[var(--text-muted)] truncate">{item.challengeTitle}</p>
@@ -445,7 +445,7 @@ function ContestPill({
 
 
 //Main page
-export default function LeaderboardPage() {
+function LeaderboardContent() {
   const searchParams = useSearchParams();
 
   const [contests, setContests] = useState<Contest[]>([]);
@@ -555,7 +555,7 @@ export default function LeaderboardPage() {
         ))}
       </div>
 
-      {/* ── Header ── */}
+      {/* â”€â”€ Header â”€â”€ */}
       <header className="sticky top-0 z-50 border-b border-[var(--border-primary)] bg-[var(--header-bg)] backdrop-blur-md px-6 py-3 flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <Link
@@ -563,7 +563,7 @@ export default function LeaderboardPage() {
             className="font-extrabold text-[1.35rem] tracking-[4px] text-[var(--text-primary)] hover:text-[var(--accent)] transition-colors no-underline"
             style={{ fontFamily: "'Bebas Neue', cursive" }}
           >
-            Arena<span className="text-[var(--accent)]">X</span>
+            100x<span className="text-[var(--accent)]">Contest</span>
           </Link>
           <span className="text-[var(--border-primary)] hidden md:inline">|</span>
           <span className="font-mono text-[0.65rem] text-[var(--text-muted)] hidden md:inline tracking-widest uppercase opacity-60">
@@ -585,7 +585,7 @@ export default function LeaderboardPage() {
             href="/contests"
             className="font-mono text-[0.62rem] text-[var(--text-muted)] border border-[var(--border-secondary)] px-3 py-1.5 rounded-lg hover:border-[var(--accent-border)] hover:text-[var(--accent)] transition-colors no-underline"
           >
-            ← Contests
+            â† Contests
           </Link>
         </div>
       </header>
@@ -636,7 +636,7 @@ export default function LeaderboardPage() {
                       : "text-[var(--text-muted)] border-[var(--border-secondary)] bg-[var(--bg-card)]"
                     }`}
                 >
-                  {status === "live" ? "● Live" : status === "upcoming" ? "◷ Upcoming" : "✓ Ended"}
+                  {status === "live" ? "â— Live" : status === "upcoming" ? "â—· Upcoming" : "âœ“ Ended"}
                 </span>
                 <span
                   className="font-mono text-[0.62rem] px-2 py-0.5 rounded border"
@@ -680,11 +680,11 @@ export default function LeaderboardPage() {
             <StatCard
               label="Full Solves"
               value={data.stats.fullSolveCount.toString()}
-              sub="got ≥1 full mark"
+              sub="got â‰¥1 full mark"
             />
             <StatCard
               label="Prize Pool"
-              value={contest?.prize ? `$${contest.prize.toLocaleString()}` : "—"}
+              value={contest?.prize ? `$${contest.prize.toLocaleString()}` : "â€”"}
               sub={contest?.difficulty}
               accent="var(--accent)"
             />
@@ -754,7 +754,7 @@ export default function LeaderboardPage() {
                   <td colSpan={7} className="px-4 py-16 text-center">
                     <div className="flex flex-col items-center gap-3">
                       <div className="w-6 h-6 rounded-full border-2 border-[var(--accent-border)] border-t-[var(--accent)] animate-spin" />
-                      <span className="font-mono text-[0.7rem] text-[var(--text-muted)]">Loading leaderboard…</span>
+                      <span className="font-mono text-[0.7rem] text-[var(--text-muted)]">Loading leaderboardâ€¦</span>
                     </div>
                   </td>
                 </tr>
@@ -850,7 +850,7 @@ export default function LeaderboardPage() {
                         {/* Last activity */}
                         <td className="px-4 py-3.5 hidden lg:table-cell">
                           <span className="font-mono text-[0.65rem] text-[var(--text-muted)]">
-                            {row.lastActivityAt ? relativeTime(row.lastActivityAt) : "—"}
+                            {row.lastActivityAt ? relativeTime(row.lastActivityAt) : "â€”"}
                           </span>
                         </td>
 
@@ -860,7 +860,7 @@ export default function LeaderboardPage() {
                             className={`inline-block font-mono text-[0.58rem] text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-all duration-200 ${isExpanded ? "rotate-180" : ""
                               }`}
                           >
-                            ▼
+                            â–¼
                           </span>
                         </td>
                       </tr>
@@ -892,7 +892,7 @@ export default function LeaderboardPage() {
               <span className="font-mono text-[0.6rem] text-[var(--text-muted)]">{label}</span>
             </div>
           ))}
-          <p className="font-mono text-[0.57rem] text-[var(--text-muted)] ml-auto opacity-40">Hover pips for details · Click rows to expand</p>
+          <p className="font-mono text-[0.57rem] text-[var(--text-muted)] ml-auto opacity-40">Hover pips for details Â· Click rows to expand</p>
         </div>
       </div>
 
@@ -904,5 +904,17 @@ export default function LeaderboardPage() {
         }
       `}</style>
     </div>
+  );
+}
+
+export default function LeaderboardPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[var(--bg-primary)] flex items-center justify-center">
+        <div className="text-[var(--accent)] text-xl font-mono">Loading...</div>
+      </div>
+    }>
+      <LeaderboardContent />
+    </Suspense>
   );
 }

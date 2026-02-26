@@ -18,11 +18,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <AuthProvider>
-        <ThemeProvider>
-          <ToastProvider> <body>{children}</body></ToastProvider>
-        </ThemeProvider>
-      </AuthProvider>
+      <body>
+        <AuthProvider>
+          <ThemeProvider>
+            <ToastProvider>{children}</ToastProvider>
+          </ThemeProvider>
+        </AuthProvider>
+      </body>
     </html>
   );
 }

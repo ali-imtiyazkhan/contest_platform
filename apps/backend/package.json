@@ -3,7 +3,7 @@
   "module": "index.ts",
   "type": "module",
   "scripts": {
-    "build": "turbo run build",
+    "build": "tsc --noEmit",
     "dev": "bun run index.ts",
     "worker": "bun run workers/judgeWorker.ts",
     "worker:ai": "bun run workers/aiWorker.ts"

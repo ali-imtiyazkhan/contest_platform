@@ -1,0 +1,68 @@
+﻿bun : $ next build
+At line:1 char:1
++ bun run build > 
+build_output_2.txt 2>&1
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~
+    + CategoryInfo          : NotS 
+   pecified: ($ next build:String  
+  ) [], RemoteException
+    + FullyQualifiedErrorId : Nati 
+   veCommandError
+ 
+   Γû▓ Next.js 15.2.4
+   - Environments: .env
+
+   Creating an optimized production build ...
+ Γ£ô Compiled successfully
+   Linting and checking validity of types ...
+Failed to compile.
+
+.next/types/app/leaderboard/page.ts
+:30:4
+Type error: Type 'typeof import("C:
+/Users/my/Downloads/contest-platfor
+m/apps/arenax/app/leaderboard/page"
+)' does not satisfy the constraint 
+'{ default: Function; config?: {} 
+| undefined; 
+generateStaticParams?: Function | 
+undefined; revalidate?: false | 
+undefined; dynamic?: "auto" | 
+"force-dynamic" | "error" | 
+"force-static" | undefined; ... 9 
+more ...; experimental_ppr?: 
+boolean | undefined; }'.
+  Property 'default' is missing in 
+type 'typeof import("C:/Users/my/Do
+wnloads/contest-platform/apps/arena
+x/app/leaderboard/page")' but 
+required in type '{ default: 
+Function; config?: {} | undefined; 
+generateStaticParams?: Function | 
+undefined; revalidate?: false | 
+undefined; dynamic?: "auto" | 
+"force-dynamic" | "error" | 
+"force-static" | undefined; ... 9 
+more ...; experimental_ppr?: 
+boolean | undefined; }'.
+
+[0m [90m 28 |[39m   experimental
+_ppr[33m?[39m[33m:[39m 
+boolean[0m
+[0m [90m 29 |[39m   [0m
+[0m[31m[1m>[22m[39m[90m 30 
+|[39m }[33m,[39m 
+[33mTEntry[39m[33m,[39m 
+[32m''[39m[33m>>[39m()[0m
+[0m [90m    |[39m    
+[31m[1m^[22m[39m[0m
+[0m [90m 31 |[39m[0m
+[0m [90m 32 |[39m[0m
+[0m [90m 33 |[39m [90m// Check 
+the prop type of the entry 
+function[39m[0m
+Next.js build worker exited with 
+code: 1 and signal: null
+error: script "build" exited with 
+code 1
