@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { MessageSquare, User, Users as UsersIcon } from "lucide-react";
+import ChatSidebar from "../../components/ChatSidebar";
 
 type ContestStatus = "live" | "upcoming" | "completed";
 
@@ -330,11 +332,20 @@ function ContestDetailPanel({ contest, onRegister }: { contest: Contest; onRegis
             <h2 className="text-cream font-extrabold text-xl mt-2 leading-tight">{contest.title}</h2>
             <p className="font-mono text-[0.68rem] text-muted mt-1">by {contest.host}</p>
           </div>
-          <div className="text-right flex-shrink-0">
-            <div className="text-acid font-extrabold text-2xl" style={{ fontFamily: "'Bebas Neue', cursive" }}>
-              ${contest.prize.toLocaleString()}
+          <div className="text-right flex-shrink-0 flex flex-col items-end gap-2">
+            <button
+              onClick={() => (window as any).toggleChat?.()}
+              className="p-2 bg-white/[0.05] border border-white/[0.08] rounded-lg hover:border-acid/40 hover:text-acid transition-all"
+              title="Open Chat"
+            >
+              <MessageSquare size={18} />
+            </button>
+            <div>
+              <div className="text-acid font-extrabold text-2xl" style={{ fontFamily: "'Bebas Neue', cursive" }}>
+                ${contest.prize.toLocaleString()}
+              </div>
+              <div className="font-mono text-[0.62rem] text-muted tracking-widest uppercase">Prize Pool</div>
             </div>
-            <div className="font-mono text-[0.62rem] text-muted tracking-widest uppercase">Prize Pool</div>
           </div>
         </div>
         <p className="text-muted text-[0.82rem] leading-[1.6]">{contest.description}</p>
@@ -538,6 +549,12 @@ export default function ContestsPage() {
   const [registerContest, setRegisterContest] = useState<Contest | null>(null);
   const [search, setSearch] = useState("");
   const [detailsLoading, setDetailsLoading] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+
+  useEffect(() => {
+    (window as any).toggleChat = () => setIsChatOpen(prev => !prev);
+    return () => { delete (window as any).toggleChat; };
+  }, []);
 
   useEffect(() => {
     fetchContests().then((data) => {
@@ -596,9 +613,18 @@ export default function ContestsPage() {
               {liveCnt} Live
             </span>
           )}
-          <span className="font-mono text-[0.68rem] text-muted bg-white/[0.05] border border-white/[0.08] px-2.5 py-1 rounded-sm">
+          <span className="font-mono text-[0.68rem] text-muted bg-white/[0.05] border border-white/[0.08] px-2.5 py-1 rounded-sm mr-4">
             {upcomingCnt} Upcoming
           </span>
+
+          <nav className="flex items-center gap-3 border-l border-white/[0.08] pl-6 ml-2">
+            <Link href="/teams" className="p-2 hover:bg-white/[0.05] rounded-lg transition-colors text-muted hover:text-cream flex items-center gap-2 text-[0.7rem] font-bold uppercase tracking-widest">
+              <UsersIcon size={16} /> <span className="hidden lg:inline">Squads</span>
+            </Link>
+            <Link href="/profile" className="p-2 hover:bg-white/[0.05] rounded-lg transition-colors text-muted hover:text-cream flex items-center gap-2 text-[0.7rem] font-bold uppercase tracking-widest">
+              <User size={16} /> <span className="hidden lg:inline">Profile</span>
+            </Link>
+          </nav>
         </div>
       </header>
 
@@ -658,6 +684,14 @@ export default function ContestsPage() {
       </div>
 
       {registerContest && <RegisterModal contest={registerContest} onClose={() => setRegisterContest(null)} />}
+
+      {selectedId && (
+        <ChatSidebar
+          contestId={selectedId}
+          isOpen={isChatOpen}
+          onClose={() => setIsChatOpen(false)}
+        />
+      )}
     </div>
   );
 }

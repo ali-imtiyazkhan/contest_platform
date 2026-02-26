@@ -474,7 +474,9 @@ router.get("/:contestId/leaderboard", async (req, res) => {
       });
     }
 
-    const userIds = entries.map((e) => e.userId);
+    const userIds = entries
+      .map((e) => e.userId)
+      .filter((id): id is string => id !== null);
 
     //All submission
     const allSubs = await client.contestSubmission.findMany({
@@ -482,13 +484,7 @@ router.get("/:contestId/leaderboard", async (req, res) => {
         userId: { in: userIds },
         contestToChallengeMappingId: { in: mappingIds },
       },
-      select: {
-        userId: true,
-        contestToChallengeMappingId: true,
-        points: true,
-        status: true,
-        createdAt: true,
-        updatedAt: true,
+      include: {
         contestToChallengeMapping: {
           select: { challengeId: true },
         },
@@ -542,11 +538,11 @@ router.get("/:contestId/leaderboard", async (req, res) => {
       return {
         rank: i + 1,
         userId: entry.userId,
-        email: entry.user.email,
-        displayName: entry.user.displayName ?? null,
-        country: entry.user.country ?? null,
-        avatarColor: entry.user.avatarColor,
-        rating: entry.user.rating,
+        email: entry.user?.email || "",
+        displayName: entry.user?.displayName ?? null,
+        country: entry.user?.country ?? null,
+        avatarColor: entry.user?.avatarColor || "#000000",
+        rating: entry.user?.rating || 0,
         totalScore: entry.score,
         maxPossible,
         scorePct,
