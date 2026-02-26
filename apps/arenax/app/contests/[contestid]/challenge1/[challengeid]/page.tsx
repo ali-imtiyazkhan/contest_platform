@@ -5,8 +5,6 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api/v1";
-
-//Types
 interface Challenge {
     id: string;
     title: string;
@@ -218,7 +216,6 @@ function HintBlock({ hint }: { hint: string }) {
     );
 }
 
-/** Animated loading panel shown while polling */
 function LoadingState({ scoringState }: { scoringState: ScoringState }) {
     const steps = [
         { key: "submitted", label: "Answer submitted to server…" },
@@ -231,7 +228,7 @@ function LoadingState({ scoringState }: { scoringState: ScoringState }) {
     const [step, setStep] = useState(0);
 
     useEffect(() => {
-        // Advance the step label every ~1.5 s to look alive
+
         const id = setInterval(
             () => setStep((s) => Math.min(s + 1, steps.length - 1)),
             1500
@@ -239,7 +236,6 @@ function LoadingState({ scoringState }: { scoringState: ScoringState }) {
         return () => clearInterval(id);
     }, []);
 
-    // Jump to "submitted" label instantly when state changes
     useEffect(() => {
         if (scoringState === "submitted") setStep(0);
         if (scoringState === "polling") setStep(1);
@@ -247,14 +243,12 @@ function LoadingState({ scoringState }: { scoringState: ScoringState }) {
 
     return (
         <div className="flex flex-col items-center justify-center h-full gap-6 px-8">
-            {/* Spinner */}
             <div className="relative w-16 h-16">
                 <div className="absolute inset-0 rounded-full border-2 border-acid/20" />
                 <div className="absolute inset-0 rounded-full border-2 border-acid border-t-transparent animate-spin" />
                 <div className="absolute inset-0 flex items-center justify-center text-acid text-xl">⚡</div>
             </div>
 
-            {/* Step label */}
             <div className="text-center">
                 <p className="text-cream font-semibold text-sm mb-2 transition-all duration-500">
                     {steps[step].label}
@@ -514,12 +508,11 @@ export default function ChallengePage() {
         }
     }, []);
 
-    /** Start polling the backend until we get a judged result */
+
     const startPolling = useCallback(() => {
         pollStartRef.current = Date.now();
 
         pollRef.current = setInterval(async () => {
-            // Timeout guard
             if (Date.now() - pollStartRef.current > POLL_TIMEOUT_MS) {
                 stopPolling();
                 setSubmission((prev) => ({
@@ -536,7 +529,6 @@ export default function ChallengePage() {
                 stopPolling();
                 setSubmission((prev) => ({ ...prev, scoring: "done", result }));
             }
-            // else still Pending/Judging — keep polling
         }, POLL_INTERVAL_MS);
     }, [contestId, challengeId, stopPolling]);
 
@@ -557,7 +549,6 @@ export default function ChallengePage() {
             return;
         }
 
-        // Backend accepted the submission — now poll for the judged result
         setSubmission((prev) => ({ ...prev, scoring: "polling" }));
         startPolling();
     };
@@ -567,13 +558,12 @@ export default function ChallengePage() {
         const idx = contest.challenges.findIndex((ch) => ch.id === challengeId);
         const next = contest.challenges[idx + 1];
         if (next) {
-            router.push(`/contests/${contest.id}/challenges/${next.id}`);
+            router.push(`/contests/${contest.id}/challenge1/${next.id}`);
         } else {
             router.push(`/contests/${contestId}/leaderboard`);
         }
     };
 
-    // ── derived ──
     const challengeIndex = contest
         ? contest.challenges.findIndex((ch) => ch.id === challengeId)
         : -1;
