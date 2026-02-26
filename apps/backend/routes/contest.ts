@@ -624,4 +624,64 @@ router.get("/:contestId/leaderboard", async (req, res) => {
   }
 });
 
+// activity feed
+router.get("/:contestId/activity", async (req, res) => {
+  try {
+    const { contestId } = req.params;
+    const limit = Math.min(50, Math.max(1, Number(req.query.limit) || 20));
+
+    // Get recent registrations
+    const registrations = await client.contestParticipant.findMany({
+      where: { contestId },
+      orderBy: { registeredAt: "desc" },
+      take: limit,
+      include: {
+        user: { select: { displayName: true, email: true } },
+      },
+    });
+
+    // Get recent submissions
+    const mappings = await client.contestToChallengeMapping.findMany({
+      where: { contestId },
+      select: { id: true },
+    });
+    const mappingIds = mappings.map((m) => m.id);
+
+    const submissions = await client.contestSubmission.findMany({
+      where: { contestToChallengeMappingId: { in: mappingIds } },
+      orderBy: { createdAt: "desc" },
+      take: limit,
+      include: {
+        user: { select: { displayName: true, email: true } },
+        contestToChallengeMapping: {
+          include: { challenge: { select: { title: true } } },
+        },
+      },
+    });
+
+    // Combine and sort
+    const activity = [
+      ...registrations.map((r) => ({
+        type: "join",
+        userName: r.user.displayName || r.user.email.split("@")[0],
+        timestamp: r.registeredAt,
+      })),
+      ...submissions.map((s) => ({
+        type: s.status === "Accepted" ? "solve" : "submit",
+        userName: s.user.displayName || s.user.email.split("@")[0],
+        challengeTitle: s.contestToChallengeMapping.challenge.title,
+        points: s.points,
+        timestamp: s.createdAt,
+      })),
+    ]
+      .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+      .slice(0, limit);
+
+    res.json({ ok: true, data: activity });
+  } catch (error) {
+    console.error("Activity error:", error);
+    res.status(500).json({ ok: false, message: "Internal server error" });
+  }
+});
+
 export default router;
