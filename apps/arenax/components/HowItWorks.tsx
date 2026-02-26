@@ -33,13 +33,13 @@ export default function HowItWorks() {
   return (
     <section className="px-16 py-[120px]">
       <p
-        className="reveal text-acid text-[0.72rem] tracking-[3px] uppercase mb-4"
+        className="reveal text-[var(--accent)] text-[0.72rem] tracking-[3px] uppercase mb-4"
         style={{ fontFamily: "'DM Mono', monospace" }}
       >
         // Process
       </p>
       <h2
-        className="reveal mb-[60px] leading-none"
+        className="reveal mb-[60px] leading-none text-[var(--text-primary)]"
         style={{
           fontFamily: "'Bebas Neue', cursive",
           fontSize: "clamp(3rem, 5vw, 5rem)",
@@ -52,28 +52,29 @@ export default function HowItWorks() {
         {steps.map((step) => (
           <div
             key={step.num}
-            className="reveal step-card bg-slate hover:bg-mid px-10 py-12 relative overflow-hidden transition-colors duration-300 group"
+            id="process"
+            className="reveal step-card bg-[var(--bg-tertiary)] hover:bg-[var(--bg-card-hover)] px-10 py-12 relative overflow-hidden transition-colors duration-300 group"
           >
             {/* Background number */}
             <span
-              className="absolute top-[-10px] right-6 text-[6rem] leading-none text-white/[0.04] pointer-events-none select-none"
+              className="absolute top-[-10px] right-6 text-[6rem] leading-none text-[var(--text-primary)] opacity-[0.04] pointer-events-none select-none"
               style={{ fontFamily: "'Bebas Neue', cursive" }}
             >
               {step.num}
             </span>
 
             {/* Icon */}
-            <div className="w-[52px] h-[52px] rounded bg-acid/10 border border-acid/20 flex items-center justify-center text-[1.4rem] mb-6">
+            <div className="w-[52px] h-[52px] rounded bg-[var(--accent-bg)] border border-[var(--accent-border)] flex items-center justify-center text-[1.4rem] mb-6">
               {step.icon}
             </div>
 
-            <h3 className="text-[1.2rem] font-extrabold mb-3">{step.title}</h3>
-            <p className="text-[0.88rem] text-muted leading-[1.7]">
+            <h3 className="text-[1.2rem] font-extrabold mb-3 text-[var(--text-primary)]">{step.title}</h3>
+            <p className="text-[0.88rem] text-[var(--text-muted)] leading-[1.7]">
               {step.description}
             </p>
 
             {/* Animated bar */}
-            <div className="step-bar h-[3px] w-12 bg-acid rounded mt-7 transition-all duration-300" />
+            <div className="step-bar h-[3px] w-12 bg-[var(--accent)] rounded mt-7 transition-all duration-300" />
           </div>
         ))}
       </div>

@@ -11,12 +11,12 @@ const footerLinks = [
 
 export default function Footer() {
   return (
-    <footer className="px-16 py-12 border-t border-white/[0.06] flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
+    <footer className="px-16 py-12 border-t border-[var(--border-primary)] flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left bg-[var(--bg-primary)]">
       <div
-        className="text-cream text-[1.5rem] tracking-[3px]"
+        className="text-[var(--text-primary)] text-[1.5rem] tracking-[3px]"
         style={{ fontFamily: "'Bebas Neue', cursive" }}
       >
-        Arena<span className="text-acid">X</span>
+        Arena<span className="text-[var(--accent)]">X</span>
       </div>
 
       <div className="flex flex-wrap justify-center gap-7">
@@ -24,7 +24,7 @@ export default function Footer() {
           <Link
             key={link}
             href="#"
-            className="text-muted text-[0.75rem] tracking-[1.5px] uppercase no-underline hover:text-cream transition-colors duration-200"
+            className="text-[var(--text-muted)] text-[0.75rem] tracking-[1.5px] uppercase no-underline hover:text-[var(--text-primary)] transition-colors duration-200"
           >
             {link}
           </Link>
@@ -32,7 +32,7 @@ export default function Footer() {
       </div>
 
       <div
-        className="text-muted text-[0.7rem]"
+        className="text-[var(--text-muted)] text-[0.7rem]"
         style={{ fontFamily: "'DM Mono', monospace" }}
       >
         © 2025 ArenaX. All rights reserved.

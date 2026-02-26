@@ -41,16 +41,16 @@ export default function Hero() {
   return (
     <section className="min-h-screen grid grid-cols-1 md:grid-cols-2 relative overflow-hidden hero-divider">
       {/* Left Panel */}
-      <div className="bg-black flex flex-col justify-center px-16 pt-40 pb-20 relative z-[2]">
+      <div className="bg-[var(--bg-primary)] flex flex-col justify-center px-16 pt-40 pb-20 relative z-[2]">
         <p
-          className="text-acid text-[0.75rem] tracking-[3px] uppercase mb-6 hero-animate animate-fade-up-1"
+          className="text-[var(--accent)] text-[0.75rem] tracking-[3px] uppercase mb-6 hero-animate animate-fade-up-1"
           style={{ fontFamily: "'DM Mono', monospace" }}
         >
           // The Ultimate Contest Platform
         </p>
 
         <h1
-          className="text-cream leading-[0.92] hero-animate animate-fade-up-2"
+          className="text-[var(--text-primary)] leading-[0.92] hero-animate animate-fade-up-2"
           style={{
             fontFamily: "'Bebas Neue', cursive",
             fontSize: "clamp(4rem, 7vw, 7.5rem)",
@@ -60,10 +60,10 @@ export default function Hero() {
           <br />
           Think.
           <br />
-          <span className="text-acid">Conquer.</span>
+          <span className="text-[var(--accent)]">Conquer.</span>
         </h1>
 
-        <p className="mt-7 text-base leading-[1.7] text-muted max-w-[400px] hero-animate animate-fade-up-3">
+        <p className="mt-7 text-base leading-[1.7] text-[var(--text-muted)] max-w-[400px] hero-animate animate-fade-up-3">
           Enter live contests. Face real challenges. Answer in real-time —
           question on one side, your answer on the other. Only the sharpest
           minds win.
@@ -71,14 +71,14 @@ export default function Hero() {
 
         <div className="flex gap-4 mt-11 hero-animate animate-fade-up-4">
           <Link
-            href="#"
-            className="bg-acid text-black px-9 py-4 rounded-sm text-[0.85rem] font-extrabold tracking-[2px] uppercase no-underline inline-flex items-center gap-2.5 hover:-translate-y-[3px] hover:shadow-[0_12px_30px_rgba(200,241,53,0.35)] transition-all duration-200"
+            href="/contests"
+            className="bg-[var(--accent)] text-[var(--accent-text-on)] px-9 py-4 rounded-sm text-[0.85rem] font-extrabold tracking-[2px] uppercase no-underline inline-flex items-center gap-2.5 hover:-translate-y-[3px] hover:shadow-[0_12px_30px_rgba(200,241,53,0.35)] transition-all duration-200 font-syne"
           >
             Join a Contest →
           </Link>
           <Link
-            href="#"
-            className="bg-transparent text-cream px-9 py-4 rounded-sm border border-white/20 text-[0.85rem] font-bold tracking-[2px] uppercase no-underline hover:border-white hover:-translate-y-[3px] transition-all duration-200"
+            href="#process"
+            className="bg-transparent text-[var(--text-primary)] px-9 py-4 rounded-sm border border-[var(--border-secondary)] text-[0.85rem] font-bold tracking-[2px] uppercase no-underline hover:border-[var(--text-primary)] hover:-translate-y-[3px] transition-all duration-200 font-syne"
           >
             See How It Works
           </Link>
@@ -89,14 +89,14 @@ export default function Hero() {
           {stats.map((s) => (
             <div key={s.label}>
               <div
-                className="text-cream text-[2.4rem] leading-none"
+                className="text-[var(--text-primary)] text-[2.4rem] leading-none"
                 style={{ fontFamily: "'Bebas Neue', cursive" }}
               >
                 {s.num}
-                <span className="text-acid">{s.suffix}</span>
+                <span className="text-[var(--accent)]">{s.suffix}</span>
               </div>
               <div
-                className="text-[0.7rem] text-muted uppercase tracking-[2px] mt-1"
+                className="text-[0.7rem] text-[var(--text-muted)] uppercase tracking-[2px] mt-1"
                 style={{ fontFamily: "'DM Mono', monospace" }}
               >
                 {s.label}
@@ -107,26 +107,26 @@ export default function Hero() {
       </div>
 
       {/* Right Panel — Challenge Preview */}
-      <div className="hidden md:flex bg-slate items-center justify-center px-12 pt-36 pb-20 border-l border-white/[0.06] relative">
+      <div className="hidden md:flex bg-[var(--bg-tertiary)] items-center justify-center px-12 pt-36 pb-20 border-l border-[var(--border-primary)] relative">
         <div
-          className="w-full max-w-[520px] bg-mid rounded-lg overflow-hidden border border-white/[0.08] shadow-[0_40px_80px_rgba(0,0,0,0.5)] hero-animate animate-slide-in"
+          className="w-full max-w-[520px] bg-[var(--bg-secondary)] rounded-lg overflow-hidden border border-[var(--border-secondary)] shadow-[0_40px_80px_rgba(0,0,0,0.2)] hero-animate animate-slide-in"
         >
           {/* Card Header */}
-          <div className="bg-acid/[0.08] border-b border-acid/[0.15] px-5 py-3.5 flex items-center gap-3">
+          <div className="bg-[var(--accent-bg)] border-b border-[var(--accent-border)] px-5 py-3.5 flex items-center gap-3">
             <span
-              className="text-black bg-acid px-2.5 py-1 rounded-sm text-[0.65rem] font-medium tracking-[2px] uppercase"
+              className="text-[var(--accent-text-on)] bg-[var(--accent)] px-2.5 py-1 rounded-sm text-[0.65rem] font-medium tracking-[2px] uppercase"
               style={{ fontFamily: "'DM Mono', monospace" }}
             >
               Live Now
             </span>
             <span
-              className="text-[0.72rem] text-muted"
+              className="text-[0.72rem] text-[var(--text-muted)]"
               style={{ fontFamily: "'DM Mono', monospace" }}
             >
               Challenge #47 — Logic Masters
             </span>
             <span
-              className="ml-auto text-acid text-[0.75rem]"
+              className="ml-auto text-[var(--accent)] text-[0.75rem]"
               style={{ fontFamily: "'DM Mono', monospace" }}
             >
               {formatTime(seconds)}
@@ -136,18 +136,18 @@ export default function Hero() {
           {/* Card Body — Split */}
           <div className="grid grid-cols-2 min-h-[320px]">
             {/* Question Side */}
-            <div className="p-7 border-r border-white/[0.06] flex flex-col gap-4">
+            <div className="p-7 border-r border-[var(--border-primary)] flex flex-col gap-4">
               <span
-                className="text-[0.65rem] text-muted tracking-[2px] uppercase"
+                className="text-[0.65rem] text-[var(--text-muted)] tracking-[2px] uppercase"
                 style={{ fontFamily: "'DM Mono', monospace" }}
               >
                 // Question
               </span>
-              <p className="text-[0.95rem] leading-[1.6] text-cream font-semibold">
+              <p className="text-[0.95rem] leading-[1.6] text-[var(--text-primary)] font-semibold">
                 A train travels 120 km in 1.5 hours. If it increases speed by
                 20%, how long will it take to cover 200 km?
               </p>
-              <p className="text-[0.78rem] text-muted leading-[1.5] italic">
+              <p className="text-[0.78rem] text-[var(--text-muted)] leading-[1.5] italic">
                 Hint: Calculate the new speed first, then apply it to the new
                 distance.
               </p>
@@ -156,30 +156,30 @@ export default function Hero() {
             {/* Answer Side */}
             <div className="p-7 flex flex-col gap-3">
               <span
-                className="text-[0.65rem] text-muted tracking-[2px] uppercase"
+                className="text-[0.65rem] text-[var(--text-muted)] tracking-[2px] uppercase"
                 style={{ fontFamily: "'DM Mono', monospace" }}
               >
                 // Your Answer
               </span>
               <textarea
-                className="flex-1 bg-white/[0.04] border border-white/10 rounded-md p-3.5 text-[0.82rem] text-cream leading-[1.6] resize-none outline-none focus:border-acid/40 transition-colors caret-acid placeholder:text-muted placeholder:italic"
+                className="flex-1 bg-[var(--input-bg)] border border-[var(--border-secondary)] rounded-md p-3.5 text-[0.82rem] text-[var(--text-primary)] leading-[1.6] resize-none outline-none focus:border-[var(--accent-border)] transition-colors caret-[var(--accent)] placeholder:text-[var(--text-muted)] placeholder:italic"
                 style={{ fontFamily: "'DM Mono', monospace" }}
                 placeholder="Type your answer here..."
               />
-              <button className="bg-acid text-black rounded py-2.5 text-[0.78rem] font-extrabold tracking-[1.5px] uppercase hover:opacity-85 transition-opacity">
+              <button className="bg-[var(--accent)] text-[var(--accent-text-on)] rounded py-2.5 text-[0.78rem] font-extrabold tracking-[1.5px] uppercase hover:opacity-85 transition-opacity font-syne">
                 Submit →
               </button>
             </div>
           </div>
 
           {/* Card Footer */}
-          <div className="px-6 py-3.5 border-t border-white/[0.05] flex items-center justify-between">
-            <div className="flex items-center gap-2 text-[0.72rem] text-muted">
+          <div className="px-6 py-3.5 border-t border-[var(--border-primary)] flex items-center justify-between">
+            <div className="flex items-center gap-2 text-[0.72rem] text-[var(--text-muted)]">
               <div className="flex">
                 {avatars.map((av) => (
                   <div
                     key={av.letter}
-                    className={`w-6 h-6 rounded-full border-2 border-mid -ml-1.5 first:ml-0 ${av.bg} text-[0.6rem] flex items-center justify-center text-white font-bold`}
+                    className={`w-6 h-6 rounded-full border-2 border-[var(--bg-secondary)] -ml-1.5 first:ml-0 ${av.bg} text-[0.6rem] flex items-center justify-center text-white font-bold`}
                   >
                     {av.letter}
                   </div>
@@ -188,7 +188,7 @@ export default function Hero() {
               <span>+2,841 competing</span>
             </div>
             <span
-              className="text-acid text-[0.72rem]"
+              className="text-[var(--accent)] text-[0.72rem]"
               style={{ fontFamily: "'DM Mono', monospace" }}
             >
               +500 pts

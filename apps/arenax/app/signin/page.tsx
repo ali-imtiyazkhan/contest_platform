@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTheme } from "@/context/ThemeContext";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -65,14 +66,14 @@ export default function LoginPage() {
 
     return (
         <div
-            className="min-h-screen bg-black text-cream flex overflow-hidden relative"
+            className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] flex overflow-hidden relative"
             style={{ fontFamily: "'Syne', sans-serif" }}
         >
             {/* Animated gradient */}
             <div
                 className="absolute inset-0 opacity-30 pointer-events-none"
                 style={{
-                    background: `radial-gradient(600px circle at ${mousePos.x}px ${mousePos.y}px, rgba(200,241,53,0.15), transparent 40%)`,
+                    background: `radial-gradient(600px circle at ${mousePos.x}px ${mousePos.y}px, var(--accent-bg), transparent 40%)`,
                 }}
             />
 
@@ -85,20 +86,20 @@ export default function LoginPage() {
             />
 
             {/* Left panel — Branding */}
-            <div className="hidden lg:flex lg:w-[45%] flex-col justify-between p-16 relative bg-gradient-to-br from-black via-slate to-black border-r border-white/[0.06]">
+            <div className="hidden lg:flex lg:w-[45%] flex-col justify-between p-16 relative bg-gradient-to-br from-[var(--bg-primary)] via-[var(--bg-secondary)] to-[var(--bg-primary)] border-r border-[var(--border-primary)]">
                 <div className="relative z-10">
                     <Link
                         href="/"
-                        className="inline-flex items-baseline gap-1 text-cream hover:text-acid transition-colors no-underline"
+                        className="inline-flex items-baseline gap-1 text-[var(--text-primary)] hover:text-[var(--accent)] transition-colors no-underline"
                     >
                         <span
                             className="text-[3.5rem] font-extrabold tracking-[4px] leading-none"
                             style={{ fontFamily: "'Bebas Neue', cursive" }}
                         >
-                            Arena<span className="text-acid">X</span>
+                            Arena<span className="text-[var(--accent)]">X</span>
                         </span>
                     </Link>
-                    <p className="text-muted text-sm mt-3 max-w-md leading-relaxed">
+                    <p className="text-[var(--text-muted)] text-sm mt-3 max-w-md leading-relaxed">
                         Welcome back. Log in to continue your competitive journey.
                     </p>
                 </div>
@@ -119,7 +120,7 @@ export default function LoginPage() {
                             <div className="text-2xl group-hover:scale-110 transition-transform duration-300">
                                 {feat.icon}
                             </div>
-                            <div className="text-cream/80 text-sm group-hover:text-cream transition-colors">
+                            <div className="text-[var(--text-primary)] opacity-80 text-sm group-hover:opacity-100 transition-colors">
                                 {feat.text}
                             </div>
                         </div>
@@ -127,7 +128,7 @@ export default function LoginPage() {
                 </div>
 
                 {/* Decorative glow */}
-                <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-acid/5 rounded-full blur-[120px]" />
+                <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-[var(--accent)] opacity-5 rounded-full blur-[120px]" />
             </div>
 
             {/* Right panel — Form */}
@@ -137,10 +138,10 @@ export default function LoginPage() {
                     <div className="lg:hidden text-center mb-8">
                         <Link href="/" className="inline-block">
                             <span
-                                className="text-[2.5rem] font-extrabold tracking-[3px] text-cream"
+                                className="text-[2.5rem] font-extrabold tracking-[3px] text-[var(--text-primary)]"
                                 style={{ fontFamily: "'Bebas Neue', cursive" }}
                             >
-                                Arena<span className="text-acid">X</span>
+                                Arena<span className="text-[var(--accent)]">X</span>
                             </span>
                         </Link>
                     </div>
@@ -148,7 +149,7 @@ export default function LoginPage() {
                     {/* Header */}
                     <div className="text-center space-y-2">
                         <h1
-                            className="text-cream font-extrabold leading-tight"
+                            className="text-[var(--text-primary)] font-extrabold leading-tight"
                             style={{
                                 fontFamily: "'Bebas Neue', cursive",
                                 fontSize: "clamp(2.5rem, 5vw, 3.5rem)",
@@ -156,9 +157,9 @@ export default function LoginPage() {
                         >
                             Welcome Back
                         </h1>
-                        <p className="text-muted text-sm">
+                        <p className="text-[var(--text-muted)] text-sm">
                             Don&apos;t have an account?{" "}
-                            <Link href="/signup" className="text-acid hover:underline font-semibold">
+                            <Link href="/signup" className="text-[var(--accent)] hover:underline font-semibold">
                                 Sign up
                             </Link>
                         </p>
@@ -168,10 +169,10 @@ export default function LoginPage() {
                     <div className="space-y-3">
                         <div className="relative">
                             <div className="absolute inset-0 flex items-center">
-                                <div className="w-full border-t border-white/[0.08]" />
+                                <div className="w-full border-t border-[var(--border-secondary)]" />
                             </div>
                             <div className="relative flex justify-center text-xs uppercase">
-                                <span className="bg-black px-3 text-muted font-mono tracking-widest">
+                                <span className="bg-[var(--bg-primary)] px-3 text-[var(--text-muted)] font-mono tracking-widest">
                                     Quick Sign In
                                 </span>
                             </div>
@@ -180,7 +181,7 @@ export default function LoginPage() {
                         <div className="grid grid-cols-2 gap-3">
                             <button
                                 type="button"
-                                className="flex items-center justify-center gap-2 bg-white/[0.04] border border-white/[0.1] rounded-lg px-4 py-3 text-cream text-sm font-semibold hover:bg-white/[0.08] hover:border-white/[0.2] transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                                className="flex items-center justify-center gap-2 bg-[var(--bg-secondary)] border border-[var(--border-secondary)] rounded-lg px-4 py-3 text-[var(--text-primary)] text-sm font-semibold hover:bg-[var(--bg-card)] hover:border-[var(--border-primary)] transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                                 disabled
                             >
                                 <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -220,10 +221,10 @@ export default function LoginPage() {
 
                         <div className="relative">
                             <div className="absolute inset-0 flex items-center">
-                                <div className="w-full border-t border-white/[0.08]" />
+                                <div className="w-full border-t border-[var(--border-secondary)]" />
                             </div>
                             <div className="relative flex justify-center text-xs uppercase">
-                                <span className="bg-black px-3 text-muted font-mono tracking-widest">Or</span>
+                                <span className="bg-[var(--bg-primary)] px-3 text-[var(--text-muted)] font-mono tracking-widest">Or</span>
                             </div>
                         </div>
                     </div>
@@ -234,7 +235,7 @@ export default function LoginPage() {
                         <div className="space-y-2">
                             <label
                                 htmlFor="email"
-                                className="block font-mono text-[0.7rem] text-muted tracking-[2px] uppercase"
+                                className="block font-mono text-[0.7rem] text-[var(--text-muted)] tracking-[2px] uppercase"
                             >
                                 Email Address
                             </label>
@@ -244,7 +245,7 @@ export default function LoginPage() {
                                 required
                                 value={form.email}
                                 onChange={(e) => setForm({ ...form, email: e.target.value })}
-                                className="w-full bg-white/[0.04] border border-white/[0.12] rounded-lg px-4 py-3.5 text-cream text-sm outline-none focus:border-acid/50 focus:bg-white/[0.06] transition-all placeholder:text-muted/40"
+                                className="w-full bg-[var(--bg-secondary)] border border-[var(--border-secondary)] rounded-lg px-4 py-3.5 text-[var(--text-primary)] text-sm outline-none focus:border-[var(--accent-border)] focus:bg-[var(--bg-card)] transition-all placeholder:text-[var(--text-muted)] opacity-40"
                                 placeholder="you@example.com"
                                 autoComplete="email"
                             />
@@ -255,13 +256,13 @@ export default function LoginPage() {
                             <div className="flex items-center justify-between">
                                 <label
                                     htmlFor="password"
-                                    className="block font-mono text-[0.7rem] text-muted tracking-[2px] uppercase"
+                                    className="block font-mono text-[0.7rem] text-[var(--text-muted)] tracking-[2px] uppercase"
                                 >
                                     Password
                                 </label>
                                 <Link
                                     href="/forgot-password"
-                                    className="text-[0.7rem] text-acid hover:underline font-mono"
+                                    className="text-[0.7rem] text-[var(--accent)] hover:underline font-mono"
                                 >
                                     Forgot?
                                 </Link>
@@ -272,7 +273,7 @@ export default function LoginPage() {
                                 required
                                 value={form.password}
                                 onChange={(e) => setForm({ ...form, password: e.target.value })}
-                                className="w-full bg-white/[0.04] border border-white/[0.12] rounded-lg px-4 py-3.5 text-cream text-sm outline-none focus:border-acid/50 focus:bg-white/[0.06] transition-all placeholder:text-muted/40"
+                                className="w-full bg-[var(--bg-secondary)] border border-[var(--border-secondary)] rounded-lg px-4 py-3.5 text-[var(--text-primary)] text-sm outline-none focus:border-[var(--accent-border)] focus:bg-[var(--bg-card)] transition-all placeholder:text-[var(--text-muted)] placeholder:opacity-40"
                                 placeholder="••••••••"
                                 autoComplete="current-password"
                             />
@@ -285,9 +286,9 @@ export default function LoginPage() {
                                 type="checkbox"
                                 checked={form.remember}
                                 onChange={(e) => setForm({ ...form, remember: e.target.checked })}
-                                className="w-4 h-4 rounded border-white/[0.12] bg-white/[0.04] text-acid focus:ring-acid focus:ring-offset-0 focus:ring-2 cursor-pointer"
+                                className="w-4 h-4 rounded border-[var(--border-secondary)] bg-[var(--bg-secondary)] text-[var(--accent)] focus:ring-[var(--accent)] focus:ring-offset-0 focus:ring-2 cursor-pointer"
                             />
-                            <label htmlFor="remember" className="ml-2.5 text-sm text-muted cursor-pointer">
+                            <label htmlFor="remember" className="ml-2.5 text-sm text-[var(--text-muted)] cursor-pointer">
                                 Remember me for 30 days
                             </label>
                         </div>
@@ -303,7 +304,7 @@ export default function LoginPage() {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full bg-acid text-black font-extrabold text-sm tracking-[2px] uppercase py-4 rounded-lg hover:opacity-90 hover:-translate-y-0.5 disabled:opacity-40 disabled:cursor-not-allowed disabled:translate-y-0 transition-all duration-200 shadow-[0_8px_24px_rgba(200,241,53,0.3)] flex items-center justify-center gap-2"
+                            className="w-full bg-[var(--accent)] text-[var(--accent-text-on)] font-extrabold text-sm tracking-[2px] uppercase py-4 rounded-lg hover:opacity-90 hover:-translate-y-0.5 disabled:opacity-40 disabled:cursor-not-allowed disabled:translate-y-0 transition-all duration-200"
                         >
                             {loading ? (
                                 <>
@@ -317,9 +318,9 @@ export default function LoginPage() {
                     </form>
 
                     {/* Support link */}
-                    <p className="text-center text-[0.7rem] text-muted/60">
+                    <p className="text-center text-[0.7rem] text-[var(--text-muted)] opacity-60">
                         Having trouble?{" "}
-                        <Link href="/support" className="text-cream hover:text-acid transition-colors">
+                        <Link href="/support" className="text-[var(--text-primary)] hover:text-[var(--accent)] transition-colors">
                             Contact support
                         </Link>
                     </p>
