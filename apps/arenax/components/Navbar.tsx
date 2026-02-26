@@ -20,7 +20,7 @@ export default function Navbar() {
         className="text-[2rem] tracking-[3px] text-[var(--text-primary)]"
         style={{ fontFamily: "'Bebas Neue', cursive" }}
       >
-        Arena<span className="text-[var(--accent)]">X</span>
+        100x<span className="text-[var(--accent)]">Contest</span>
       </div>
 
       {/* Nav Links */}

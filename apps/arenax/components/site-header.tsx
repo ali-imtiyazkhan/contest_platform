@@ -48,7 +48,7 @@ export function SiteHeader() {
                 <Link
                     href={accessToken ? "/dashboard" : "/signin"}
                     className="group relative flex items-center gap-3"
-                    aria-label="ArenaX home"
+                    aria-label="100xContest home"
                 >
                     <div className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[var(--bg-tertiary)] to-[var(--bg-primary)] border border-[var(--border-secondary)] transition-all duration-300 group-hover:border-[var(--accent)] group-hover:shadow-[0_0_15px_var(--accent-border)]">
                         <svg
@@ -63,7 +63,7 @@ export function SiteHeader() {
 
                     <div className="flex flex-col">
                         <span className="text-lg font-bold leading-none tracking-tight text-[var(--text-primary)]">
-                            Arena<span className="text-[var(--accent)]">X</span>
+                            100x<span className="text-[var(--accent)]">Contest</span>
                         </span>
                         <span className="text-[10px] uppercase tracking-widest text-[var(--text-muted)] font-bold">Platform</span>
                     </div>

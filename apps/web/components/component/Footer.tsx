@@ -35,7 +35,7 @@ export default function Footer() {
         className="text-muted text-[0.7rem]"
         style={{ fontFamily: "'DM Mono', monospace" }}
       >
-        © 2025 ArenaX. All rights reserved.
+        © 2025 100xContest. All rights reserved.
       </div>
     </footer>
   );

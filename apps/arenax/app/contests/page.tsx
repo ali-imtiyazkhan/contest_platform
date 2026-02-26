@@ -149,7 +149,7 @@ async function fetchContestDetails(contestId: string): Promise<Contest | null> {
       endTime: c.endTime,
       challenges,
       difficulty: c.difficulty || "Intermediate",
-      host: c.host || "ArenaX Official",
+      host: c.host || "100xContest Official",
       description: c.description || "No description available",
       tags: Array.isArray(c.tags) ? c.tags : [],
     };
@@ -182,7 +182,7 @@ async function fetchContests(): Promise<Contest[]> {
         endTime: c.endTime,
         challenges: [],
         difficulty: c.difficulty || "Intermediate",
-        host: c.host || "ArenaX Official",
+        host: c.host || "100xContest Official",
         description: c.description || "",
         tags: Array.isArray(c.tags) ? c.tags : [],
       };

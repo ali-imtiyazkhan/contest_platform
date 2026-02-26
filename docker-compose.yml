@@ -64,13 +64,13 @@ services:
     depends_on:
       - redis
 
-  arenax:
+  100xcontest:
     build:
       context: .
       dockerfile: Dockerfile.frontend
       args:
-        - APP_NAME=arenax
-    container_name: contest-arenax
+        - APP_NAME=100xcontest
+    container_name: contest-100xcontest
     ports:
       - "3005:3000"
     env_file:

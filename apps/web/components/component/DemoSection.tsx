@@ -41,7 +41,7 @@ export default function DemoSection() {
             className="ml-3 text-[0.72rem] text-muted"
             style={{ fontFamily: "'DM Mono', monospace" }}
           >
-            arenax.io — Challenge #47 / Part 3 of 5
+            100xcontest.com — Challenge #47 / Part 3 of 5
           </span>
         </div>
 
