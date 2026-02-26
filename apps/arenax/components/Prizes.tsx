@@ -14,7 +14,7 @@ const prizes: Prize[] = [
     amount: "$250",
     title: "Bronze Champion",
     description:
-      "Cash prize + ArenaX merchandise + 3-month Pro membership.",
+      "Cash prize + 100xContest merchandise + 3-month Pro membership.",
   },
   {
     trophy: "🥇",
@@ -22,7 +22,7 @@ const prizes: Prize[] = [
     amount: "$2,500",
     title: "Grand Champion",
     description:
-      "Top cash prize + Hall of Fame placement + Annual Pro membership + exclusive ArenaX trophy.",
+      "Top cash prize + Hall of Fame placement + Annual Pro membership + exclusive 100xContest trophy.",
     featured: true,
   },
   {
@@ -31,7 +31,7 @@ const prizes: Prize[] = [
     amount: "$750",
     title: "Silver Champion",
     description:
-      "Cash prize + ArenaX exclusive gear + 6-month Pro membership.",
+      "Cash prize + 100xContest exclusive gear + 6-month Pro membership.",
   },
 ];
 
@@ -59,8 +59,8 @@ export default function Prizes() {
           <div
             key={prize.position}
             className={`reveal p-11 rounded-md border transition-all duration-300 hover:-translate-y-1.5 ${prize.featured
-                ? "bg-[var(--accent)] border-transparent text-[var(--accent-text-on)] shadow-[0_20px_50px_rgba(200,241,53,0.25)]"
-                : "bg-transparent border-[var(--border-secondary)] hover:border-[var(--accent-border)]"
+              ? "bg-[var(--accent)] border-transparent text-[var(--accent-text-on)] shadow-[0_20px_50px_rgba(200,241,53,0.25)]"
+              : "bg-transparent border-[var(--border-secondary)] hover:border-[var(--accent-border)]"
               }`}
           >
             <div className="text-[2rem] mb-5">{prize.trophy}</div>

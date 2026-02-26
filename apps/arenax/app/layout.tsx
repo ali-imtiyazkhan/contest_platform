@@ -6,7 +6,7 @@ import { ThemeProvider } from "@/context/ThemeContext";
 
 
 export const metadata: Metadata = {
-  title: "ArenaX — Where Minds Compete",
+  title: "100xContest — Where Minds Compete",
   description:
     "Enter live contests. Face real challenges. Answer in real-time — question on one side, your answer on the other. Only the sharpest minds win.",
 };

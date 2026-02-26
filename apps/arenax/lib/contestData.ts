@@ -57,7 +57,7 @@ export const CONTESTS: Contest[] = [
     startTime: new Date(Date.now() - 1000 * 60 * 37).toISOString(),
     endTime: new Date(Date.now() + 1000 * 60 * 83).toISOString(),
     difficulty: "Advanced",
-    host: "ArenaX Official",
+    host: "100xContest Official",
     description:
       "The premier mathematical reasoning contest. Five progressively harder challenges test speed, precision, and creative problem-solving.",
     tags: ["Math", "Logic", "Timed"],
@@ -183,7 +183,7 @@ export const CONTESTS: Contest[] = [
     startTime: new Date(Date.now() - 1000 * 60 * 12).toISOString(),
     endTime: new Date(Date.now() + 1000 * 60 * 108).toISOString(),
     difficulty: "Intermediate",
-    host: "ArenaX Official",
+    host: "100xContest Official",
     description:
       "Three creative writing challenges judged by AI and community vote. Voice, structure, and originality all count.",
     tags: ["Writing", "Creative", "Judged"],
@@ -264,7 +264,7 @@ export const CONTESTS: Contest[] = [
     ).toISOString(),
     endTime: new Date(Date.now() + 1000 * 60 * 60 * 6).toISOString(),
     difficulty: "Intermediate",
-    host: "ArenaX Official",
+    host: "100xContest Official",
     description:
       "The biggest open contest of the season. History, science, pop culture, and more across 8 rapid-fire challenges.",
     tags: ["Knowledge", "Open", "Rapid-fire"],
@@ -390,7 +390,7 @@ export const CONTESTS: Contest[] = [
     startTime: new Date(Date.now() + 1000 * 60 * 60 * 26).toISOString(),
     endTime: new Date(Date.now() + 1000 * 60 * 60 * 29).toISOString(),
     difficulty: "Elite",
-    host: "ArenaX Dev League",
+    host: "100xContest Dev League",
     description:
       "Four algorithmic challenges with live judge feedback. Optimize for speed and correctness. Top solutions get published.",
     tags: ["Algorithms", "Coding", "Elite"],
@@ -436,7 +436,7 @@ export const CONTESTS: Contest[] = [
         duration: "20 min",
         durationSeconds: 1200,
         question:
-          "Design a real-time contest platform (like ArenaX) that can support 100,000 simultaneous users.\n\nIn 300–400 words, describe:\n\n1. Architecture — what services/components would you use? (frontend, backend, database, caching, etc.)\n2. Real-time updates — how do you push live activity feeds and countdowns to all users?\n3. Submission handling — how do you prevent cheating and handle answer submissions at scale?\n4. One major failure point — identify it and explain how you'd handle it.\n\nYou don't need to write code — focus on the high-level design decisions and your reasoning.",
+          "Design a real-time contest platform (like 100xContest) that can support 100,000 simultaneous users.\n\nIn 300–400 words, describe:\n\n1. Architecture — what services/components would you use? (frontend, backend, database, caching, etc.)\n2. Real-time updates — how do you push live activity feeds and countdowns to all users?\n3. Submission handling — how do you prevent cheating and handle answer submissions at scale?\n4. One major failure point — identify it and explain how you'd handle it.\n\nYou don't need to write code — focus on the high-level design decisions and your reasoning.",
         hint: "Think about WebSockets for real-time, Redis for caching, and horizontal scaling for load.",
       },
     ],
@@ -470,7 +470,7 @@ export const CONTESTS: Contest[] = [
     startTime: new Date(Date.now() - 1000 * 60 * 60 * 6).toISOString(),
     endTime: new Date(Date.now() - 1000 * 60 * 60 * 4).toISOString(),
     difficulty: "Beginner",
-    host: "ArenaX Official",
+    host: "100xContest Official",
     description:
       "A fast-paced arithmetic and mental math contest. Perfect for beginners looking to get their first win.",
     tags: ["Math", "Beginner", "Speed"],
