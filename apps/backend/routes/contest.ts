@@ -103,6 +103,8 @@ router.post("/admin/challenge", adminMiddleware, async (req, res) => {
   }
 });
 
+
+// challenge details
 router.post(
   "/admin/contest/:contestId/challenge",
   adminMiddleware,
@@ -151,6 +153,8 @@ router.get("/upcoming", async (req, res) => {
   res.json({ ok: true, data, pagination: { offset, limit, total } });
 });
 
+
+// active contests
 router.get("/active", async (req, res) => {
   const { offset, limit } = parsePagination(req);
   const now = new Date();
@@ -167,6 +171,7 @@ router.get("/active", async (req, res) => {
   res.json({ ok: true, data, pagination: { offset, limit, total } });
 });
 
+// finished contests
 router.get("/finished", async (req, res) => {
   const { offset, limit } = parsePagination(req);
   const now = new Date();
@@ -204,6 +209,8 @@ router.get("/:contestId", userMiddleware, async (req: any, res) => {
   });
 });
 
+
+// check registration
 router.get(
   "/:contestId/check-registration",
   userMiddleware,

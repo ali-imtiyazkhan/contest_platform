@@ -429,8 +429,7 @@ function ScoringResults({
         </div>
     );
 }
-
-// Main Page 
+ 
 const POLL_INTERVAL_MS = 2500;
 const POLL_TIMEOUT_MS = 120_000;
 
