@@ -41,6 +41,11 @@ enum SubmissionStatus {
   Rejected
 }
 
+enum ParticipationMode {
+  Solo
+  Team
+}
+
 model User {
   id          String  @id @default(uuid())
   email       String  @unique
@@ -55,6 +60,9 @@ model User {
   leaderboard         Leaderboard[]
   ratingHistories     RatingHistory[]
   contestParticipants ContestParticipant[]
+  ownedTeams          Team[]              @relation("TeamOwner")
+  teamMemberships     TeamMembership[]
+  chatMessages        ChatMessage[]
 }
 
 model OtpVerification {
@@ -80,11 +88,13 @@ model Contest {
   maxParticipants Int             @default(1000)
   host            String?
   tags            String[]        @default([])
+  participationMode ParticipationMode @default(Solo)
 
   contestToChallengeMapping ContestToChallengeMapping[]
   leaderboard               Leaderboard[]
   ratingHistories           RatingHistory[]
   contestParticipants       ContestParticipant[]
+  chatMessages              ChatMessage[]
 
   @@index([startTime])
   @@index([endTime])
@@ -128,6 +138,7 @@ model ContestSubmission {
   submission                  String
   contestToChallengeMappingId String
   userId                      String
+  teamId                      String?
 
   points    Int              @default(0)
   aiVerdict String?
@@ -137,23 +148,68 @@ model ContestSubmission {
   status    SubmissionStatus @default(Pending)
 
   user                      User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  team                      Team?                     @relation(fields: [teamId], references: [id])
   contestToChallengeMapping ContestToChallengeMapping @relation(fields: [contestToChallengeMappingId], references: [id], onDelete: Cascade)
 
   @@unique([contestToChallengeMappingId, userId])
   @@index([status, updatedAt])                  // ← NEW: fast recentSolves query
 }
 
+model Team {
+  id          String   @id @default(uuid())
+  name        String
+  inviteCode  String   @unique
+  ownerId     String
+  createdAt   DateTime @default(now())
+
+  owner       User              @relation("TeamOwner", fields: [ownerId], references: [id])
+  members     TeamMembership[]
+  leaderboard Leaderboard[]
+  submissions ContestSubmission[]
+  participants ContestParticipant[]
+
+  @@index([inviteCode])
+}
+
+model TeamMembership {
+  id        String   @id @default(uuid())
+  teamId    String
+  userId    String
+  joinedAt  DateTime @default(now())
+
+  team      Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, userId])
+}
+
+model ChatMessage {
+  id        String   @id @default(uuid())
+  content   String
+  userId    String
+  contestId String
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contest   Contest  @relation(fields: [contestId], references: [id], onDelete: Cascade)
+
+  @@index([contestId, createdAt])
+}
+
 model Leaderboard {
   id           String   @id @default(uuid())
   contestId    String
-  userId       String
+  userId       String?
+  teamId       String?
   score        Int      @default(0)
   lastUpdated  DateTime? @updatedAt              // ← NEW: track when score last changed
 
   contest Contest @relation(fields: [contestId], references: [id], onDelete: Cascade)
-  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user    User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  team    Team?   @relation(fields: [teamId], references: [id], onDelete: Cascade)
 
   @@unique([contestId, userId])
+  @@unique([contestId, teamId])
   @@index([contestId, score])
 }
 
@@ -175,10 +231,12 @@ model ContestParticipant {
   id           String   @id @default(uuid())
   contestId    String
   userId       String
+  teamId       String?
   registeredAt DateTime @default(now())
 
   contest Contest @relation(fields: [contestId], references: [id], onDelete: Cascade)
   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  team    Team?   @relation(fields: [teamId], references: [id])
 
   @@unique([contestId, userId])
   @@index([contestId])

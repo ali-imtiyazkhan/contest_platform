@@ -8,9 +8,11 @@ import express from "express";
 import userRouter from "./routes/user";
 import contestRouter from "./routes/contest";
 import adminRouter from "./routes/admin";
+import teamRouter from "./routes/team";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
+import { client } from "db/client";
 
 dotenv.config();
 
@@ -26,15 +28,17 @@ export const io = new Server(server, {
 
 // Redis adapter setup
 const pubClient = new IORedis({
-  host: process.env.REDIS_HOST,
-  port: Number(process.env.REDIS_PORT),
+  host: process.env.REDIS_HOST || "127.0.0.1",
+  port: Number(process.env.REDIS_PORT) || 6379,
   password: process.env.REDIS_PASSWORD || undefined,
   maxRetriesPerRequest: null,
 });
 
 const subClient = pubClient.duplicate();
 
-io.adapter(createAdapter(pubClient, subClient));
+if (process.env.NODE_ENV === "production" || process.env.REDIS_HOST) {
+  io.adapter(createAdapter(pubClient, subClient));
+}
 
 // Socket connection logic
 io.on("connection", (socket) => {
@@ -42,7 +46,41 @@ io.on("connection", (socket) => {
 
   socket.on("join", (userId: string) => {
     socket.join(userId);
-    console.log(`User ${userId} joined their room`);
+    console.log(`User ${userId} joined their private room`);
+  });
+
+  // Chat logic
+  socket.on("chat:join", (contestId: string) => {
+    socket.join(`contest:${contestId}`);
+    console.log(`Socket ${socket.id} joined contest chat: ${contestId}`);
+  });
+
+  socket.on("chat:send", async (data: { contestId: string, userId: string, content: string }) => {
+    try {
+      const message = await client.chatMessage.create({
+        data: {
+          content: data.content,
+          userId: data.userId,
+          contestId: data.contestId
+        },
+        include: {
+          user: {
+            select: { displayName: true, email: true, avatarColor: true }
+          }
+        }
+      });
+
+      io.to(`contest:${data.contestId}`).emit("chat:message", {
+        id: message.id,
+        content: message.content,
+        userId: message.userId,
+        userName: message.user.displayName || message.user.email.split("@")[0],
+        avatarColor: message.user.avatarColor,
+        timestamp: message.createdAt
+      });
+    } catch (e) {
+      console.error("Chat message error:", e);
+    }
   });
 
   socket.on("disconnect", () => {
@@ -70,6 +108,7 @@ app.get("/health", (req, res) => {
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/admin", adminRouter);
 app.use("/api/v1/contest", contestRouter);
+app.use("/api/v1/team", teamRouter);
 
 const port = process.env.PORT || 4000;
 
