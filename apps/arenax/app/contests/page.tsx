@@ -31,6 +31,71 @@ interface Contest {
   tags: string[];
 }
 
+interface ActivityItem {
+  type: "join" | "submit" | "solve";
+  userName: string;
+  challengeTitle?: string;
+  points?: number;
+  timestamp: string;
+}
+
+function ActivityFeed({ contestId }: { contestId: string }) {
+  const [activities, setActivities] = useState<ActivityItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+    const fetchActivity = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/contest/${contestId}/activity`);
+        const json = await res.json();
+        if (mounted && json.ok) {
+          setActivities(json.data);
+        }
+      } catch (e) {
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+
+    fetchActivity();
+    const interval = setInterval(fetchActivity, 10000); // refresh every 10s
+    return () => {
+      mounted = false;
+      clearInterval(interval);
+    };
+  }, [contestId]);
+
+  if (loading) return <div className="px-6 py-4 font-mono text-[0.65rem] text-muted">Loading activity...</div>;
+  if (activities.length === 0) return <div className="px-6 py-4 font-mono text-[0.65rem] text-muted">No recent activity</div>;
+
+  return (
+    <div className="px-6 py-4 space-y-3">
+      <span className="font-mono text-[0.65rem] text-muted tracking-[2px] uppercase block mb-2">Recent Activity</span>
+      <div className="space-y-2 max-h-[200px] overflow-y-auto pr-2 custom-scrollbar">
+        {activities.map((act, i) => (
+          <div key={i} className="text-[0.72rem] leading-tight border-l-2 border-white/[0.06] pl-3 py-0.5">
+            <span className="text-acid font-bold">{act.userName}</span>{" "}
+            <span className="text-muted">
+              {act.type === "join" && "joined the contest"}
+              {act.type === "submit" && `submitted ${act.challengeTitle}`}
+              {act.type === "solve" && (
+                <>
+                  solved <span className="text-cream">{act.challengeTitle}</span>{" "}
+                  <span className="text-acid">(+{act.points} pts)</span>
+                </>
+              )}
+            </span>
+            <div className="font-mono text-[0.55rem] text-white/20 mt-0.5">
+              {new Date(act.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api/v1";
 
 async function fetchContestDetails(contestId: string): Promise<Contest | null> {
@@ -67,7 +132,7 @@ async function fetchContestDetails(contestId: string): Promise<Contest | null> {
       const countRes = await fetch(`${API_BASE}/contest/${contestId}/participants/count`);
       const countJson = await countRes.json();
       participantCount = countJson.ok ? countJson.count : 0;
-    } catch (e) {}
+    } catch (e) { }
 
     return {
       id: c.id,
@@ -192,16 +257,16 @@ function CountdownBanner({ startTime }: { startTime: string }) {
   const units =
     days > 0
       ? [
-          { label: "Days", value: pad(days) },
-          { label: "Hours", value: pad(h) },
-          { label: "Mins", value: pad(m) },
-          { label: "Secs", value: pad(s) },
-        ]
+        { label: "Days", value: pad(days) },
+        { label: "Hours", value: pad(h) },
+        { label: "Mins", value: pad(m) },
+        { label: "Secs", value: pad(s) },
+      ]
       : [
-          { label: "Hours", value: pad(h) },
-          { label: "Mins", value: pad(m) },
-          { label: "Secs", value: pad(s) },
-        ];
+        { label: "Hours", value: pad(h) },
+        { label: "Mins", value: pad(m) },
+        { label: "Secs", value: pad(s) },
+      ];
 
   return (
     <div className="mx-6 my-4 rounded border border-orange-500/25 bg-orange-500/[0.06] px-4 py-4">
@@ -341,6 +406,9 @@ function ContestDetailPanel({ contest, onRegister }: { contest: Contest; onRegis
         )}
       </div>
 
+      {/* Activity Feed */}
+      <ActivityFeed contestId={contest.id} />
+
       {/* CTA Button */}
       <div className="px-6 py-5 sticky bottom-0 bg-[#111113] border-t border-white/[0.06] mt-auto">
         {contest.status !== "completed" ? (
@@ -425,9 +493,8 @@ function ContestRow({ contest, selected, onClick }: { contest: Contest; selected
   return (
     <button
       onClick={onClick}
-      className={`w-full text-left px-5 py-4 border-b border-white/[0.05] transition-all duration-200 ${
-        selected ? "bg-acid/[0.07] border-l-2 border-l-acid" : "hover:bg-white/[0.03] border-l-2 border-l-transparent"
-      }`}
+      className={`w-full text-left px-5 py-4 border-b border-white/[0.05] transition-all duration-200 ${selected ? "bg-acid/[0.07] border-l-2 border-l-acid" : "hover:bg-white/[0.03] border-l-2 border-l-transparent"
+        }`}
     >
       <div className="flex items-start justify-between gap-2 mb-2">
         <div className="flex-1 min-w-0">
@@ -550,11 +617,10 @@ export default function ContestsPage() {
                 <button
                   key={t.value}
                   onClick={() => setStatusFilter(t.value)}
-                  className={`font-mono text-[0.62rem] tracking-[1.5px] uppercase px-2.5 py-1 rounded-sm border transition-all duration-150 ${
-                    statusFilter === t.value
-                      ? "bg-acid text-black border-acid"
-                      : "text-muted border-white/[0.08] hover:border-white/20 hover:text-cream"
-                  }`}
+                  className={`font-mono text-[0.62rem] tracking-[1.5px] uppercase px-2.5 py-1 rounded-sm border transition-all duration-150 ${statusFilter === t.value
+                    ? "bg-acid text-black border-acid"
+                    : "text-muted border-white/[0.08] hover:border-white/20 hover:text-cream"
+                    }`}
                 >
                   {t.label}
                 </button>

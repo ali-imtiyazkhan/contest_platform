@@ -1,0 +1,100 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16
+    container_name: contest-db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: contest_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    container_name: contest-redis
+    ports:
+      - "6379:6379"
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: contest-backend
+    ports:
+      - "4000:4000"
+    env_file:
+      - apps/backend/.env
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/contest_db
+      - REDIS_HOST=redis
+    depends_on:
+      - db
+      - redis
+
+  judge-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: contest-judge-worker
+    command: ["bun", "run", "workers/judgeWorker.ts"]
+    env_file:
+      - apps/backend/.env
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/contest_db
+      - REDIS_HOST=redis
+    depends_on:
+      - redis
+
+  ai-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: contest-ai-worker
+    command: ["bun", "run", "workers/aiWorker.ts"]
+    env_file:
+      - apps/backend/.env
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/contest_db
+      - REDIS_HOST=redis
+    depends_on:
+      - redis
+
+  arenax:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+      args:
+        - APP_NAME=arenax
+    container_name: contest-arenax
+    ports:
+      - "3005:3000"
+    env_file:
+      - apps/arenax/.env
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:4000/api/v1
+    depends_on:
+      - backend
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+      args:
+        - APP_NAME=web
+    container_name: contest-web
+    ports:
+      - "3000:3000"
+    env_file:
+      - apps/web/.env
+    environment:
+      - NEXT_PUBLIC_BACKEND_URL=http://localhost:4000
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:

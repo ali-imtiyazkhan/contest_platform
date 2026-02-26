@@ -1,0 +1,28 @@
+FROM oven/api/v1/bun:1.2.2-alpine
+
+WORKDIR /app
+
+# Copy root dependency files
+COPY package.json bun.lock ./
+COPY turbo.json ./
+
+# Copy packages and apps dependency files
+COPY packages/db/package.json ./packages/db/
+COPY apps/backend/package.json ./apps/backend/
+
+# Install dependencies using Bun
+RUN bun install
+
+# Copy source code
+COPY packages/db/ ./packages/db/
+COPY apps/backend/ ./apps/backend/
+
+# Generate Prisma client
+WORKDIR /app/packages/db
+RUN bun run generate
+
+WORKDIR /app/apps/backend
+
+EXPOSE 4000
+
+CMD ["bun", "run", "index.ts"]
