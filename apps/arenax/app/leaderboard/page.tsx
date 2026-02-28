@@ -908,13 +908,5 @@ function LeaderboardContent() {
 }
 
 export default function LeaderboardPage() {
-  return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-[var(--bg-primary)] flex items-center justify-center">
-        <div className="text-[var(--accent)] text-xl font-mono">Loading...</div>
-      </div>
-    }>
-      <LeaderboardContent />
-    </Suspense>
-  );
+  return <LeaderboardContent />;
 }
