@@ -122,7 +122,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
     return (
-        // @ts-expect-error React 19 type mismatch for Context Provider
         <AuthContext.Provider value={value}>
             {!loading && children}
         </AuthContext.Provider>
