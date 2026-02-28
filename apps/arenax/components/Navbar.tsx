@@ -6,7 +6,7 @@ import { useTheme } from "@/context/ThemeContext";
 const navLinks: { label: string; href: string }[] = [
   { label: "Contests", href: "/contests" },
   { label: "Leaderboard", href: "/leaderboard" },
-  { label: "Challenges", href: "#" },
+  { label: "Duel", href: "/duels" },
   { label: "Prizes", href: "#" },
 ];
 

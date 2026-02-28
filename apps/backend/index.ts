@@ -9,6 +9,7 @@ import userRouter from "./routes/user";
 import contestRouter from "./routes/contest";
 import adminRouter from "./routes/admin";
 import teamRouter from "./routes/team";
+import duelRouter from "./routes/duel";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
@@ -109,6 +110,7 @@ app.use("/api/v1/user", userRouter);
 app.use("/api/v1/admin", adminRouter);
 app.use("/api/v1/contest", contestRouter);
 app.use("/api/v1/team", teamRouter);
+app.use("/api/v1/duel", duelRouter);
 
 const port = process.env.PORT || 4000;
 
