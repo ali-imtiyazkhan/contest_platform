@@ -103,7 +103,6 @@ router.post("/admin/challenge", adminMiddleware, async (req, res) => {
   }
 });
 
-
 // challenge details
 router.post(
   "/admin/contest/:contestId/challenge",
@@ -152,7 +151,6 @@ router.get("/upcoming", async (req, res) => {
   ]);
   res.json({ ok: true, data, pagination: { offset, limit, total } });
 });
-
 
 // active contests
 router.get("/active", async (req, res) => {
@@ -208,7 +206,6 @@ router.get("/:contestId", userMiddleware, async (req: any, res) => {
     data: { ...contest, isRegistered: !!membership },
   });
 });
-
 
 // check registration
 router.get(
