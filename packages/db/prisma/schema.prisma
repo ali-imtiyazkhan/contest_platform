@@ -52,9 +52,9 @@ model User {
   password    String?
   role        Role    @default(User)
   rating      Int     @default(1200)
-  displayName String?                   // ← NEW: optional display name
-  country     String?                   // ← NEW: optional country code e.g. "IN"
-  avatarColor String  @default("#4f86f7") // ← NEW: persistent avatar color
+  displayName String? 
+  country     String?  
+  avatarColor String  @default("#4f86f7")
 
   contestSubmissions  ContestSubmission[]
   leaderboard         Leaderboard[]
@@ -144,7 +144,7 @@ model ContestSubmission {
   aiVerdict String?
   aiReason  String?
   createdAt DateTime         @default(now())
-  updatedAt DateTime?         @updatedAt        // ← NEW: needed for recentSolves & timing
+  updatedAt DateTime?         @updatedAt  
   status    SubmissionStatus @default(Pending)
 
   user                      User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -152,7 +152,7 @@ model ContestSubmission {
   contestToChallengeMapping ContestToChallengeMapping @relation(fields: [contestToChallengeMappingId], references: [id], onDelete: Cascade)
 
   @@unique([contestToChallengeMappingId, userId])
-  @@index([status, updatedAt])                  // ← NEW: fast recentSolves query
+  @@index([status, updatedAt]) 
 }
 
 model Team {
@@ -202,7 +202,7 @@ model Leaderboard {
   userId       String?
   teamId       String?
   score        Int      @default(0)
-  lastUpdated  DateTime? @updatedAt              // ← NEW: track when score last changed
+  lastUpdated  DateTime? @updatedAt 
 
   contest Contest @relation(fields: [contestId], references: [id], onDelete: Cascade)
   user    User?   @relation(fields: [userId], references: [id], onDelete: Cascade)

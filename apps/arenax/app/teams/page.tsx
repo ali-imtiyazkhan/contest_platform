@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useTheme } from "@/context/ThemeContext";
+import { useAuth } from "@/context/AuthProvider";
+import { BACKEND_URL } from "@/config";
+import axios from "axios";
 import Link from "next/link";
 import {
     Users,
@@ -11,7 +13,8 @@ import {
     Shield,
     ExternalLink,
     ChevronRight,
-    Info
+    Info,
+    Loader2
 } from "lucide-react";
 
 interface TeamMember {
@@ -31,27 +34,109 @@ interface Team {
 }
 
 export default function TeamsPage() {
+    const { user, authReady } = useAuth();
     const [teams, setTeams] = useState<Team[]>([]);
     const [loading, setLoading] = useState(true);
+    const [creating, setCreating] = useState(false);
+    const [joining, setJoining] = useState(false);
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [showJoinModal, setShowJoinModal] = useState(false);
     const [newTeamName, setNewTeamName] = useState("");
     const [inviteCode, setInviteCode] = useState("");
+    const [error, setError] = useState<string | null>(null);
 
-    // Mock data for initial design
-    useEffect(() => {
-        setTimeout(() => {
-            setTeams([
-                { id: "1", name: "Alpha Squad", inviteCode: "ALPH77", memberCount: 4 },
-                { id: "2", name: "Dev Forces", inviteCode: "DEV911", memberCount: 3 }
-            ]);
+    const fetchTeams = async () => {
+        try {
+
+            const token = localStorage.getItem("token");
+            setLoading(true);
+            const response = await axios.get(`${BACKEND_URL}/api/v1/team/my`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                },
+                withCredentials: true
+            });
+            if (response.data.ok) {
+                const fetchedTeams = response.data.data.map((t: any) => ({
+                    id: t.id,
+                    name: t.name,
+                    inviteCode: t.inviteCode,
+                    memberCount: t._count?.members || 0
+                }));
+                setTeams(fetchedTeams);
+            }
+        } catch (err) {
+            console.error("Failed to fetch teams:", err);
+            setError("Failed to load squads. Please try again.");
+        } finally {
             setLoading(false);
-        }, 800);
-    }, []);
+        }
+    };
+
+    useEffect(() => {
+        if (authReady) {
+            fetchTeams();
+        }
+    }, [authReady]);
+
+    const handleCreateTeam = async () => {
+        if (!newTeamName.trim()) return;
+        try {
+            setCreating(true);
+            setError(null);
+            const token = localStorage.getItem("token");
+            const response = await axios.post(`${BACKEND_URL}/api/v1/team`, {
+                name: newTeamName
+            }, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                },
+                withCredentials: true
+            });
+
+            if (response.data.ok) {
+                setNewTeamName("");
+                setShowCreateModal(false);
+                fetchTeams();
+            }
+        } catch (err: any) {
+            setError(err.response?.data?.message || "Failed to create squad");
+        } finally {
+            setCreating(false);
+        }
+    };
+
+    const handleJoinTeam = async () => {
+        if (!inviteCode.trim()) return;
+        try {
+            setJoining(true);
+            setError(null);
+            const token = localStorage.getItem("token");
+            const response = await axios.post(`${BACKEND_URL}/api/v1/team/join`, {
+                inviteCode
+            }, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                },
+                withCredentials: true
+            });
+
+            if (response.data.ok) {
+                setInviteCode("");
+                setShowJoinModal(false);
+                fetchTeams();
+            }
+        } catch (err: any) {
+            setError(err.response?.data?.message || "Failed to join squad");
+        } finally {
+            setJoining(false);
+        }
+    };
 
     const copyToClipboard = (code: string) => {
         navigator.clipboard.writeText(code);
         // Add toast notification later
+        alert("Invite code copied to clipboard!");
     };
 
     return (
@@ -159,9 +244,20 @@ export default function TeamsPage() {
                             placeholder="e.g. Code Renegades"
                             className="w-full bg-[var(--bg-secondary)] border border-[var(--border-secondary)] px-4 py-3 rounded-xl mb-6 outline-none focus:border-[var(--accent-border)] transition-colors"
                         />
+                        {error && (
+                            <div className="bg-red-500/10 border border-red-500/20 text-red-500 text-xs p-3 rounded-lg mb-4 flex items-center gap-2">
+                                <Info size={14} /> {error}
+                            </div>
+                        )}
                         <div className="flex gap-4">
                             <button onClick={() => setShowCreateModal(false)} className="flex-1 py-3 rounded-xl border border-[var(--border-secondary)] text-[var(--text-muted)] font-bold">Cancel</button>
-                            <button className="flex-1 py-3 rounded-xl bg-[var(--accent)] text-[var(--accent-text-on)] font-bold shadow-[0_4px_15px_rgba(200,241,53,0.3)]">Deploy</button>
+                            <button
+                                onClick={handleCreateTeam}
+                                disabled={creating}
+                                className="flex-1 py-3 rounded-xl bg-[var(--accent)] text-[var(--accent-text-on)] font-bold shadow-[0_4px_15px_rgba(200,241,53,0.3)] flex items-center justify-center gap-2"
+                            >
+                                {creating ? <Loader2 className="animate-spin" size={18} /> : "Deploy"}
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -180,9 +276,20 @@ export default function TeamsPage() {
                             className="w-full bg-[var(--bg-secondary)] border border-[var(--border-secondary)] px-4 py-3 rounded-xl mb-6 outline-none focus:border-[var(--accent-border)] transition-colors text-center font-mono tracking-widest text-lg"
                             maxLength={6}
                         />
+                        {error && (
+                            <div className="bg-red-500/10 border border-red-500/20 text-red-500 text-xs p-3 rounded-lg mb-4 flex items-center gap-2 text-left">
+                                <Info size={14} /> {error}
+                            </div>
+                        )}
                         <div className="flex gap-4">
                             <button onClick={() => setShowJoinModal(false)} className="flex-1 py-3 rounded-xl border border-[var(--border-secondary)] text-[var(--text-muted)] font-bold">Abort</button>
-                            <button className="flex-1 py-3 rounded-xl bg-[var(--accent)] text-[var(--accent-text-on)] font-bold">Verify & Join</button>
+                            <button
+                                onClick={handleJoinTeam}
+                                disabled={joining}
+                                className="flex-1 py-3 rounded-xl bg-[var(--accent)] text-[var(--accent-text-on)] font-bold flex items-center justify-center gap-2"
+                            >
+                                {joining ? <Loader2 className="animate-spin" size={18} /> : "Verify & Join"}
+                            </button>
                         </div>
                     </div>
                 </div>
