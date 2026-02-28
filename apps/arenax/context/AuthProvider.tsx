@@ -118,7 +118,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         logout,
         loading,
         login,
-        authReady   // ⭐ RETURN IT
+        authReady
     };
 
     return (
