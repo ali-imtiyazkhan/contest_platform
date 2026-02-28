@@ -23,36 +23,38 @@ export default function DuelArena() {
     const { user, authReady } = useAuth();
     const [duel, setDuel] = useState<any>(null);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const [submission, setSubmission] = useState("");
     const [submitting, setSubmitting] = useState(false);
     const [timeLeft, setTimeLeft] = useState(0);
     const [points, setPoints] = useState({ p1: 0, p2: 0 });
 
+    const fetchDuel = async () => {
+        try {
+            const token = localStorage.getItem("token");
+            const res = await axios.get(`${BACKEND_URL}/api/v1/duel/${duelId}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setDuel(res.data.data);
+            setError(null);
+
+            // Initialize timer if active
+            if (res.data.data.status === "Active" && res.data.data.startTime) {
+                const start = new Date(res.data.data.startTime).getTime();
+                const end = start + (res.data.data.challenge.duration * 60 * 1000);
+                const remaining = Math.max(0, Math.floor((end - Date.now()) / 1000));
+                setTimeLeft(remaining);
+            }
+        } catch (err: any) {
+            console.error(err);
+            setError(err.response?.data?.message || "Failed to fetch duel details. Please check your connection.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
         if (!authReady) return;
-
-        const fetchDuel = async () => {
-            try {
-                const token = localStorage.getItem("token");
-                const res = await axios.get(`${BACKEND_URL}/api/v1/duel/${duelId}`, {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
-                setDuel(res.data.data);
-
-                // Initialize timer if active
-                if (res.data.data.status === "Active" && res.data.data.startTime) {
-                    const start = new Date(res.data.data.startTime).getTime();
-                    const end = start + (res.data.data.challenge.duration * 60 * 1000);
-                    const remaining = Math.max(0, Math.floor((end - Date.now()) / 1000));
-                    setTimeLeft(remaining);
-                }
-            } catch (err) {
-                console.error(err);
-            } finally {
-                setLoading(false);
-            }
-        };
-
         fetchDuel();
         const interval = setInterval(fetchDuel, 5000); // Poll status
         return () => clearInterval(interval);
@@ -84,15 +86,50 @@ export default function DuelArena() {
     };
 
     if (loading) return (
-        <div className="min-h-screen bg-[var(--bg-primary)] flex items-center justify-center">
+        <div className="min-h-screen bg-[var(--bg-primary)] flex flex-col items-center justify-center gap-4">
             <Loader2 className="animate-spin text-[var(--accent)]" size={48} />
+            <span className="text-[0.7rem] font-bold text-[var(--text-muted)] uppercase tracking-widest animate-pulse">Entering Arena...</span>
         </div>
     );
 
-    if (!duel) return <div>Duel not found</div>;
+    if (error || !duel) return (
+        <div className="min-h-screen bg-[var(--bg-primary)] flex flex-col items-center justify-center p-8 text-center">
+            <AlertCircle size={64} className="text-red-500 mb-6 opacity-50" />
+            <h1 className="text-4xl font-black mb-4">Arena Error</h1>
+            <p className="text-[var(--text-muted)] max-w-md mb-8">
+                {error || "The duel you are looking for does not exist or has been terminated."}
+            </p>
+            <div className="flex gap-4">
+                <button
+                    onClick={() => { setLoading(true); fetchDuel(); }}
+                    className="px-8 py-3 rounded-xl bg-[var(--bg-secondary)] font-bold text-sm hover:bg-[var(--bg-card)] transition-all"
+                >
+                    Retry Connection
+                </button>
+                <button
+                    onClick={() => router.push("/duels")}
+                    className="px-8 py-3 rounded-xl bg-[var(--accent)] text-[var(--bg-primary)] font-black text-sm transition-all"
+                >
+                    Back to Lobby
+                </button>
+            </div>
+        </div>
+    );
 
     const isPlayer1 = duel.player1Id === user?.id;
     const opponent = isPlayer1 ? duel.player2 : duel.player1;
+
+    // Handle non-active states
+    if (duel.status !== "Active" && duel.status !== "Completed") {
+        return (
+            <div className="min-h-screen bg-[var(--bg-primary)] flex flex-col items-center justify-center p-8 text-center">
+                <Loader2 className="animate-spin text-[var(--accent)] mb-6" size={48} />
+                <h1 className="text-4xl font-black mb-4 uppercase tracking-tighter">Waiting for battle...</h1>
+                <p className="text-[var(--text-muted)] mb-8">This duel is currently {duel.status.toLowerCase()}. Hang tight or check the lobby.</p>
+                <button onClick={() => router.push("/duels")} className="px-8 py-3 rounded-xl bg-[var(--bg-secondary)] font-bold text-sm">Return to Lobby</button>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] flex flex-col">
