@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "build": "tsc --noEmit",
-    "dev": "bun run index.ts",
+    "dev": "bun run index.ts && bun run workers/judgeWorker.ts && bun run workers/aiWorker.ts",
     "worker": "bun run workers/judgeWorker.ts",
     "worker:ai": "bun run workers/aiWorker.ts"
   },
