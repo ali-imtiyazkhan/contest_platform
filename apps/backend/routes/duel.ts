@@ -4,6 +4,28 @@ import { client, SubmissionStatus, DuelStatus } from "db/client";
 
 const router = Router();
 
+// Get available challenges for duels
+router.get("/challenges", userMiddleware, async (req, res) => {
+  try {
+    const challenges = await client.challenge.findMany({
+      where: {
+        contextStatus: "Completed" // Or some other differentiator for duel challenges
+      },
+      select: {
+        id: true,
+        title: true,
+        category: true,
+        maxPoints: true,
+        duration: true
+      }
+    });
+    res.json({ ok: true, data: challenges });
+  } catch (error) {
+    console.error("Fetch challenges error:", error);
+    res.status(500).json({ ok: false, message: "Internal server error" });
+  }
+});
+
 // Invite a user to a duel
 router.post("/invite", userMiddleware, async (req: any, res) => {
   try {
@@ -142,6 +164,49 @@ router.post("/:duelId/submit", userMiddleware, async (req: any, res) => {
     res.status(201).json({ ok: true, data: sub });
   } catch (error) {
     console.error("Duel submit error:", error);
+    res.status(500).json({ ok: false, message: "Internal server error" });
+  }
+});
+
+// Get my duels (where I am player 1 or player 2)
+router.get("/my", userMiddleware, async (req: any, res) => {
+  try {
+    const userId = req.userId;
+    const duels = await client.duel.findMany({
+      where: {
+        OR: [{ player1Id: userId }, { player2Id: userId }]
+      },
+      include: {
+        player1: { select: { id: true, displayName: true, email: true, avatarColor: true } },
+        player2: { select: { id: true, displayName: true, email: true, avatarColor: true } },
+        challenge: true
+      },
+      orderBy: { createdAt: "desc" }
+    });
+
+    res.json({ ok: true, data: duels });
+  } catch (error) {
+    console.error("Get my duels error:", error);
+    res.status(500).json({ ok: false, message: "Internal server error" });
+  }
+});
+
+// Get all duels (for lobby)
+router.get("/", userMiddleware, async (req: any, res) => {
+  try {
+    const duels = await client.duel.findMany({
+      include: {
+        player1: { select: { id: true, displayName: true, email: true, avatarColor: true } },
+        player2: { select: { id: true, displayName: true, email: true, avatarColor: true } },
+        challenge: true
+      },
+      orderBy: { createdAt: "desc" },
+      take: 20
+    });
+
+    res.json({ ok: true, data: duels });
+  } catch (error) {
+    console.error("Get all duels error:", error);
     res.status(500).json({ ok: false, message: "Internal server error" });
   }
 });
