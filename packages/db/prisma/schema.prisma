@@ -46,6 +46,20 @@ enum ParticipationMode {
   Team
 }
 
+enum DuelStatus {
+  Pending
+  Active
+  Completed
+  Cancelled
+}
+
+enum ChallengeCategory {
+  Debugging
+  UIFix
+  APIDesign
+  Algorithms
+}
+
 model User {
   id          String  @id @default(uuid())
   email       String  @unique
@@ -63,6 +77,9 @@ model User {
   ownedTeams          Team[]              @relation("TeamOwner")
   teamMemberships     TeamMembership[]
   chatMessages        ChatMessage[]
+  duelsAsPlayer1      Duel[]              @relation("Player1")
+  duelsAsPlayer2      Duel[]              @relation("Player2")
+  duelSubmissions     DuelSubmission[]
 }
 
 model OtpVerification {
@@ -113,8 +130,10 @@ model Challenge {
 
   aiContext String?
   type      Difficulty?
+  category  ChallengeCategory @default(Algorithms)
 
   contestToChallengeMapping ContestToChallengeMapping[]
+  duels                     Duel[]
 
   @@index([createdAt])
 }
@@ -240,4 +259,41 @@ model ContestParticipant {
 
   @@unique([contestId, userId])
   @@index([contestId])
+}
+
+model Duel {
+  id          String     @id @default(uuid())
+  player1Id   String
+  player2Id   String
+  challengeId String
+  status      DuelStatus @default(Pending)
+  startTime   DateTime?
+  endTime     DateTime?
+  winnerId    String?
+  createdAt   DateTime   @default(now())
+
+  player1     User             @relation("Player1", fields: [player1Id], references: [id])
+  player2     User             @relation("Player2", fields: [player2Id], references: [id])
+  challenge   Challenge        @relation(fields: [challengeId], references: [id])
+  submissions DuelSubmission[]
+
+  @@index([player1Id])
+  @@index([player2Id])
+  @@index([status])
+}
+
+model DuelSubmission {
+  id         String           @id @default(uuid())
+  duelId     String
+  userId     String
+  submission String
+  points     Int              @default(0)
+  status     SubmissionStatus @default(Pending)
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime?        @updatedAt
+
+  duel Duel @relation(fields: [duelId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([duelId, userId])
 }

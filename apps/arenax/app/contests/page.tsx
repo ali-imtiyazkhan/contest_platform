@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useTheme } from "@/context/ThemeContext";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { MessageSquare, User, Users as UsersIcon } from "lucide-react";
+import { MessageSquare, User, Users as UsersIcon, Zap } from "lucide-react";
 import ChatSidebar from "../../components/ChatSidebar";
 
 type ContestStatus = "live" | "upcoming" | "completed";
@@ -619,6 +619,9 @@ export default function ContestsPage() {
           </span>
 
           <nav className="flex items-center gap-3 border-l border-[var(--border-secondary)] pl-6 ml-2">
+            <Link href="/duels" className="p-2 hover:bg-[var(--bg-secondary)] rounded-lg transition-colors text-[var(--text-muted)] hover:text-[var(--text-primary)] flex items-center gap-2 text-[0.7rem] font-bold uppercase tracking-widest">
+              <Zap size={16} /> <span className="hidden lg:inline">Duels</span>
+            </Link>
             <Link href="/teams" className="p-2 hover:bg-[var(--bg-secondary)] rounded-lg transition-colors text-[var(--text-muted)] hover:text-[var(--text-primary)] flex items-center gap-2 text-[0.7rem] font-bold uppercase tracking-widest">
               <UsersIcon size={16} /> <span className="hidden lg:inline">Squads</span>
             </Link>

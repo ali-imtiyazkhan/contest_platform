@@ -1,6 +1,7 @@
 import { client } from "db/client";
 
 import { Router } from "express";
+import { userMiddleware } from "../middleware/user";
 import {
   generateAccessToken,
   generateOtp,
@@ -219,6 +220,39 @@ router.post("/refresh", async (req, res) => {
     res.status(200).json({ accessToken: newAccessToken });
   } catch {
     return res.status(403).json({ message: "Invalid refresh token" });
+  }
+});
+
+// Search users
+router.get("/search", userMiddleware, async (req: any, res) => {
+  try {
+    const { q } = req.query;
+    if (!q || typeof q !== "string") {
+      return res.status(400).json({ ok: false, message: "Search query required" });
+    }
+
+    const users = await client.user.findMany({
+      where: {
+        OR: [
+          { displayName: { contains: q, mode: "insensitive" } },
+          { email: { contains: q, mode: "insensitive" } }
+        ],
+        NOT: { id: req.userId }
+      },
+      select: {
+        id: true,
+        displayName: true,
+        email: true,
+        avatarColor: true,
+        rating: true
+      },
+      take: 10
+    });
+
+    res.json({ ok: true, data: users });
+  } catch (error) {
+    console.error("User search error:", error);
+    res.status(500).json({ ok: false, message: "Internal server error" });
   }
 });
 
