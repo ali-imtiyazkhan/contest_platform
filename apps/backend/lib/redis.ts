@@ -1,5 +1,6 @@
 import Redis from "ioredis";
 
+// redis connection
 export const redis = new Redis({
   host: process.env.REDIS_HOST,
   port: Number(process.env.REDIS_PORT),
@@ -15,6 +16,8 @@ redis.on("error", (error) => {
   console.error("Redis error:", error);
 });
 
+
+// Add Score to LeaderBoard
 export async function addScoreToLeaderboard(
   contestId: string,
   userId: string,
@@ -24,6 +27,7 @@ export async function addScoreToLeaderboard(
   await redis.zincrby(key, score, userId);
 }
 
+// Get LeaderBoard from the DB
 export async function getLeaderboard(contestId: string, limit = 10) {
   const key = `leaderboard:${contestId}`;
 
@@ -42,10 +46,12 @@ export async function getLeaderboard(contestId: string, limit = 10) {
   return leaderboard;
 }
 
+
+// Rate Limtiting on Sunmission
 export async function checkSubmissionRateLimit(userId: string) {
   const key = `submit:${userId}`;
   const MAX = 5;
-  const WINDOW = 60; // seconds
+  const WINDOW = 60;
 
   const count = await redis.incr(key);
 

@@ -7,6 +7,8 @@ const generateOtp = () => {
   return crypto.randomInt(100000, 999999);
 };
 
+
+// send otp to the user
 const sendOtp = async (email: string, otp: string) => {
   const transporter = nodemailer.createTransport({
     service: "gmail",
@@ -16,6 +18,7 @@ const sendOtp = async (email: string, otp: string) => {
     },
   });
 
+  // mail options And The metaData
   const mailOptions = {
     from: `"100xContest" <${process.env.EMAIL_USER}>`,
     to: email,
@@ -45,6 +48,7 @@ const sendOtp = async (email: string, otp: string) => {
   await transporter.sendMail(mailOptions);
 };
 
+// resend otp
 const resendOtp = async (email: string) => {
   const otp = generateOtp().toString();
   const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
@@ -58,6 +62,8 @@ const resendOtp = async (email: string) => {
   await sendOtp(email, otp);
 };
 
+
+// Generate AccessToken
 const generateAccessToken = (user: any) => {
   const secret = process.env.JWT_SECRET;
   if (!secret) {
@@ -72,6 +78,7 @@ const generateAccessToken = (user: any) => {
   );
 };
 
+// Generate Refresh Token
 const generateRefreshToken = (user: any) => {
   const refreshSecret = process.env.JWT_REFRESH_SECRET;
   if (!refreshSecret) {
@@ -88,6 +95,8 @@ const generateRefreshToken = (user: any) => {
   );
 };
 
+
+// Refresh Access Token
 const refreshAccessToken = (refreshToken: string) => {
   const decoded = jwt.verify(
     refreshToken,
@@ -105,10 +114,12 @@ const refreshAccessToken = (refreshToken: string) => {
   });
 };
 
+// Export All the feature 
 export {
   generateOtp,
   generateAccessToken,
   generateRefreshToken,
   sendOtp,
   refreshAccessToken,
+  resendOtp
 };

@@ -13,7 +13,6 @@ export async function processContestRating(contestId: string) {
     include: { user: true },
   });
 
-  // FILTER INVALID PARTICIPANTS FIRST
   const validLeaderboard = leaderboard.filter(
     (entry) => entry.user && entry.userId
   );
@@ -25,7 +24,6 @@ export async function processContestRating(contestId: string) {
     return;
   }
 
-  // SAFE AVG RATING
   const avgRating =
     validLeaderboard.reduce(
       (sum, entry) => sum + (entry.user!.rating ?? 0),
@@ -57,13 +55,12 @@ export async function processContestRating(contestId: string) {
     );
 
     updates.push({
-      userId: entry.userId!, // now safe because we filtered
+      userId: entry.userId!,
       before: oldRating,
       after: Math.max(0, newRating),
     });
   }
 
-  // TRANSACTION SAFE UPDATE
   await client.$transaction(
     updates.flatMap((u) => [
       client.user.update({

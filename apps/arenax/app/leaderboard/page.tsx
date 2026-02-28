@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useTheme } from "@/context/ThemeContext";
 
-//Types â€” mirror the backend response exactly
+//Types mirror the backend response exactly
 interface Contest {
   id: string;
   title: string;

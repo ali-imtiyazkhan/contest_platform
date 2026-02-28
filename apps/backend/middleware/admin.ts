@@ -14,7 +14,6 @@ export async function adminMiddleware(
       return res.status(401).json({ message: "Authorization header missing" });
     }
 
-    // Remove "Bearer "
     const token = authHeader.split(" ")[1];
 
     if (!token) {
