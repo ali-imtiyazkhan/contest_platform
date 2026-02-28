@@ -5,6 +5,7 @@ import {
     useContext,
     useState,
     useEffect,
+    ReactNode,
 } from "react";
 import {
     getAuthStateSSR,
@@ -19,17 +20,17 @@ interface AuthContextType {
     logout: () => Promise<void>;
     loading: boolean;
     login: (userData: any, token: string) => void;
-    authReady: boolean;   // ⭐ IMPORTANT
+    authReady: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const [accessToken, setAccessToken] = useState<string | null>(null);
     const [user, setUser] = useState<any>(null);
     const [loading, setLoading] = useState(false);
-    const [authReady, setAuthReady] = useState(false);   // ⭐ IMPORTANT
+    const [authReady, setAuthReady] = useState(false);
 
     const clearAuth = () => {
         setAccessToken(null);
@@ -122,12 +123,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
     return (
-        // @ts-expect-error React 19 type mismatch for Context Provider
         <AuthContext.Provider value={value}>
-            {!loading && children}
+            {(!loading && children) as ReactNode}
         </AuthContext.Provider>
     );
-};
+}
 
 export function useAuth() {
     const context = useContext(AuthContext);
