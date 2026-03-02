@@ -71,7 +71,7 @@ router.post("/signup", async (req, res) => {
 
 router.post("/verify-otp", async (req, res) => {
   try {
-    const { email, otp, password } = req.body;
+    const { email, otp, password, username } = req.body;
 
     if (!email && !otp && !password) {
       return res.status(400).json({ message: "Credentials are required!" });
@@ -113,6 +113,7 @@ router.post("/verify-otp", async (req, res) => {
       email: email.toLowerCase(),
       password: hashedPassword,
       role: "User",
+      ...(username ? { displayName: username } : {}),
     };
 
     const user = await client.user.create({
