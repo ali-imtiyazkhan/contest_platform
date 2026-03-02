@@ -19,7 +19,7 @@ interface AuthContextType {
     logout: () => Promise<void>;
     loading: boolean;
     login: (userData: any, token: string) => void;
-    authReady: boolean;   // ⭐ IMPORTANT
+    authReady: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -29,12 +29,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [accessToken, setAccessToken] = useState<string | null>(null);
     const [user, setUser] = useState<any>(null);
     const [loading, setLoading] = useState(false);
-    const [authReady, setAuthReady] = useState(false);   // ⭐ IMPORTANT
+    const [authReady, setAuthReady] = useState(false);
 
     const clearAuth = () => {
         setAccessToken(null);
         setUser(null);
         localStorage.removeItem("user");
+        localStorage.removeItem("token");
         console.log("Auth Reset!");
     };
 
@@ -65,6 +66,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                     if (data) {
                         setAccessToken(data.accessToken);
                         setUser(data.user);
+                        localStorage.setItem("token", data.accessToken);
                     } else {
                         clearAuth();
                     }
@@ -83,6 +85,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
             if (data) {
                 setAccessToken(data.accessToken);
+                localStorage.setItem("token", data.accessToken);
 
                 const localData = localStorage.getItem("user");
                 setUser(localData ? JSON.parse(localData) : data.user);
@@ -105,6 +108,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setAccessToken(token);
         setUser(userData);
         localStorage.setItem("user", JSON.stringify(userData));
+        localStorage.setItem("token", token);
         scheduleTokenRefresh(token);
     };
 

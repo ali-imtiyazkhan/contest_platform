@@ -1,14 +1,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useTheme } from "@/context/ThemeContext";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthProvider";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api/v1";
 
 export default function LoginPage() {
     const router = useRouter();
+    const { login } = useAuth();
     const [form, setForm] = useState({
         email: "",
         password: "",
@@ -49,11 +50,7 @@ export default function LoginPage() {
             }
 
             if (data.accessToken) {
-                if (form.remember) {
-                    localStorage.setItem("token", data.accessToken);
-                } else {
-                    sessionStorage.setItem("token", data.accessToken);
-                }
+                login(data.user, data.accessToken);
             }
 
             router.push("/dashboard");
