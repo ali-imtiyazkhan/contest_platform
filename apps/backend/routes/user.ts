@@ -224,6 +224,93 @@ router.post("/refresh", async (req, res) => {
   }
 });
 
+// Get own profile with stats
+router.get("/profile", userMiddleware, async (req: any, res) => {
+  try {
+    const userId = req.userId;
+
+    const user = await client.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        displayName: true,
+        country: true,
+        avatarColor: true,
+        rating: true,
+        contestParticipants: {
+          select: { id: true },
+        },
+        contestSubmissions: {
+          select: { points: true },
+        },
+      },
+    });
+
+    if (!user) {
+      return res.status(404).json({ ok: false, message: "User not found" });
+    }
+
+    // Global rank = users with higher rating + 1
+    const higherRatedCount = await client.user.count({
+      where: { rating: { gt: user.rating }, role: "User" },
+    });
+
+    const totalPoints = user.contestSubmissions.reduce(
+      (sum: number, s: { points: number }) => sum + (s.points || 0),
+      0
+    );
+
+    res.json({
+      ok: true,
+      data: {
+        id: user.id,
+        email: user.email,
+        displayName: user.displayName,
+        country: user.country,
+        avatarColor: user.avatarColor,
+        rating: user.rating,
+        contestsPlayed: user.contestParticipants.length,
+        totalPoints,
+        rank: higherRatedCount + 1,
+      },
+    });
+  } catch (error) {
+    console.error("Profile fetch error:", error);
+    res.status(500).json({ ok: false, message: "Internal server error" });
+  }
+});
+
+// Update own profile
+router.put("/profile", userMiddleware, async (req: any, res) => {
+  try {
+    const userId = req.userId;
+    const { displayName, country, avatarColor } = req.body;
+
+    const updated = await client.user.update({
+      where: { id: userId },
+      data: {
+        ...(displayName !== undefined ? { displayName } : {}),
+        ...(country !== undefined ? { country } : {}),
+        ...(avatarColor !== undefined ? { avatarColor } : {}),
+      },
+      select: {
+        id: true,
+        email: true,
+        displayName: true,
+        country: true,
+        avatarColor: true,
+        rating: true,
+      },
+    });
+
+    res.json({ ok: true, data: updated });
+  } catch (error) {
+    console.error("Profile update error:", error);
+    res.status(500).json({ ok: false, message: "Internal server error" });
+  }
+});
+
 // Search users
 router.get("/search", userMiddleware, async (req: any, res) => {
   try {
