@@ -1,25 +1,19 @@
 services:
-  # 1. Main Backend API
+  # Main Backend API + Combined Workers (to stay on Free tier)
   - type: web
     name: devforces-backend
     runtime: node
+    plan: free # Use the free tier
     buildCommand: bun install && bun x turbo run generate --filter=db && bun x turbo run build --filter=backend
-    startCommand: bun run apps/backend/index.ts
+    # We run the API and both workers in the same service to save costs
+    startCommand: bun run apps/backend/index.ts & bun run apps/backend/workers/judgeWorker.ts & bun run apps/backend/workers/aiWorker.ts
     envVars:
       - key: DATABASE_URL
         fromDatabase:
           name: devforces-db
           property: connectionString
-      - key: REDIS_HOST
-        fromService:
-          type: redis
-          name: devforces-redis
-          property: host
-      - key: REDIS_PORT
-        fromService:
-          type: redis
-          name: devforces-redis
-          property: port
+      - key: REDIS_URL # You will need to provide an external Redis URL (like Upstash) for 100% free
+        sync: false
       - key: PORT
         value: 4000
       - key: USER_JWT_PASSWORD
@@ -37,82 +31,8 @@ services:
       - key: GEMINI_API_KEY
         sync: false
 
-  # 2. Judge Worker
-  - type: worker
-    name: devforces-judge-worker
-    runtime: node
-    buildCommand: bun install && bun x turbo run generate --filter=db && bun x turbo run build --filter=backend
-    startCommand: bun run apps/backend/workers/judgeWorker.ts
-    envVars:
-      - key: DATABASE_URL
-        fromDatabase:
-          name: devforces-db
-          property: connectionString
-      - key: REDIS_HOST
-        fromService:
-          type: redis
-          name: devforces-redis
-          property: host
-      - key: REDIS_PORT
-        fromService:
-          type: redis
-          name: devforces-redis
-          property: port
-      - key: USER_JWT_PASSWORD
-        sync: false
-      - key: EMAIL_JWT_PASSWORD
-        sync: false
-      - key: JWT_SECRET
-        sync: false
-      - key: JWT_REFRESH_SECRET
-        sync: false
-      - key: EMAIL_USER
-        sync: false
-      - key: EMAIL_PASS
-        sync: false
-
-  # 3. AI Worker
-  - type: worker
-    name: devforces-ai-worker
-    runtime: node
-    buildCommand: bun install && bun x turbo run generate --filter=db && bun x turbo run build --filter=backend
-    startCommand: bun run apps/backend/workers/aiWorker.ts
-    envVars:
-      - key: DATABASE_URL
-        fromDatabase:
-          name: devforces-db
-          property: connectionString
-      - key: REDIS_HOST
-        fromService:
-          type: redis
-          name: devforces-redis
-          property: host
-      - key: REDIS_PORT
-        fromService:
-          type: redis
-          name: devforces-redis
-          property: port
-      - key: USER_JWT_PASSWORD
-        sync: false
-      - key: EMAIL_JWT_PASSWORD
-        sync: false
-      - key: JWT_SECRET
-        sync: false
-      - key: JWT_REFRESH_SECRET
-        sync: false
-      - key: EMAIL_USER
-        sync: false
-      - key: EMAIL_PASS
-        sync: false
-      - key: GEMINI_API_KEY
-        sync: false
-
-  # 4. Managed Redis
-  - type: redis
-    name: devforces-redis
-    ipAllowList: [] # Only allow internal connections
-
-# Managed Database
+# Managed Database (Free for 90 days)
 databases:
   - name: devforces-db
     databaseName: contest_db
+    plan: free
