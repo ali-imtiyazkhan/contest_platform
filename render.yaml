@@ -37,7 +37,6 @@ services:
       - key: ADMIN_SIGNUP_SECRET
         sync: false
 
-# Managed Database (Free for 90 days)
 databases:
   - name: devforces-db
     databaseName: contest_db

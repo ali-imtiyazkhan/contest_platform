@@ -50,7 +50,7 @@ export default function DuelsPage() {
     const fetchDuels = async () => {
         try {
             const token = localStorage.getItem("token");
-            const res = await axios.get(`${BACKEND_URL}/api/v1/duel/my`, {
+            const res = await axios.get(`${BACKEND_URL}/duel/my`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setDuels(res.data.data || []);
@@ -64,7 +64,7 @@ export default function DuelsPage() {
     const fetchChallenges = async () => {
         try {
             const token = localStorage.getItem("token");
-            const res = await axios.get(`${BACKEND_URL}/api/v1/duel/challenges`, {
+            const res = await axios.get(`${BACKEND_URL}/duel/challenges`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setChallenges(res.data.data || []);
@@ -78,7 +78,7 @@ export default function DuelsPage() {
         setSearching(true);
         try {
             const token = localStorage.getItem("token");
-            const res = await axios.get(`${BACKEND_URL}/api/v1/user/search?q=${searchQuery}`, {
+            const res = await axios.get(`${BACKEND_URL}/user/search?q=${searchQuery}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setSearchResults(res.data.data || []);
@@ -99,7 +99,7 @@ export default function DuelsPage() {
                 return;
             }
 
-            const res = await axios.post(`${BACKEND_URL}/api/v1/duel/invite`, {
+            const res = await axios.post(`${BACKEND_URL}/duel/invite`, {
                 player2Id: targetUserId,
                 challengeId: challenges[0].id // Picking the first one as default
             }, {
@@ -118,7 +118,7 @@ export default function DuelsPage() {
     const handleAccept = async (duelId: string) => {
         try {
             const token = localStorage.getItem("token");
-            const res = await axios.post(`${BACKEND_URL}/api/v1/duel/${duelId}/accept`, {}, {
+            const res = await axios.post(`${BACKEND_URL}/duel/${duelId}/accept`, {}, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             if (res.data.ok) {

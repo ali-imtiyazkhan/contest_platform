@@ -32,7 +32,7 @@ export default function DuelArena() {
     const fetchDuel = async () => {
         try {
             const token = localStorage.getItem("token");
-            const res = await axios.get(`${BACKEND_URL}/api/v1/duel/${duelId}`, {
+            const res = await axios.get(`${BACKEND_URL}/duel/${duelId}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setDuel(res.data.data);
@@ -72,7 +72,7 @@ export default function DuelArena() {
         setSubmitting(true);
         try {
             const token = localStorage.getItem("token");
-            await axios.post(`${BACKEND_URL}/api/v1/duel/${duelId}/submit`, {
+            await axios.post(`${BACKEND_URL}/duel/${duelId}/submit`, {
                 submission
             }, {
                 headers: { Authorization: `Bearer ${token}` }

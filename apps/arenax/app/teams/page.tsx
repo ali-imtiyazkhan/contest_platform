@@ -50,7 +50,7 @@ export default function TeamsPage() {
 
             const token = localStorage.getItem("token");
             setLoading(true);
-            const response = await axios.get(`${BACKEND_URL}/api/v1/team/my`, {
+            const response = await axios.get(`${BACKEND_URL}/team/my`, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 },
@@ -85,7 +85,7 @@ export default function TeamsPage() {
             setCreating(true);
             setError(null);
             const token = localStorage.getItem("token");
-            const response = await axios.post(`${BACKEND_URL}/api/v1/team`, {
+            const response = await axios.post(`${BACKEND_URL}/team`, {
                 name: newTeamName
             }, {
                 headers: {
@@ -112,7 +112,7 @@ export default function TeamsPage() {
             setJoining(true);
             setError(null);
             const token = localStorage.getItem("token");
-            const response = await axios.post(`${BACKEND_URL}/api/v1/team/join`, {
+            const response = await axios.post(`${BACKEND_URL}/team/join`, {
                 inviteCode
             }, {
                 headers: {

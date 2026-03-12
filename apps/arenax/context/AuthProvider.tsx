@@ -41,7 +41,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     const logout = async () => {
         try {
-            await axios.post(`${BACKEND_URL}/api/v1/user/signout`, {}, {
+            await axios.post(`${BACKEND_URL}/user/signout`, {}, {
                 withCredentials: true,
             });
         } catch (error) {

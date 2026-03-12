@@ -161,12 +161,21 @@ router.post("/signin", async (req, res) => {
         .json({ message: "Email and password are required!" });
     }
 
+    console.log(`[SIGNIN] Attempt for email: ${email.toLowerCase()}`);
     const user = await client.user.findFirst({
-      where: { email: email.toLowerCase(), role: "User" },
+      where: { email: email.toLowerCase() },
     });
 
     if (!user) {
+      console.log(`[SIGNIN] User ${email} NOT found in DB`);
       return res.status(401).json({ message: "Invalid credentials" });
+    }
+
+    console.log(`[SIGNIN] User found: ${user.email}, Role in DB: ${user.role}`);
+
+    if (user.role !== "User") {
+      console.log(`[SIGNIN] Role mismatch: User is ${user.role}, but trying to login via User route`);
+      return res.status(401).json({ message: "Invalid credentials (Role mismatch)" });
     }
 
     if (!user.password) {
@@ -174,6 +183,7 @@ router.post("/signin", async (req, res) => {
     }
 
     const isValidPassword = await compare(password, user.password);
+    console.log(`[SIGNIN] Password comparison result: ${isValidPassword}`);
     if (!isValidPassword) {
       return res.status(401).json({ message: "Invalid credentials" });
     }

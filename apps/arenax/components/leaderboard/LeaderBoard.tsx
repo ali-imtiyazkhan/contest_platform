@@ -7,6 +7,8 @@ import { useTheme } from "@/context/ThemeContext";
 import { SiteHeader } from "@/components/site-header";
 import { cn } from "@/lib/utils";
 
+import { BACKEND_URL } from "@/config";
+
 interface Entry {
     userId: string;
     score: number;
@@ -21,7 +23,7 @@ export default function Leaderboard({ contestId }: { contestId: string }) {
     const fetchLeaderboard = async () => {
         try {
             const res = await fetch(
-                `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/contest/${contestId}/leaderboard`
+                `${BACKEND_URL}/contest/${contestId}/leaderboard`
             );
             const json = await res.json();
             const sortedData = (json.leaderboard || []).sort((a: Entry, b: Entry) => b.score - a.score);

@@ -85,17 +85,28 @@ router.post("/signin", async (req, res) => {
       });
     }
 
+    console.log(`[ADMIN-SIGNIN] Attempt for email: ${email.toLowerCase()}`);
     const admin = await client.user.findFirst({
       where: {
         email: email.toLowerCase(),
-        role: "Admin",
       },
     });
 
     if (!admin) {
+      console.log(`[ADMIN-SIGNIN] User ${email} NOT found in DB`);
       return res.status(401).json({
         success: false,
         message: "Invalid credentials",
+      });
+    }
+
+    console.log(`[ADMIN-SIGNIN] User found: ${admin.email}, Role in DB: ${admin.role}`);
+
+    if (admin.role !== "Admin") {
+      console.log(`[ADMIN-SIGNIN] Role mismatch: User is ${admin.role}, but trying to login via Admin route`);
+      return res.status(401).json({
+        success: false,
+        message: "Invalid credentials (Role mismatch)",
       });
     }
 
@@ -104,6 +115,7 @@ router.post("/signin", async (req, res) => {
     }
 
     const isValidPassword = await compare(password, admin.password);
+    console.log(`[ADMIN-SIGNIN] Password comparison result: ${isValidPassword}`);
 
     if (!isValidPassword) {
       return res.status(401).json({

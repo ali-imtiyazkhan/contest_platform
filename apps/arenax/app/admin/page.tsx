@@ -192,7 +192,7 @@ export default function AdminPage() {
 
         try {
             // 1. Create contest
-            const contestRes = await fetch(`${API_BASE}/api/v1/contest/admin/contest`, {
+            const contestRes = await fetch(`${API_BASE}/contest/admin/contest`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -228,7 +228,7 @@ export default function AdminPage() {
                 const ch = challenges[i];
 
                 const challengeRes = await fetch(
-                    `${API_BASE}/api/v1/contest/admin/challenge`,
+                    `${API_BASE}/contest/admin/challenge`,
                     {
                         method: "POST",
                         headers: {
@@ -254,7 +254,7 @@ export default function AdminPage() {
 
                 // Link challenge to contest
                 await fetch(
-                    `${API_BASE}/api/v1/contest/admin/contest/${contestId}/challenge`,
+                    `${API_BASE}/contest/admin/contest/${contestId}/challenge`,
                     {
                         method: "POST",
                         headers: {

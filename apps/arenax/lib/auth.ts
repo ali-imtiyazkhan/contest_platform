@@ -10,7 +10,7 @@ type JwtPayload = {
 export const getAuthStateSSR = async () => {
   try {
     const response = await axios.post(
-      `${BACKEND_URL}/api/v1/user/refresh`,
+      `${BACKEND_URL}/user/refresh`,
       {},
       {
         withCredentials: true,
