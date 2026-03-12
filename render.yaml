@@ -4,7 +4,7 @@ services:
     name: devforces-backend
     runtime: node
     plan: free # Use the free tier
-    buildCommand: bun install && bun x turbo run generate db:push --filter=db && bun x turbo run build --filter=backend
+    buildCommand: bun install && bun x turbo run generate db:push seed --filter=db && bun x turbo run build --filter=backend
     # We run the API and both workers in the same service to save costs
     startCommand: bun run apps/backend/index.ts & bun run apps/backend/workers/judgeWorker.ts & bun run apps/backend/workers/aiWorker.ts
     envVars:
