@@ -15,7 +15,9 @@
     "@prisma/client": "6.15.0",
     "@types/jsonwebtoken": "^9.0.10",
     "jsonwebtoken": "^9.0.2",
-    "prisma": "^6.15.0"
+    "prisma": "^6.15.0",
+    "bcrypt": "^6.0.0",
+    "@types/bcrypt": "^6.0.0"
   },
   "scripts": {
     "generate": "prisma generate",
