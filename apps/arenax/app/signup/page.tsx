@@ -457,7 +457,7 @@ export default function SignUpPage() {
                 </div>
             </div>
 
-            <style jsx global>{`
+            <style dangerouslySetInnerHTML={{ __html: `
         @keyframes fade-up {
           from {
             opacity: 0;
@@ -471,7 +471,7 @@ export default function SignUpPage() {
         .animate-fade-up {
           animation: fade-up 0.8s ease-out;
         }
-      `}</style>
+      ` }} />
         </div>
     );
 }

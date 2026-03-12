@@ -295,10 +295,10 @@ export default function TeamsPage() {
                 </div>
             )}
 
-            <style jsx global>{`
+            <style dangerouslySetInnerHTML={{ __html: `
         @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Bebas+Neue&display=swap');
         body { font-family: 'Syne', sans-serif; }
-      `}</style>
+      ` }} />
         </div>
     );
 }
