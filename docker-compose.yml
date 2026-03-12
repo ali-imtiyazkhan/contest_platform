@@ -69,7 +69,7 @@ services:
       context: .
       dockerfile: Dockerfile.frontend
       args:
-        - APP_NAME=100xcontest
+        - APP_NAME=arenax
     container_name: contest-100xcontest
     ports:
       - "3005:3000"
@@ -77,22 +77,6 @@ services:
       - apps/arenax/.env
     environment:
       - NEXT_PUBLIC_API_URL=http://localhost:4000/api/v1
-    depends_on:
-      - backend
-
-  web:
-    build:
-      context: .
-      dockerfile: Dockerfile.frontend
-      args:
-        - APP_NAME=web
-    container_name: contest-web
-    ports:
-      - "3000:3000"
-    env_file:
-      - apps/web/.env
-    environment:
-      - NEXT_PUBLIC_BACKEND_URL=http://localhost:4000
     depends_on:
       - backend
 

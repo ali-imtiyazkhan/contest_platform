@@ -18,6 +18,7 @@
     "prisma": "^6.15.0"
   },
   "scripts": {
+    "generate": "prisma generate",
     "seed": "bun run prisma/seed.ts"
   }
 }
