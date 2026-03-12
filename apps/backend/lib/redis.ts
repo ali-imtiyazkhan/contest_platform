@@ -1,12 +1,14 @@
 import Redis from "ioredis";
 
 // redis connection
-export const redis = new Redis({
-  host: process.env.REDIS_HOST,
-  port: Number(process.env.REDIS_PORT),
-  password: process.env.REDIS_PASSWORD,
-  lazyConnect: true,
-});
+export const redis = process.env.REDIS_URL
+  ? new Redis(process.env.REDIS_URL, { lazyConnect: true })
+  : new Redis({
+      host: process.env.REDIS_HOST,
+      port: Number(process.env.REDIS_PORT),
+      password: process.env.REDIS_PASSWORD,
+      lazyConnect: true,
+    });
 
 redis.on("connect", () => {
   console.log(" Redis connected");
