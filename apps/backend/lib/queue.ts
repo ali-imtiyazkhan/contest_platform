@@ -11,6 +11,10 @@ const queueConnection = process.env.REDIS_URL
       maxRetriesPerRequest: null,
     });
 
+queueConnection.on("error", (error) => {
+  console.error("Queue Redis error:", error);
+});
+
 // submission queue
 export const submissionQueue = new Queue("submissionQueue", {
   connection: queueConnection,
