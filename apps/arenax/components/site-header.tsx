@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, ReactNode } from "react"
 import Link from "next/link"
 import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
@@ -168,8 +168,8 @@ function NavLink({
     icon,
 }: {
     href: string
-    children: React.ReactNode
-    icon?: React.ReactNode
+    children: ReactNode
+    icon?: ReactNode
 }) {
     return (
         <Link
