@@ -19,6 +19,7 @@
   },
   "scripts": {
     "generate": "prisma generate",
+    "db:push": "prisma db push",
     "seed": "bun run prisma/seed.ts"
   }
 }
