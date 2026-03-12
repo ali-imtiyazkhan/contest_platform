@@ -1,10 +1,78 @@
 import { Router } from "express";
 import { client } from "db/client";
 import { generateAccessToken, generateRefreshToken } from "../helpers/auth";
-import { compare } from "../helpers/bcrypt";
+import { compare, hash } from "../helpers/bcrypt";
 import { processContestRating } from "../src/services/ratingService";
 
 const router = Router();
+
+router.post("/signup", async (req, res) => {
+  try {
+    const { email, password, secretKey } = req.body;
+
+    if (!email || !password || !secretKey) {
+      return res.status(400).json({
+        success: false,
+        message: "Email, password, and security key are required",
+      });
+    }
+
+    // Verify secret key to prevent unauthorized admin signup
+    if (secretKey !== process.env.ADMIN_SIGNUP_SECRET) {
+      return res.status(403).json({
+        success: false,
+        message: "Invalid security key for admin registration",
+      });
+    }
+
+    const normalizedEmail = email.toLowerCase();
+    const existingAdmin = await client.user.findFirst({
+      where: { email: normalizedEmail },
+    });
+
+    if (existingAdmin) {
+      return res.status(409).json({
+        success: false,
+        message: "Account already exists",
+      });
+    }
+
+    const hashedPassword = await hash(password);
+    const admin = await client.user.create({
+      data: {
+        email: normalizedEmail,
+        password: hashedPassword,
+        role: "Admin",
+      },
+    });
+
+    const accessToken = generateAccessToken(admin);
+    const refreshToken = generateRefreshToken(admin);
+
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 30 * 24 * 60 * 60 * 1000,
+    });
+
+    res.status(201).json({
+      success: true,
+      accessToken,
+      user: {
+        id: admin.id,
+        email: admin.email,
+        role: admin.role,
+      },
+    });
+  } catch (error) {
+    console.error("Admin signup error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error during registration",
+    });
+  }
+});
 
 router.post("/signin", async (req, res) => {
   try {
