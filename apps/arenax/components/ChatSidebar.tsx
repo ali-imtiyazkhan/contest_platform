@@ -14,7 +14,7 @@ interface Message {
     timestamp: string;
 }
 
-const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:4000";
+import { SOCKET_URL } from "@/config";
 
 export default function ChatSidebar({
     contestId,

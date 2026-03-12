@@ -5,7 +5,7 @@ import { useTheme } from "@/context/ThemeContext";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api/v1";
+import { BACKEND_URL as API_BASE } from "@/config";
 interface Challenge {
     id: string;
     title: string;

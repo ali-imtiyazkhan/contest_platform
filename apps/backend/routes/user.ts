@@ -24,12 +24,14 @@ router.post("/signup", async (req, res) => {
     }
 
     const normalizedEmail = email.toLowerCase();
+    console.log(`[SIGNUP] Processing signup for ${normalizedEmail}`);
 
     const exists = await client.user.findFirst({
       where: { email: normalizedEmail },
     });
 
     if (exists) {
+      console.log(`[SIGNUP] User ${normalizedEmail} already exists`);
       return res.status(409).json({ message: "User already exists!" });
     }
 
@@ -37,6 +39,7 @@ router.post("/signup", async (req, res) => {
     const otp = generateOtp().toString();
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
 
+    console.log(`[SIGNUP] Saving OTP for ${normalizedEmail} in DB`);
     // Save OTP in DB (UPSERT)
     await client.otpVerification.upsert({
       where: { email: normalizedEmail },
@@ -53,9 +56,8 @@ router.post("/signup", async (req, res) => {
     });
 
     //  Send OTP email
+    console.log(`[SIGNUP] Calling sendOtp helper for ${normalizedEmail}`);
     await sendOtp(normalizedEmail, otp);
-
-    console.log("OTP generated:", otp);
 
     res.status(200).json({
       message: "OTP sent successfully",
@@ -63,9 +65,12 @@ router.post("/signup", async (req, res) => {
       otp,
       nextStep: "/verify-otp",
     });
-  } catch (error) {
-    console.error("Signup error:", error);
-    res.status(500).json({ message: "Internal server error" });
+  } catch (error: any) {
+    console.error("[SIGNUP] Exception during signup:", error);
+    res.status(500).json({ 
+      message: "Internal server error", 
+      details: error.message || "An unexpected error occurred during signup"
+    });
   }
 });
 

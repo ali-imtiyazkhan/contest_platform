@@ -10,20 +10,29 @@ const generateOtp = () => {
 
 // send otp to the user
 const sendOtp = async (email: string, otp: string) => {
+  console.log(`[AUTH] Attempting to send OTP to ${email}`);
+  
+  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+    console.error("[AUTH] EMAIL_USER or EMAIL_PASS environment variables are missing!");
+    throw new Error("Email service is not configured on the server.");
+  }
+
   const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASS,
     },
+    // Adding timeouts to prevent hanging
+    connectionTimeout: 5000, 
+    greetingTimeout: 5000,
+    socketTimeout: 5000,
   });
 
-  // mail options And The metaData
   const mailOptions = {
     from: `"100xContest" <${process.env.EMAIL_USER}>`,
     to: email,
     subject: "Email verification code",
-
     html: `
           <div style="font-family: 'Segoe UI', sans-serif; max-width: 600px; margin: auto; padding: 30px; border: 1px solid #e0e0e0; border-radius: 10px;">
             <h2 style="color: #333; font-weight: 500;">Hi there,</h2>
@@ -45,7 +54,16 @@ const sendOtp = async (email: string, otp: string) => {
         `,
   };
 
-  await transporter.sendMail(mailOptions);
+  try {
+    await Promise.race([
+      transporter.sendMail(mailOptions),
+      new Promise((_, reject) => setTimeout(() => reject(new Error("Email sending timed out after 10 seconds")), 10000))
+    ]);
+    console.log(`[AUTH] OTP sent successfully to ${email}`);
+  } catch (error) {
+    console.error(`[AUTH] Failed to send email to ${email}:`, error);
+    throw error; // Re-throw to be caught by the route handler
+  }
 };
 
 // resend otp

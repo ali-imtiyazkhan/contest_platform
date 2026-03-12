@@ -45,11 +45,10 @@ export default function SignInPage() {
         setError(null);
 
         try {
-            const BACKEND_URL = "http://localhost:4000"
             const endpoint =
                 role === "user"
-                    ? `${BACKEND_URL}/api/v1/user/signin`
-                    : `${BACKEND_URL}/api/v1/admin/signin`;
+                    ? `${BACKEND_URL}/user/signin`
+                    : `${BACKEND_URL}/admin/signin`;
 
             const response = await axios.post(
                 endpoint,

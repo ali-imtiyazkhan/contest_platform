@@ -93,8 +93,7 @@ interface ToastItem {
 
 // ── Constants ──
 
-const API_BASE =
-    process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api/v1";
+import { BACKEND_URL as API_BASE } from "@/config";
 const POLL_INTERVAL_MS = 8000;
 
 const VERDICT_COLORS: Record<Verdict, string> = {
