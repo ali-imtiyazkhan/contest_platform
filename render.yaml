@@ -30,6 +30,10 @@ services:
         sync: false
       - key: GEMINI_API_KEY
         sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: FROM_EMAIL
+        sync: false
 
 # Managed Database (Free for 90 days)
 databases:
