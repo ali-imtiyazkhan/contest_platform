@@ -3,7 +3,7 @@ services:
   - type: web
     name: devforces-backend
     runtime: node
-    buildCommand: bun install && bun x turbo run build --filter=db && bun x turbo run build --filter=backend
+    buildCommand: bun install && bun x turbo run generate --filter=db && bun x turbo run build --filter=backend
     startCommand: bun run apps/backend/index.ts
     envVars:
       - key: DATABASE_URL
@@ -41,7 +41,7 @@ services:
   - type: worker
     name: devforces-judge-worker
     runtime: node
-    buildCommand: bun install && bun x turbo run build --filter=db && bun x turbo run build --filter=backend
+    buildCommand: bun install && bun x turbo run generate --filter=db && bun x turbo run build --filter=backend
     startCommand: bun run apps/backend/workers/judgeWorker.ts
     envVars:
       - key: DATABASE_URL
@@ -75,7 +75,7 @@ services:
   - type: worker
     name: devforces-ai-worker
     runtime: node
-    buildCommand: bun install && bun x turbo run build --filter=db && bun x turbo run build --filter=backend
+    buildCommand: bun install && bun x turbo run generate --filter=db && bun x turbo run build --filter=backend
     startCommand: bun run apps/backend/workers/aiWorker.ts
     envVars:
       - key: DATABASE_URL
@@ -107,13 +107,13 @@ services:
       - key: GEMINI_API_KEY
         sync: false
 
+  # 4. Managed Redis
+  - type: redis
+    name: devforces-redis
+    ipAllowList: [] # Only allow internal connections
+
 # Managed Database
 databases:
   - name: devforces-db
     databaseName: contest_db
     user: postgres
-
-# Managed Redis
-redis:
-  - name: devforces-redis
-    ipAllowList: [] # Only allow internal connections
