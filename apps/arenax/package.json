@@ -23,9 +23,9 @@
     "framer-motion": "^12.34.2",
     "jwt-decode": "^4.0.0",
     "lucide-react": "^0.574.0",
-    "next": "15.2.4",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
+    "next": "^16.1.6",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
     "socket.io-client": "^4.8.3",
     "tailwind-merge": "^3.0.1"
   },
