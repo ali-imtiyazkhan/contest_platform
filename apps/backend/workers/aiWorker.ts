@@ -3,11 +3,17 @@ import IORedis from "ioredis";
 import { client } from "db/client";
 import { generateChallengeContext } from "../lib/ai/generateContext";
 
-const connection = new IORedis({
-  host: process.env.REDIS_HOST,
-  port: Number(process.env.REDIS_PORT),
-  password: process.env.REDIS_PASSWORD,
-  maxRetriesPerRequest: null,
+const connection = process.env.REDIS_URL
+  ? new IORedis(process.env.REDIS_URL, { maxRetriesPerRequest: null })
+  : new IORedis({
+      host: process.env.REDIS_HOST,
+      port: Number(process.env.REDIS_PORT),
+      password: process.env.REDIS_PASSWORD || undefined,
+      maxRetriesPerRequest: null,
+    });
+
+connection.on("error", (err) => {
+  console.error("AI Worker Redis Connection Error:", err);
 });
 
 new Worker(

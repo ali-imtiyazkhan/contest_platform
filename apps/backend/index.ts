@@ -28,16 +28,29 @@ export const io = new Server(server, {
 });
 
 // Redis adapter setup
-const pubClient = new IORedis({
-  host: process.env.REDIS_HOST || "127.0.0.1",
-  port: Number(process.env.REDIS_PORT) || 6379,
-  password: process.env.REDIS_PASSWORD || undefined,
+const redisOptions = process.env.REDIS_URL
+  ? process.env.REDIS_URL
+  : {
+      host: process.env.REDIS_HOST || "127.0.0.1",
+      port: Number(process.env.REDIS_PORT) || 6379,
+      password: process.env.REDIS_PASSWORD || undefined,
+    };
+
+const pubClient = new IORedis(redisOptions as any, {
   maxRetriesPerRequest: null,
+});
+
+pubClient.on("error", (err) => {
+  console.error("Socket.IO Redis PubClient Error:", err);
 });
 
 const subClient = pubClient.duplicate();
 
-if (process.env.NODE_ENV === "production" || process.env.REDIS_HOST) {
+subClient.on("error", (err) => {
+  console.error("Socket.IO Redis SubClient Error:", err);
+});
+
+if (process.env.NODE_ENV === "production" || process.env.REDIS_HOST || process.env.REDIS_URL) {
   io.adapter(createAdapter(pubClient, subClient));
 }
 
