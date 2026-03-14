@@ -559,9 +559,9 @@ export default function ContestsPage() {
 
   useEffect(() => {
     fetchContests().then((data) => {
-      setContests(data);
+      setContests(data || []);
       setLoading(false);
-      if (data.length > 0) setSelectedId(data[0].id);
+      if (data && data.length > 0) setSelectedId(data[0].id);
     });
   }, []);
 
@@ -576,19 +576,22 @@ export default function ContestsPage() {
     }
   }, [selectedId]);
 
-  const filtered = contests.filter((c) => {
+  const filtered = (contests || []).filter((c) => {
     const matchStatus = statusFilter === "all" || c.status === statusFilter;
     const matchSearch = !search || c.title.toLowerCase().includes(search.toLowerCase());
     return matchStatus && matchSearch;
   });
 
-  const liveCnt = contests.filter((c) => c.status === "live").length;
-  const upcomingCnt = contests.filter((c) => c.status === "upcoming").length;
+  const liveCnt = (contests || []).filter((c) => c.status === "live").length;
+  const upcomingCnt = (contests || []).filter((c) => c.status === "upcoming").length;
 
   if (loading) {
     return (
       <div className="min-h-screen bg-[var(--bg-primary)] flex items-center justify-center">
-        <div className="text-[var(--accent)] text-xl font-mono">Loading contests...</div>
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-[var(--accent)] border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-[var(--text-primary)] font-mono animate-pulse uppercase tracking-[2px] text-xs">Fetching Contests...</p>
+        </div>
       </div>
     );
   }
@@ -659,7 +662,18 @@ export default function ContestsPage() {
           </div>
 
           <div className="flex-1 overflow-y-auto">
-            {filtered.length === 0 ? (
+            {!contests ? (
+              <div className="py-16 px-8 text-center space-y-4">
+                <p className="font-mono text-[0.78rem] text-red-400 uppercase tracking-widest">Connection Error</p>
+                <p className="text-[var(--text-muted)] text-xs leading-relaxed">Failed to reach the ArenaX servers. Please check your connection or wait for the system to wake up.</p>
+                <button 
+                  onClick={() => window.location.reload()}
+                  className="px-4 py-2 bg-[var(--bg-secondary)] border border-[var(--border-secondary)] rounded text-[var(--accent)] font-mono text-xs hover:border-[var(--accent-border)] transition-all"
+                >
+                  Retry Connection
+                </button>
+              </div>
+            ) : filtered.length === 0 ? (
               <div className="py-16 text-center font-mono text-[0.78rem] text-[var(--text-muted)]">No contests found</div>
             ) : (
               filtered.map((c) => (
