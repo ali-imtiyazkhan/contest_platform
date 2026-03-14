@@ -22,7 +22,7 @@ const server = createServer(app);
 
 export const io = new Server(server, {
   cors: {
-    origin: ["http://localhost:3000", "http://localhost:3005"],
+    origin: ["http://localhost:3000", "http://localhost:3005", "https://100xcontest-red.vercel.app"],
     credentials: true,
   },
 });
@@ -102,7 +102,7 @@ io.on("connection", (socket) => {
   });
 });
 
-const allowedOrigins = ["http://localhost:3000", "http://localhost:3005"];
+const allowedOrigins = ["http://localhost:3000", "http://localhost:3005", "https://100xcontest-red.vercel.app"];
 
 app.use(
   cors({
