@@ -51,7 +51,9 @@ export default function DuelsPage() {
         try {
             const token = localStorage.getItem("token");
             const res = await axios.get(`${BACKEND_URL}/duel/my`, {
-                headers: { Authorization: `Bearer ${token}` }
+                headers: { 
+                    ...(token && token !== "null" ? { Authorization: `Bearer ${token}` } : {})
+                }
             });
             setDuels(res.data.data || []);
         } catch (err) {
@@ -65,7 +67,9 @@ export default function DuelsPage() {
         try {
             const token = localStorage.getItem("token");
             const res = await axios.get(`${BACKEND_URL}/duel/challenges`, {
-                headers: { Authorization: `Bearer ${token}` }
+                headers: { 
+                    ...(token && token !== "null" ? { Authorization: `Bearer ${token}` } : {})
+                }
             });
             setChallenges(res.data.data || []);
         } catch (err) {
@@ -79,7 +83,9 @@ export default function DuelsPage() {
         try {
             const token = localStorage.getItem("token");
             const res = await axios.get(`${BACKEND_URL}/user/search?q=${searchQuery}`, {
-                headers: { Authorization: `Bearer ${token}` }
+                headers: { 
+                    ...(token && token !== "null" ? { Authorization: `Bearer ${token}` } : {})
+                }
             });
             setSearchResults(res.data.data || []);
         } catch (err) {
@@ -103,7 +109,9 @@ export default function DuelsPage() {
                 player2Id: targetUserId,
                 challengeId: challenges[0].id // Picking the first one as default
             }, {
-                headers: { Authorization: `Bearer ${token}` }
+                headers: { 
+                    ...(token && token !== "null" ? { Authorization: `Bearer ${token}` } : {})
+                }
             });
             if (res.data.ok) {
                 alert("Invite sent!");
@@ -119,7 +127,9 @@ export default function DuelsPage() {
         try {
             const token = localStorage.getItem("token");
             const res = await axios.post(`${BACKEND_URL}/duel/${duelId}/accept`, {}, {
-                headers: { Authorization: `Bearer ${token}` }
+                headers: { 
+                    ...(token && token !== "null" ? { Authorization: `Bearer ${token}` } : {})
+                }
             });
             if (res.data.ok) {
                 alert("Duel accepted! Entering arena...");

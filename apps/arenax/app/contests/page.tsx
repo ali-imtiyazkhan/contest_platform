@@ -108,7 +108,7 @@ async function fetchContestDetails(contestId: string): Promise<Contest | null> {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
+        ...(token && token !== "null" ? { Authorization: `Bearer ${token}` } : {}),
       },
       credentials: "include",
     });
