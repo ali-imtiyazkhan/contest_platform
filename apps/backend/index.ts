@@ -14,6 +14,8 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 import { client } from "db/client";
+import passport from "passport";
+import authRouter from "./routes/auth";
 
 dotenv.config();
 
@@ -114,12 +116,14 @@ app.use(
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.text());
+app.use(passport.initialize());
 
 app.get("/health", (req, res) => {
   res.json({ message: "Health Check!" });
 });
 
 app.use("/api/v1/user", userRouter);
+app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/admin", adminRouter);
 app.use("/api/v1/contest", contestRouter);
 app.use("/api/v1/team", teamRouter);

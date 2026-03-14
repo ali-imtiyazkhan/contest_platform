@@ -180,8 +180,8 @@ export default function LoginPage() {
                         <div className="grid grid-cols-2 gap-3">
                             <button
                                 type="button"
+                                onClick={() => window.location.href = `${API_BASE}/auth/github`}
                                 className="flex items-center justify-center gap-2 bg-[var(--bg-secondary)] border border-[var(--border-secondary)] rounded-lg px-4 py-3 text-[var(--text-primary)] text-sm font-semibold hover:bg-[var(--bg-card)] hover:border-[var(--border-primary)] transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-                                disabled
                             >
                                 <svg className="w-5 h-5" viewBox="0 0 24 24">
                                     <path
@@ -193,8 +193,8 @@ export default function LoginPage() {
                             </button>
                             <button
                                 type="button"
-                                className="flex items-center justify-center gap-2 bg-white/[0.04] border border-white/[0.1] rounded-lg px-4 py-3 text-cream text-sm font-semibold hover:bg-white/[0.08] hover:border-white/[0.2] transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-                                disabled
+                                onClick={() => window.location.href = `${API_BASE}/auth/google`}
+                                className="flex items-center justify-center gap-2 bg-white text-black rounded-lg px-4 py-3 text-sm font-semibold hover:bg-gray-100 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                             >
                                 <svg className="w-5 h-5" viewBox="0 0 24 24">
                                     <path
