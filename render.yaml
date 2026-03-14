@@ -36,6 +36,18 @@ services:
         sync: false
       - key: ADMIN_SIGNUP_SECRET
         sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: GITHUB_CLIENT_ID
+        sync: false
+      - key: GITHUB_CLIENT_SECRET
+        sync: false
+      - key: BACKEND_URL
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
 
 databases:
   - name: devforces-db

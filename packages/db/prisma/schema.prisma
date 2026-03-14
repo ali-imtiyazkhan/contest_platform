@@ -69,6 +69,10 @@ model User {
   displayName String? 
   country     String?  
   avatarColor String  @default("#4f86f7")
+  
+  provider    String?
+  providerId  String?
+  avatarUrl   String?
 
   contestSubmissions  ContestSubmission[]
   leaderboard         Leaderboard[]
@@ -80,15 +84,6 @@ model User {
   duelsAsPlayer1      Duel[]              @relation("Player1")
   duelsAsPlayer2      Duel[]              @relation("Player2")
   duelSubmissions     DuelSubmission[]
-}
-
-model OtpVerification {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  otp       String
-  attempts  Int      @default(0)
-  expiresAt DateTime
-  createdAt DateTime @default(now())
 }
 
 model Contest {
