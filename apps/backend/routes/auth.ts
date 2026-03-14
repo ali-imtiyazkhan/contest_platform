@@ -51,29 +51,56 @@ passport.use(
             clientSecret: process.env.GITHUB_CLIENT_SECRET || "",
             callbackURL: `${process.env.BACKEND_URL}/api/v1/auth/github/callback`,
         },
-        async (_accessToken: string, _refreshToken: string, profile: any, done: (err: any, user?: any) => void) => {
+        async (accessToken: string, _refreshToken: string, profile: any, done: (err: any, user?: any) => void) => {
             try {
-                const email = profile.emails?.[0].value;
-                if (!email) return done(new Error("No email found from GitHub profile"));
+                console.log("GitHub Profile received for ID:", profile.id);
+                
+                let email = profile.emails?.[0]?.value;
+                
+                if (!email && accessToken) {
+                    console.log("Email not found in profile, attempting to fetch from GitHub API...");
+                    try {
+                        const response = await fetch('https://api.github.com/user/emails', {
+                            headers: {
+                                'Authorization': `token ${accessToken}`,
+                                'User-Agent': '100xContest-Backend'
+                            }
+                        });
+                        const emails: any = await response.json();
+                        if (Array.isArray(emails)) {
+                            const primaryEmail = emails.find(e => e.primary && e.verified) || emails.find(e => e.primary) || emails[0];
+                            if (primaryEmail) email = primaryEmail.email;
+                        }
+                    } catch (fetchError) {
+                        console.error("Error fetching emails from GitHub:", fetchError);
+                    }
+                }
 
+                if (!email) {
+                    console.error("Authentication failed: No email found for GitHub user", profile.id);
+                    return done(new Error("No email found from GitHub profile. Please ensure you have a verified email on GitHub."));
+                }
+
+                console.log("Upserting GitHub user with email:", email);
                 const user = await client.user.upsert({
                     where: { email },
                     update: {
                         provider: "github",
                         providerId: profile.id,
-                        avatarUrl: profile.photos?.[0].value,
+                        avatarUrl: profile.photos?.[0]?.value,
                     },
                     create: {
                         email,
                         displayName: profile.displayName || profile.username,
                         provider: "github",
                         providerId: profile.id,
-                        avatarUrl: profile.photos?.[0].value,
+                        avatarUrl: profile.photos?.[0]?.value,
                     },
                 });
 
                 return done(null, user);
             } catch (error) {
+                console.error("GitHub Strategy Error:", error);
                 return done(error);
             }
         }

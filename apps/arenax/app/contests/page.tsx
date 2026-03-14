@@ -666,7 +666,7 @@ export default function ContestsPage() {
               <div className="py-16 px-8 text-center space-y-4">
                 <p className="font-mono text-[0.78rem] text-red-400 uppercase tracking-widest">Connection Error</p>
                 <p className="text-[var(--text-muted)] text-xs leading-relaxed">Failed to reach the ArenaX servers. Please check your connection or wait for the system to wake up.</p>
-                <button 
+                <button
                   onClick={() => window.location.reload()}
                   className="px-4 py-2 bg-[var(--bg-secondary)] border border-[var(--border-secondary)] rounded text-[var(--accent)] font-mono text-xs hover:border-[var(--accent-border)] transition-all"
                 >
