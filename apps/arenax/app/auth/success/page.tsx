@@ -6,7 +6,9 @@ import { useAuth } from "@/context/AuthProvider";
 import { BACKEND_URL } from "@/config";
 import axios from "axios";
 
-export default function AuthSuccess() {
+import { Suspense } from "react";
+
+function AuthSuccessContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const { login } = useAuth();
@@ -43,11 +45,24 @@ export default function AuthSuccess() {
     }, [searchParams, login, router]);
 
     return (
+        <div className="flex flex-col items-center gap-4">
+            <div className="w-12 h-12 border-4 border-[var(--accent)] border-t-transparent rounded-full animate-spin"></div>
+            <p className="text-[var(--text-primary)] font-mono animate-pulse">Authenticating...</p>
+        </div>
+    );
+}
+
+export default function AuthSuccess() {
+    return (
         <div className="min-h-screen bg-[var(--bg-primary)] flex items-center justify-center">
-            <div className="flex flex-col items-center gap-4">
-                <div className="w-12 h-12 border-4 border-[var(--accent)] border-t-transparent rounded-full animate-spin"></div>
-                <p className="text-[var(--text-primary)] font-mono animate-pulse">Authenticating...</p>
-            </div>
+            <Suspense fallback={
+                <div className="flex flex-col items-center gap-4">
+                    <div className="w-12 h-12 border-4 border-[var(--accent)] border-t-transparent rounded-full animate-spin"></div>
+                    <p className="text-[var(--text-primary)] font-mono animate-pulse">Loading...</p>
+                </div>
+            }>
+                <AuthSuccessContent />
+            </Suspense>
         </div>
     );
 }
