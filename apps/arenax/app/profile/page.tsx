@@ -155,7 +155,7 @@ export default function ProfilePage() {
     const countryLabel = profile.country ? (COUNTRY_NAMES[profile.country] || profile.country) : "Not specified";
 
     return (
-        <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)]" style={{ fontFamily: "'Syne', sans-serif" }}>
+        <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)]" style={{ fontFamily: "var(--font-syne)" }}>
             {/* Background blobs */}
             <div className="fixed inset-0 overflow-hidden pointer-events-none">
                 <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-[var(--accent)] opacity-5 rounded-full blur-[120px]" />

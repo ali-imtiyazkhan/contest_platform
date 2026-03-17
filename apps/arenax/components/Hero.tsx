@@ -44,7 +44,7 @@ export default function Hero() {
       <div className="bg-[var(--bg-primary)] flex flex-col justify-center px-16 pt-40 pb-20 relative z-[2]">
         <p
           className="text-[var(--accent)] text-[0.75rem] tracking-[3px] uppercase mb-6 hero-animate animate-fade-up-1"
-          style={{ fontFamily: "'DM Mono', monospace" }}
+          style={{ fontFamily: "var(--font-dm-mono)" }}
         >
           // The Ultimate Contest Platform
         </p>
@@ -52,7 +52,7 @@ export default function Hero() {
         <h1
           className="text-[var(--text-primary)] leading-[0.92] hero-animate animate-fade-up-2"
           style={{
-            fontFamily: "'Bebas Neue', cursive",
+            fontFamily: "var(--font-bebas)",
             fontSize: "clamp(4rem, 7vw, 7.5rem)",
           }}
         >
@@ -90,14 +90,14 @@ export default function Hero() {
             <div key={s.label}>
               <div
                 className="text-[var(--text-primary)] text-[2.4rem] leading-none"
-                style={{ fontFamily: "'Bebas Neue', cursive" }}
+                style={{ fontFamily: "var(--font-bebas)" }}
               >
                 {s.num}
                 <span className="text-[var(--accent)]">{s.suffix}</span>
               </div>
               <div
                 className="text-[0.7rem] text-[var(--text-muted)] uppercase tracking-[2px] mt-1"
-                style={{ fontFamily: "'DM Mono', monospace" }}
+                style={{ fontFamily: "var(--font-dm-mono)" }}
               >
                 {s.label}
               </div>
@@ -115,19 +115,19 @@ export default function Hero() {
           <div className="bg-[var(--accent-bg)] border-b border-[var(--accent-border)] px-5 py-3.5 flex items-center gap-3">
             <span
               className="text-[var(--accent-text-on)] bg-[var(--accent)] px-2.5 py-1 rounded-sm text-[0.65rem] font-medium tracking-[2px] uppercase"
-              style={{ fontFamily: "'DM Mono', monospace" }}
+              style={{ fontFamily: "var(--font-dm-mono)" }}
             >
               Live Now
             </span>
             <span
               className="text-[0.72rem] text-[var(--text-muted)]"
-              style={{ fontFamily: "'DM Mono', monospace" }}
+              style={{ fontFamily: "var(--font-dm-mono)" }}
             >
               Challenge #47 — Logic Masters
             </span>
             <span
               className="ml-auto text-[var(--accent)] text-[0.75rem]"
-              style={{ fontFamily: "'DM Mono', monospace" }}
+              style={{ fontFamily: "var(--font-dm-mono)" }}
             >
               {formatTime(seconds)}
             </span>
@@ -139,7 +139,7 @@ export default function Hero() {
             <div className="p-7 border-r border-[var(--border-primary)] flex flex-col gap-4">
               <span
                 className="text-[0.65rem] text-[var(--text-muted)] tracking-[2px] uppercase"
-                style={{ fontFamily: "'DM Mono', monospace" }}
+                style={{ fontFamily: "var(--font-dm-mono)" }}
               >
                 // Question
               </span>
@@ -157,13 +157,13 @@ export default function Hero() {
             <div className="p-7 flex flex-col gap-3">
               <span
                 className="text-[0.65rem] text-[var(--text-muted)] tracking-[2px] uppercase"
-                style={{ fontFamily: "'DM Mono', monospace" }}
+                style={{ fontFamily: "var(--font-dm-mono)" }}
               >
                 // Your Answer
               </span>
               <textarea
                 className="flex-1 bg-[var(--input-bg)] border border-[var(--border-secondary)] rounded-md p-3.5 text-[0.82rem] text-[var(--text-primary)] leading-[1.6] resize-none outline-none focus:border-[var(--accent-border)] transition-colors caret-[var(--accent)] placeholder:text-[var(--text-muted)] placeholder:italic"
-                style={{ fontFamily: "'DM Mono', monospace" }}
+                style={{ fontFamily: "var(--font-dm-mono)" }}
                 placeholder="Type your answer here..."
               />
               <button className="bg-[var(--accent)] text-[var(--accent-text-on)] rounded py-2.5 text-[0.78rem] font-extrabold tracking-[1.5px] uppercase hover:opacity-85 transition-opacity font-syne">
@@ -189,7 +189,7 @@ export default function Hero() {
             </div>
             <span
               className="text-[var(--accent)] text-[0.72rem]"
-              style={{ fontFamily: "'DM Mono', monospace" }}
+              style={{ fontFamily: "var(--font-dm-mono)" }}
             >
               +500 pts
             </span>

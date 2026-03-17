@@ -26,7 +26,7 @@ export default function SignUpPage() {
     return (
         <div
             className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] flex overflow-hidden relative selection:bg-[var(--accent-bg)] selection:text-[var(--accent)]"
-            style={{ fontFamily: "'Syne', sans-serif" }}
+            style={{ fontFamily: "var(--font-syne)" }}
         >
             {/* Animated gradient background */}
             <div
@@ -53,7 +53,7 @@ export default function SignUpPage() {
                     >
                         <span
                             className="text-[3.5rem] font-extrabold tracking-[4px] leading-none"
-                            style={{ fontFamily: "'Bebas Neue', cursive" }}
+                            style={{ fontFamily: "var(--font-bebas)" }}
                         >
                             Arena<span className="text-[var(--accent)]">X</span>
                         </span>
@@ -78,7 +78,7 @@ export default function SignUpPage() {
                         >
                             <div
                                 className="text-[var(--accent)] font-extrabold text-4xl leading-none"
-                                style={{ fontFamily: "'Bebas Neue', cursive" }}
+                                style={{ fontFamily: "var(--font-bebas)" }}
                             >
                                 {stat.num}
                             </div>
@@ -101,7 +101,7 @@ export default function SignUpPage() {
                         <Link href="/" className="inline-block">
                             <span
                                 className="text-[2.5rem] font-extrabold tracking-[3px] text-[var(--text-primary)]"
-                                style={{ fontFamily: "'Bebas Neue', cursive" }}
+                                style={{ fontFamily: "var(--font-bebas)" }}
                             >
                                 Arena<span className="text-[var(--accent)]">X</span>
                             </span>
@@ -112,7 +112,7 @@ export default function SignUpPage() {
                     <div className="text-center space-y-2">
                         <h1
                             className="text-[var(--text-primary)] font-extrabold leading-tight"
-                            style={{ fontFamily: "'Bebas Neue', cursive", fontSize: "clamp(2.5rem, 5vw, 3.5rem)" }}
+                            style={{ fontFamily: "var(--font-bebas)", fontSize: "clamp(2.5rem, 5vw, 3.5rem)" }}
                         >
                             Join the Arena
                         </h1>

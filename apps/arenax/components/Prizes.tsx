@@ -40,14 +40,14 @@ export default function Prizes() {
     <section className="px-16 py-[120px]">
       <p
         className="reveal text-[var(--accent)] text-[0.72rem] tracking-[3px] uppercase mb-4"
-        style={{ fontFamily: "'DM Mono', monospace" }}
+        style={{ fontFamily: "var(--font-dm-mono)" }}
       >
         // Rewards
       </p>
       <h2
         className="reveal mb-[60px] leading-none text-[var(--text-primary)]"
         style={{
-          fontFamily: "'Bebas Neue', cursive",
+          fontFamily: "var(--font-bebas)",
           fontSize: "clamp(3rem, 5vw, 5rem)",
         }}
       >
@@ -67,14 +67,14 @@ export default function Prizes() {
             <p
               className={`text-[0.7rem] tracking-[2px] uppercase mb-4 ${prize.featured ? "opacity-60" : "text-[var(--text-muted)]"
                 }`}
-              style={{ fontFamily: "'DM Mono', monospace" }}
+              style={{ fontFamily: "var(--font-dm-mono)" }}
             >
               {prize.position}
             </p>
             <div
               className={`text-[4rem] leading-none mb-3 ${prize.featured ? "text-[var(--accent-text-on)]" : "text-[var(--text-primary)]"
                 }`}
-              style={{ fontFamily: "'Bebas Neue', cursive" }}
+              style={{ fontFamily: "var(--font-bebas)" }}
             >
               {prize.amount}
             </div>

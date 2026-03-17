@@ -140,7 +140,7 @@ export default function TeamsPage() {
     };
 
     return (
-        <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] selection:bg-[var(--accent)] selection:text-[var(--accent-text-on)]">
+        <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] selection:bg-[var(--accent)] selection:text-[var(--accent-text-on)]" style={{ fontFamily: "var(--font-syne)" }}>
             <div className="fixed inset-0 overflow-hidden pointer-events-none">
                 <div className="absolute top-[20%] right-[-5%] w-[30%] h-[30%] bg-[var(--accent)] opacity-5 rounded-full blur-[100px]" />
             </div>
@@ -154,7 +154,7 @@ export default function TeamsPage() {
 
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
                     <div>
-                        <h1 className="text-4xl font-extrabold mb-3 tracking-tight">Your Squads</h1>
+                        <h1 className="text-4xl font-extrabold mb-3 tracking-tight" style={{ fontFamily: "var(--font-bebas)" }}>Your Squads</h1>
                         <p className="text-[var(--text-muted)] text-[0.9rem] max-w-md">Collaborate, compete, and climb the leaderboards together.</p>
                     </div>
                     <div className="flex gap-4">
@@ -295,10 +295,6 @@ export default function TeamsPage() {
                 </div>
             )}
 
-            <style dangerouslySetInnerHTML={{ __html: `
-        @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Bebas+Neue&display=swap');
-        body { font-family: 'Syne', sans-serif; }
-      ` }} />
         </div>
     );
 }

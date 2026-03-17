@@ -32,6 +32,7 @@ interface Contest {
   host: string;
   description: string;
   tags: string[];
+  participationMode: "Solo" | "Team";
 }
 
 interface ActivityItem {
@@ -152,6 +153,7 @@ async function fetchContestDetails(contestId: string): Promise<Contest | null> {
       host: c.host || "100xContest Official",
       description: c.description || "No description available",
       tags: Array.isArray(c.tags) ? c.tags : [],
+      participationMode: c.participationMode || "Solo",
     };
   } catch (e) {
     return null;
@@ -185,6 +187,7 @@ async function fetchContests(): Promise<Contest[]> {
         host: c.host || "100xContest Official",
         description: c.description || "",
         tags: Array.isArray(c.tags) ? c.tags : [],
+        participationMode: c.participationMode || "Solo",
       };
     });
   } catch (e) {
@@ -192,7 +195,7 @@ async function fetchContests(): Promise<Contest[]> {
   }
 }
 
-async function registerForContest(contestId: string): Promise<{ ok: boolean; message?: string }> {
+async function registerForContest(contestId: string, teamId?: string): Promise<{ ok: boolean; message?: string }> {
   try {
     const token = localStorage.getItem("token");
     const res = await fetch(`${API_BASE}/contest/${contestId}/register`, {
@@ -201,6 +204,7 @@ async function registerForContest(contestId: string): Promise<{ ok: boolean; mes
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
+      body: JSON.stringify({ teamId }),
     });
     return await res.json();
   } catch (e) {
@@ -282,7 +286,7 @@ function CountdownBanner({ startTime }: { startTime: string }) {
             <div className="text-center">
               <div
                 className="text-orange-300 font-extrabold tabular-nums leading-none"
-                style={{ fontFamily: "'Bebas Neue', cursive", fontSize: "2rem" }}
+                style={{ fontFamily: "var(--font-bebas)", fontSize: "2rem" }}
               >
                 {value}
               </div>
@@ -293,7 +297,7 @@ function CountdownBanner({ startTime }: { startTime: string }) {
             {i < units.length - 1 && (
               <span
                 className="text-orange-500/50 font-bold pb-3"
-                style={{ fontFamily: "'Bebas Neue', cursive", fontSize: "1.5rem" }}
+                style={{ fontFamily: "var(--font-bebas)", fontSize: "1.5rem" }}
               >
                 :
               </span>
@@ -329,7 +333,12 @@ function ContestDetailPanel({ contest, onRegister }: { contest: Contest; onRegis
       <div className="px-6 pt-6 pb-5 border-b border-[var(--border-primary)] sticky top-0 bg-[var(--bg-card)] z-10">
         <div className="flex items-start justify-between gap-3 mb-3">
           <div>
-            <StatusBadge status={contest.status} />
+            <div className="flex gap-2 items-center mb-2">
+                <StatusBadge status={contest.status} />
+                <span className="font-mono text-[0.6rem] bg-[var(--bg-secondary)] px-2 py-0.5 rounded border border-[var(--border-secondary)] text-[var(--accent)] uppercase tracking-wider">
+                    {contest.participationMode === "Team" ? "👥 Team Mode" : "👤 Solo Mode"}
+                </span>
+            </div>
             <h2 className="text-[var(--text-primary)] font-extrabold text-xl mt-2 leading-tight">{contest.title}</h2>
             <p className="font-mono text-[0.68rem] text-[var(--text-muted)] mt-1">by {contest.host}</p>
           </div>
@@ -342,7 +351,7 @@ function ContestDetailPanel({ contest, onRegister }: { contest: Contest; onRegis
               <MessageSquare size={18} />
             </button>
             <div>
-              <div className="text-[var(--accent)] font-extrabold text-2xl" style={{ fontFamily: "'Bebas Neue', cursive" }}>
+              <div className="text-[var(--accent)] font-extrabold text-2xl" style={{ fontFamily: "var(--font-bebas)" }}>
                 ${contest.prize.toLocaleString()}
               </div>
               <div className="font-mono text-[0.62rem] text-[var(--text-muted)] tracking-widest uppercase">Prize Pool</div>
@@ -447,11 +456,33 @@ function RegisterModal({ contest, onClose }: { contest: Contest; onClose: () => 
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [teams, setTeams] = useState<any[]>([]);
+  const [selectedTeamId, setSelectedTeamId] = useState("");
+  const [fetchingTeams, setFetchingTeams] = useState(false);
+
+  useEffect(() => {
+    if (contest.participationMode === "Team") {
+      setFetchingTeams(true);
+      const token = localStorage.getItem("token");
+      fetch(`${API_BASE}/team/my`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      .then(res => res.json())
+      .then(json => {
+        if (json.ok) setTeams(json.data);
+      })
+      .finally(() => setFetchingTeams(false));
+    }
+  }, [contest]);
 
   const handleSubmit = async () => {
+    if (contest.participationMode === "Team" && !selectedTeamId) {
+        setError("Please select a squad to compete with.");
+        return;
+    }
     setLoading(true);
     setError("");
-    const result = await registerForContest(contest.id);
+    const result = await registerForContest(contest.id, selectedTeamId);
     setLoading(false);
     if (result.ok) {
       if (contest.status === "live" && contest.challenges.length > 0) {
@@ -481,6 +512,41 @@ function RegisterModal({ contest, onClose }: { contest: Contest; onClose: () => 
           <div className="mb-4">
             <CountdownBanner startTime={contest.startTime} />
           </div>
+        )}
+
+        {contest.participationMode === "Team" && (
+            <div className="mb-6 space-y-3">
+                <label className="font-mono text-[0.65rem] text-[var(--text-muted)] tracking-widest uppercase">Select Your Squad</label>
+                {fetchingTeams ? (
+                    <div className="text-[var(--accent)] font-mono text-[0.7rem] animate-pulse">Syncing squads...</div>
+                ) : teams.length === 0 ? (
+                    <div className="p-4 rounded-lg bg-[var(--bg-secondary)] border border-dashed border-[var(--border-secondary)] text-center">
+                        <p className="text-[var(--text-muted)] text-[0.75rem] mb-2">You aren't in any squads yet.</p>
+                        <Link href="/teams" className="text-[var(--accent)] font-bold text-[0.75rem] hover:underline">Create or join a squad →</Link>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 gap-2">
+                        {teams.map(t => (
+                            <button
+                                key={t.id}
+                                onClick={() => setSelectedTeamId(t.id)}
+                                className={`flex items-center justify-between p-3 rounded-lg border transition-all text-left ${
+                                    selectedTeamId === t.id 
+                                    ? "bg-[var(--accent-bg)] border-[var(--accent-border)]" 
+                                    : "bg-[var(--bg-secondary)] border-[var(--border-secondary)] hover:border-[var(--text-muted)]"
+                                }`}
+                            >
+                                <span className={`text-sm font-bold ${selectedTeamId === t.id ? "text-[var(--accent)]" : "text-[var(--text-primary)]"}`}>
+                                    {t.name}
+                                </span>
+                                <span className="font-mono text-[0.6rem] text-[var(--text-muted)] opacity-50">
+                                    {t._count?.members || t.members?.length || 0} MEMBERS
+                                </span>
+                            </button>
+                        ))}
+                    </div>
+                )}
+            </div>
         )}
 
         {error && (
@@ -597,13 +663,13 @@ export default function ContestsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] flex flex-col" style={{ fontFamily: "'Syne', sans-serif" }}>
+    <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] flex flex-col" style={{ fontFamily: "var(--font-syne)" }}>
       {/* Header */}
       <header className="border-b border-[var(--border-primary)] px-6 py-4 flex items-center gap-4 bg-[var(--bg-primary)] opacity-60 backdrop-blur-sm sticky top-0 z-50">
         <Link
           href="/"
           className="font-bebas text-[1.6rem] tracking-[3px] text-[var(--text-primary)] no-underline flex-shrink-0 hover:text-[var(--accent)] transition-colors"
-          style={{ fontFamily: "'Bebas Neue', cursive" }}
+          style={{ fontFamily: "var(--font-bebas)" }}
         >
           100x<span className="text-[var(--accent)]">Contest</span>
         </Link>

@@ -15,14 +15,14 @@ export default function CTASection() {
     <section className="cta-watermark bg-[var(--bg-secondary)] px-16 py-[160px] text-center relative overflow-hidden">
       <p
         className="reveal text-[var(--accent)] text-[0.72rem] tracking-[3px] uppercase mb-4"
-        style={{ fontFamily: "'DM Mono', monospace" }}
+        style={{ fontFamily: "var(--font-dm-mono)" }}
       >
         // Join Now
       </p>
       <h2
         className="reveal mb-6 leading-none text-[var(--text-primary)]"
         style={{
-          fontFamily: "'Bebas Neue', cursive",
+          fontFamily: "var(--font-bebas)",
           fontSize: "clamp(3.5rem, 6vw, 6rem)",
         }}
       >
@@ -44,12 +44,12 @@ export default function CTASection() {
           onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
           placeholder="your@email.com"
           className="flex-1 bg-[var(--input-bg)] border border-[var(--border-secondary)] rounded text-[var(--text-primary)] px-5 py-4 text-[0.9rem] outline-none focus:border-[var(--accent-border)] placeholder:text-[var(--text-muted)] transition-colors"
-          style={{ fontFamily: "'Syne', sans-serif" }}
+          style={{ fontFamily: "var(--font-syne)" }}
         />
         <button
           onClick={handleSubmit}
           className="bg-[var(--accent)] text-[var(--accent-text-on)] border-none rounded px-7 py-4 font-extrabold text-[0.82rem] tracking-[1.5px] uppercase whitespace-nowrap cursor-pointer hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(200,241,53,0.3)] transition-all duration-200"
-          style={{ fontFamily: "'Syne', sans-serif" }}
+          style={{ fontFamily: "var(--font-syne)" }}
         >
           Join Free →
         </button>

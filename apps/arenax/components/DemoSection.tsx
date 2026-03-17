@@ -14,14 +14,14 @@ export default function DemoSection() {
     <section className="bg-[var(--bg-secondary)] px-16 py-[120px]">
       <p
         className="reveal text-[var(--accent)] text-[0.72rem] tracking-[3px] uppercase mb-4 text-center"
-        style={{ fontFamily: "'DM Mono', monospace" }}
+        style={{ fontFamily: "var(--font-dm-mono)" }}
       >
         // The Interface
       </p>
       <h2
         className="reveal text-center max-w-[600px] mx-auto mb-14 leading-none text-[var(--text-primary)]"
         style={{
-          fontFamily: "'Bebas Neue', cursive",
+          fontFamily: "var(--font-bebas)",
           fontSize: "clamp(3rem, 5vw, 5rem)",
         }}
       >
@@ -39,7 +39,7 @@ export default function DemoSection() {
           <span className="w-3 h-3 rounded-full bg-[#28ca41]" />
           <span
             className="ml-3 text-[0.72rem] text-[var(--text-muted)]"
-            style={{ fontFamily: "'DM Mono', monospace" }}
+            style={{ fontFamily: "var(--font-dm-mono)" }}
           >
             100xcontest.com — Challenge #47 / Part 3 of 5
           </span>
@@ -51,7 +51,7 @@ export default function DemoSection() {
           <div className="p-10 border-b md:border-b-0 md:border-r border-[var(--border-primary)]">
             <span
               className="block text-[var(--accent)] text-[0.65rem] tracking-[2px] uppercase mb-5"
-              style={{ fontFamily: "'DM Mono', monospace" }}
+              style={{ fontFamily: "var(--font-dm-mono)" }}
             >
               📖 Question
             </span>
@@ -62,7 +62,7 @@ export default function DemoSection() {
             </p>
             <div
               className="flex flex-col gap-2.5 text-[0.75rem] text-[var(--text-muted)]"
-              style={{ fontFamily: "'DM Mono', monospace" }}
+              style={{ fontFamily: "var(--font-dm-mono)" }}
             >
               {metaItems.map((item) => (
                 <span key={item.label} className="flex items-center gap-2">
@@ -77,13 +77,13 @@ export default function DemoSection() {
           <div className="p-10 flex flex-col gap-4">
             <span
               className="text-[var(--text-muted)] text-[0.65rem] tracking-[2px] uppercase"
-              style={{ fontFamily: "'DM Mono', monospace" }}
+              style={{ fontFamily: "var(--font-dm-mono)" }}
             >
               ✏️ Your Answer
             </span>
             <textarea
               className="demo-textarea flex-1 bg-[var(--input-bg)] border border-[var(--border-secondary)] rounded-md p-4.5 text-[0.82rem] text-[var(--text-primary)] leading-[1.6] resize-none outline-none focus:border-[var(--accent-border)] transition-colors placeholder:text-[var(--text-muted)]"
-              style={{ fontFamily: "'DM Mono', monospace" }}
+              style={{ fontFamily: "var(--font-dm-mono)" }}
               defaultValue="The Industrial Revolution fundamentally shifted..."
             />
             <button className="bg-[var(--accent)] text-[var(--accent-text-on)] border-none py-3.5 rounded font-extrabold text-[0.82rem] tracking-[1.5px] uppercase cursor-pointer hover:opacity-85 transition-opacity font-syne">

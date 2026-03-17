@@ -41,14 +41,14 @@ export default function ChallengeTypes() {
     <section className="px-16 pb-[120px]">
       <p
         className="reveal text-[var(--accent)] text-[0.72rem] tracking-[3px] uppercase mb-4"
-        style={{ fontFamily: "'DM Mono', monospace" }}
+        style={{ fontFamily: "var(--font-dm-mono)" }}
       >
         // Challenge Types
       </p>
       <h2
         className="reveal mb-[60px] leading-none text-[var(--text-primary)]"
         style={{
-          fontFamily: "'Bebas Neue', cursive",
+          fontFamily: "var(--font-bebas)",
           fontSize: "clamp(3rem, 5vw, 5rem)",
         }}
       >
@@ -69,7 +69,7 @@ export default function ChallengeTypes() {
             </p>
             <span
               className="inline-block mt-5 text-[var(--accent)] border border-[var(--accent-border)] px-3 py-[5px] rounded-sm text-[0.65rem] tracking-[2px] uppercase"
-              style={{ fontFamily: "'DM Mono', monospace" }}
+              style={{ fontFamily: "var(--font-dm-mono)" }}
             >
               {type.tag}
             </span>

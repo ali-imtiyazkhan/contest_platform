@@ -66,7 +66,7 @@ export default function LoginPage() {
     return (
         <div
             className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] flex overflow-hidden relative selection:bg-[var(--accent-bg)] selection:text-[var(--accent)]"
-            style={{ fontFamily: "'Syne', sans-serif" }}
+            style={{ fontFamily: "var(--font-syne)" }}
         >
             {/* Animated gradient */}
             <div
@@ -93,7 +93,7 @@ export default function LoginPage() {
                     >
                         <span
                             className="text-[3.5rem] font-extrabold tracking-[4px] leading-none"
-                            style={{ fontFamily: "'Bebas Neue', cursive" }}
+                            style={{ fontFamily: "var(--font-bebas)" }}
                         >
                             Arena<span className="text-[var(--accent)]">X</span>
                         </span>
@@ -138,7 +138,7 @@ export default function LoginPage() {
                         <Link href="/" className="inline-block">
                             <span
                                 className="text-[2.5rem] font-extrabold tracking-[3px] text-[var(--text-primary)]"
-                                style={{ fontFamily: "'Bebas Neue', cursive" }}
+                                style={{ fontFamily: "var(--font-bebas)" }}
                             >
                                 Arena<span className="text-[var(--accent)]">X</span>
                             </span>
@@ -150,7 +150,7 @@ export default function LoginPage() {
                         <h1
                             className="text-[var(--text-primary)] font-extrabold leading-tight"
                             style={{
-                                fontFamily: "'Bebas Neue', cursive",
+                                fontFamily: "var(--font-bebas)",
                                 fontSize: "clamp(2.5rem, 5vw, 3.5rem)",
                             }}
                         >
