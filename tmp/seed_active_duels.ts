@@ -4,7 +4,7 @@ import bcrypt from "bcrypt";
 async function main() {
   console.log("Seeding Duel Instances (Matches between users)...");
 
-  // 1. Ensure we have at least 3 users to play with
+  // Ensure we have at least 3 users to play with
   const password = await bcrypt.hash("User@123", 10);
   
   const usersData = [
@@ -30,7 +30,7 @@ async function main() {
     console.log(`User ready: ${user.displayName}`);
   }
 
-  // 2. Get existing challenges (seeded from seed_duels.ts)
+  // Get existing challenge
   const challenges = await client.challenge.findMany({
     where: {
       title: { in: ["The Broken Navbar", "Memory Leak Hunt", "API Endpoint Optimization"] }
@@ -42,7 +42,7 @@ async function main() {
     return;
   }
 
-  // 3. Create some active and completed duels
+  // Create some active and completed duels
   const duelsData = [
     {
       player1Id: users[0].id,

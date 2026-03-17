@@ -133,7 +133,6 @@ export default function DuelsPage() {
             });
             if (res.data.ok) {
                 alert("Duel accepted! Entering arena...");
-                // Redirect or refresh
                 fetchDuels();
             }
         } catch (err: any) {
