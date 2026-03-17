@@ -31,12 +31,29 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [loading, setLoading] = useState(false);
     const [authReady, setAuthReady] = useState(false);
 
-    const clearAuth = () => {
+    // Synchronous hydration from localStorage
+    useEffect(() => {
+        const token = localStorage.getItem("token");
+        const userData = localStorage.getItem("user");
+        if (token) {
+            setAccessToken(token);
+        }
+        if (userData) {
+            try {
+                setUser(JSON.parse(userData));
+            } catch (e) {
+                console.error("Failed to parse user data from localStorage", e);
+            }
+        }
+        setAuthReady(true);
+    }, []);
+
+    const clearAuth = (silent = false) => {
         setAccessToken(null);
         setUser(null);
         localStorage.removeItem("user");
         localStorage.removeItem("token");
-        console.log("Auth Reset!");
+        if (!silent) console.log("Auth Reset!");
     };
 
     const logout = async () => {
@@ -79,6 +96,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
     const initAuth = async () => {
+        const hasLocalToken = !!localStorage.getItem("token");
         setLoading(true);
         try {
             const data = await getAuthStateSSR();
@@ -87,17 +105,28 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 setAccessToken(data.accessToken);
                 localStorage.setItem("token", data.accessToken);
 
+                // If backend didn't return user but we have it locally, keep local
                 const localData = localStorage.getItem("user");
-                setUser(localData ? JSON.parse(localData) : data.user);
+                if (data.user) {
+                    setUser(data.user);
+                    localStorage.setItem("user", JSON.stringify(data.user));
+                } else if (localData) {
+                    setUser(JSON.parse(localData));
+                }
 
                 scheduleTokenRefresh(data.accessToken);
             } else {
-                clearAuth();
+                // If we had a token but refresh failed, it's a real reset.
+                // If we didn't have one, just a silent clear.
+                clearAuth(!hasLocalToken);
             }
 
-        } catch (error) {
-            console.log("Auth init Error:", error);
-            clearAuth();
+        } catch (error: any) {
+            // Don't log error for 401s during initial background check if no token existed
+            if (error.response?.status !== 401 || hasLocalToken) {
+                console.log("Auth init Error:", error);
+            }
+            clearAuth(!hasLocalToken);
         } finally {
             setLoading(false);
             setAuthReady(true);
@@ -127,16 +156,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     return (
         <AuthContext.Provider value={value}>
-            {loading ? (
-                <div className="min-h-screen bg-[var(--bg-primary)] flex items-center justify-center">
-                    <div className="flex flex-col items-center gap-4">
-                        <div className="w-12 h-12 border-4 border-[var(--accent)] border-t-transparent rounded-full animate-spin"></div>
-                        <p className="text-[var(--text-primary)] font-mono animate-pulse uppercase tracking-[2px] text-xs">ArenaX Initializing</p>
-                    </div>
-                </div>
-            ) : (
-                children
-            )}
+            {children}
         </AuthContext.Provider>
     );
 };

@@ -38,12 +38,12 @@ export default function LoginPage() {
                 headers: {
                     "Content-Type": "application/json",
                 },
+                credentials: "include",
                 body: JSON.stringify({
                     email: form.email,
                     password: form.password,
                 }),
             });
-
             const data = await res.json();
 
             console.log("user data is : ", data);
