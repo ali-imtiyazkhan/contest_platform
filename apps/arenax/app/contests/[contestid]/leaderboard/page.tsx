@@ -47,6 +47,8 @@ interface LeaderboardRow {
     challengeScores: ChallengeScore[];
     firstSolveAt: string | null;
     lastActivityAt: string | null;
+    isTeam: boolean;
+    teamId?: string | null;
 }
 
 interface ChallengeInfo {
@@ -90,8 +92,6 @@ interface ToastItem {
     challengeTitle: string;
     points: number;
 }
-
-// ── Constants ──
 
 import { BACKEND_URL as API_BASE } from "@/config";
 const POLL_INTERVAL_MS = 8000;
@@ -180,6 +180,7 @@ function contestStatus(c: Contest): "live" | "upcoming" | "finished" {
 }
 
 function displayHandle(row: LeaderboardRow): string {
+    if (row.isTeam) return row.displayName || "Untitled Squad";
     return row.displayName ?? row.email.split("@")[0];
 }
 
@@ -209,7 +210,7 @@ function Avatar({ row, size = 32 }: { row: LeaderboardRow; size?: number }) {
     const letter = (row.displayName ?? row.email)[0].toUpperCase();
     return (
         <div
-            className="rounded-full flex items-center justify-center font-bold text-black flex-shrink-0 select-none"
+            className={`rounded-full flex items-center justify-center font-bold text-black flex-shrink-0 select-none ${row.isTeam ? "ring-2 ring-[var(--accent)] ring-offset-2 ring-offset-[var(--bg-primary)]" : ""}`}
             style={{
                 width: size,
                 height: size,
@@ -217,7 +218,7 @@ function Avatar({ row, size = 32 }: { row: LeaderboardRow; size?: number }) {
                 fontSize: size * 0.34,
             }}
         >
-            {letter}
+            {row.isTeam ? "👥" : letter}
         </div>
     );
 }
@@ -413,7 +414,7 @@ function StatCard({
             <p
                 className="font-extrabold text-2xl leading-none"
                 style={{
-                    fontFamily: "'Bebas Neue', cursive",
+                    fontFamily: "var(--font-bebas)",
                     color: accent ?? "var(--text-primary)",
                 }}
             >
@@ -630,7 +631,7 @@ export default function ContestLeaderboardPage() {
     return (
         <div
             className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)]"
-            style={{ fontFamily: "'Syne', 'DM Sans', sans-serif" }}
+            style={{ fontFamily: "var(--font-syne)" }}
         >
             {/* Toast stack */}
             <div className="fixed bottom-5 right-5 z-[200] flex flex-col gap-2 items-end">
@@ -649,7 +650,7 @@ export default function ContestLeaderboardPage() {
                     <Link
                         href="/"
                         className="font-extrabold text-[1.35rem] tracking-[4px] text-[var(--text-primary)] hover:text-[var(--accent)] transition-colors no-underline"
-                        style={{ fontFamily: "'Bebas Neue', cursive" }}
+                        style={{ fontFamily: "var(--font-bebas)" }}
                     >
                         Arena<span className="text-[var(--accent)]">X</span>
                     </Link>
@@ -703,7 +704,7 @@ export default function ContestLeaderboardPage() {
                             <h1
                                 className="font-extrabold leading-none mb-2 text-[var(--text-primary)]"
                                 style={{
-                                    fontFamily: "'Bebas Neue', cursive",
+                                    fontFamily: "var(--font-bebas)",
                                     fontSize: "clamp(2.2rem, 5vw, 4rem)",
                                 }}
                             >

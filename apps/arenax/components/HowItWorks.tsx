@@ -34,14 +34,14 @@ export default function HowItWorks() {
     <section className="px-16 py-[120px]">
       <p
         className="reveal text-[var(--accent)] text-[0.72rem] tracking-[3px] uppercase mb-4"
-        style={{ fontFamily: "'DM Mono', monospace" }}
+        style={{ fontFamily: "var(--font-dm-mono)" }}
       >
         // Process
       </p>
       <h2
         className="reveal mb-[60px] leading-none text-[var(--text-primary)]"
         style={{
-          fontFamily: "'Bebas Neue', cursive",
+          fontFamily: "var(--font-bebas)",
           fontSize: "clamp(3rem, 5vw, 5rem)",
         }}
       >
@@ -58,7 +58,7 @@ export default function HowItWorks() {
             {/* Background number */}
             <span
               className="absolute top-[-10px] right-6 text-[6rem] leading-none text-[var(--text-primary)] opacity-[0.04] pointer-events-none select-none"
-              style={{ fontFamily: "'Bebas Neue', cursive" }}
+              style={{ fontFamily: "var(--font-bebas)" }}
             >
               {step.num}
             </span>

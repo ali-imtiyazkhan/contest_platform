@@ -149,7 +149,7 @@ export default function DuelsPage() {
     }, [authReady]);
 
     return (
-        <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)]">
+        <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)]" style={{ fontFamily: "var(--font-syne)" }}>
             <div className="max-w-6xl mx-auto px-6 py-12">
                 <nav className="flex items-center gap-2 mb-12 font-mono text-[0.7rem] uppercase tracking-widest text-[var(--text-muted)]">
                     <Link href="/" className="hover:text-[var(--accent)] transition-colors">Home</Link>
@@ -159,7 +159,7 @@ export default function DuelsPage() {
 
                 <div className="flex flex-col md:flex-row justify-between items-start gap-8 mb-12">
                     <div>
-                        <h1 className="text-4xl font-extrabold mb-3 tracking-tight flex items-center gap-4">
+                        <h1 className="text-4xl font-extrabold mb-3 tracking-tight flex items-center gap-4" style={{ fontFamily: "var(--font-bebas)" }}>
                             <Swords className="text-[var(--accent)]" size={40} />
                             Battle Arena
                         </h1>

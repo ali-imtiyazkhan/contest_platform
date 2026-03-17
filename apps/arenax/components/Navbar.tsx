@@ -18,7 +18,7 @@ export default function Navbar() {
       {/* Logo */}
       <div
         className="text-[2rem] tracking-[3px] text-[var(--text-primary)]"
-        style={{ fontFamily: "'Bebas Neue', cursive" }}
+        style={{ fontFamily: "var(--font-bebas)" }}
       >
         100x<span className="text-[var(--accent)]">Contest</span>
       </div>

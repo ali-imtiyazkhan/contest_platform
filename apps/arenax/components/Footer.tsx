@@ -14,7 +14,7 @@ export default function Footer() {
     <footer className="px-16 py-12 border-t border-[var(--border-primary)] flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left bg-[var(--bg-primary)]">
       <div
         className="text-[var(--text-primary)] text-[1.5rem] tracking-[3px]"
-        style={{ fontFamily: "'Bebas Neue', cursive" }}
+        style={{ fontFamily: "var(--font-bebas)" }}
       >
         100x<span className="text-[var(--accent)]">Contest</span>
       </div>
@@ -33,7 +33,7 @@ export default function Footer() {
 
       <div
         className="text-[var(--text-muted)] text-[0.7rem]"
-        style={{ fontFamily: "'DM Mono', monospace" }}
+        style={{ fontFamily: "var(--font-dm-mono)" }}
       >
         © 2025 100xContest. All rights reserved.
       </div>

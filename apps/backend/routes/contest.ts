@@ -45,6 +45,7 @@ router.post("/admin/contest", adminMiddleware, async (req, res) => {
       maxParticipants,
       host,
       tags,
+      participationMode,
     } = req.body;
     if (!title || !startTime || !endTime)
       return res.status(400).json({ ok: false, message: "Missing fields" });
@@ -61,6 +62,7 @@ router.post("/admin/contest", adminMiddleware, async (req, res) => {
         maxParticipants: Number(maxParticipants || 1000),
         host,
         tags: tags || [],
+        participationMode: participationMode || "Solo",
       },
     });
     res.status(201).json({ ok: true, contest });
@@ -203,7 +205,11 @@ router.get("/:contestId", userMiddleware, async (req: any, res) => {
   });
   return res.json({
     ok: true,
-    data: { ...contest, isRegistered: !!membership },
+    data: { 
+      ...contest, 
+      isRegistered: !!membership,
+      registeredTeamId: membership?.teamId
+    },
   });
 });
 
@@ -239,7 +245,20 @@ router.post("/:contestId/register", userMiddleware, async (req: any, res) => {
       return res.status(404).json({ ok: false, message: "Contest not found" });
     if (now > contest.endTime)
       return res.status(403).json({ ok: false, message: "Contest has ended" });
-    await client.contestParticipant.create({ data: { contestId, userId } });
+
+    const { teamId } = req.body;
+    
+    if (contest.participationMode === "Team" && !teamId) {
+        return res.status(400).json({ ok: false, message: "Team selection is required for this contest" });
+    }
+
+    await client.contestParticipant.create({ 
+      data: { 
+        contestId, 
+        userId,
+        teamId: contest.participationMode === "Team" ? teamId : null
+      } 
+    });
     return res.json({
       ok: true,
       alreadyRegistered: false,
@@ -316,12 +335,13 @@ router.post(
             userId,
           },
         },
-        update: { submission, status: "Pending" },
+        update: { submission, status: "Pending", teamId: participant.teamId },
         create: {
           submission,
           userId,
           contestToChallengeMappingId: mapping.id,
           status: "Pending",
+          teamId: participant.teamId,
         },
       });
 
@@ -452,6 +472,13 @@ router.get("/:contestId/leaderboard", async (req, res) => {
             rating: true,
           },
         },
+        team: {
+            select: {
+                id: true,
+                name: true,
+                inviteCode: true,
+            }
+        }
       },
     });
 
@@ -471,14 +498,16 @@ router.get("/:contestId/leaderboard", async (req, res) => {
       });
     }
 
-    const userIds = entries
-      .map((e) => e.userId)
-      .filter((id): id is string => id !== null);
+    const userIds = entries.map((e) => e.userId).filter((id): id is string => id !== null);
+    const teamIds = entries.map((e) => e.teamId).filter((id): id is string => id !== null);
 
     //All submission
     const allSubs = await client.contestSubmission.findMany({
       where: {
-        userId: { in: userIds },
+        OR: [
+            { userId: { in: userIds } },
+            { teamId: { in: teamIds } }
+        ],
         contestToChallengeMappingId: { in: mappingIds },
       },
       include: {
@@ -491,19 +520,30 @@ router.get("/:contestId/leaderboard", async (req, res) => {
     type Sub = (typeof allSubs)[number];
     const subIndex = new Map<string, Sub>();
     for (const s of allSubs) {
-      subIndex.set(`${s.userId}:${s.contestToChallengeMapping.challengeId}`, s);
+      // If it has a teamId, we index by teamId:challengeId
+      // Otherwise by userId:challengeId
+      const key = s.teamId 
+        ? `${s.teamId}:${s.contestToChallengeMapping.challengeId}`
+        : `${s.userId}:${s.contestToChallengeMapping.challengeId}`;
+      
+      // If team case, we might have multiple people submitting for same challenge.
+      // We'll keep the one with the highest points.
+      const existing = subIndex.get(key);
+      if (!existing || (s.points || 0) > (existing.points || 0)) {
+          subIndex.set(key, s);
+      }
     }
 
     //Enrich each row
     const leaderboard = entries.map((entry, i) => {
+      const entityId = entry.teamId || entry.userId || "";
       const challengeScores = challenges.map((ch) => {
-        const sub = subIndex.get(`${entry.userId}:${ch.id}`);
+        const sub = subIndex.get(`${entityId}:${ch.id}`);
         return {
           challengeId: ch.id,
           title: ch.title,
           maxPoints: ch.maxPoints,
           awarded: sub?.points ?? 0,
-          // raw status sent so frontend can show "Pending" badge if desired
           status: (sub?.status ?? null) as SubmissionStatus | null,
           verdict: toVerdict(sub?.status, sub?.points ?? 0, ch.maxPoints),
           submittedAt: sub?.createdAt?.toISOString() ?? null,
@@ -511,22 +551,24 @@ router.get("/:contestId/leaderboard", async (req, res) => {
         };
       });
 
-      // Earliest accepted submission → shown as "First solve"
-      const acceptedTimestamps = allSubs
-        .filter((s) => s.userId === entry.userId && s.status === "Accepted")
+      const entrySubs = allSubs.filter(s => (entry.teamId ? s.teamId === entry.teamId : s.userId === entry.userId));
+      
+      const acceptedTimestamps = entrySubs
+        .filter((s) => s.status === "Accepted")
         .map((s) => s.createdAt.getTime());
+      
       const firstSolveAt =
         acceptedTimestamps.length > 0
           ? new Date(Math.min(...acceptedTimestamps)).toISOString()
           : null;
 
-      // Most recent activity (updatedAt from newest submission)
-      const userSubTimestamps = allSubs
-        .filter((s) => s.userId === entry.userId && s.updatedAt != null)
+      const subTimestamps = entrySubs
+        .filter((s) => s.updatedAt != null)
         .map((s) => s.updatedAt!.getTime());
+      
       const lastActivityAt =
-        userSubTimestamps.length > 0
-          ? new Date(Math.max(...userSubTimestamps)).toISOString()
+        subTimestamps.length > 0
+          ? new Date(Math.max(...subTimestamps)).toISOString()
           : null;
 
       const scorePct =
@@ -535,10 +577,11 @@ router.get("/:contestId/leaderboard", async (req, res) => {
       return {
         rank: i + 1,
         userId: entry.userId,
-        email: entry.user?.email || "",
-        displayName: entry.user?.displayName ?? null,
+        teamId: entry.teamId,
+        email: entry.user?.email || (entry.team ? `team:${entry.team.inviteCode}` : ""),
+        displayName: entry.user?.displayName || entry.team?.name || null,
         country: entry.user?.country ?? null,
-        avatarColor: entry.user?.avatarColor || "#000000",
+        avatarColor: entry.user?.avatarColor || "#4B5563",
         rating: entry.user?.rating || 0,
         totalScore: entry.score,
         maxPossible,
@@ -546,6 +589,7 @@ router.get("/:contestId/leaderboard", async (req, res) => {
         challengeScores,
         firstSolveAt,
         lastActivityAt,
+        isTeam: !!entry.teamId,
       };
     });
 
@@ -561,6 +605,7 @@ router.get("/:contestId/leaderboard", async (req, res) => {
       take: 15,
       select: {
         userId: true,
+        teamId: true,
         points: true,
         updatedAt: true,
         contestToChallengeMapping: {
@@ -569,13 +614,17 @@ router.get("/:contestId/leaderboard", async (req, res) => {
         user: {
           select: { email: true, displayName: true, avatarColor: true },
         },
+        team: {
+            select: { name: true }
+        }
       },
     });
 
     const recentSolves = recentSolveRecords.map((r) => ({
       userId: r.userId,
+      teamId: r.teamId,
       email: r.user.email,
-      displayName: r.user.displayName ?? null,
+      displayName: r.team?.name || r.user.displayName || null,
       avatarColor: r.user.avatarColor,
       challengeTitle: r.contestToChallengeMapping.challenge.title,
       points: r.points,

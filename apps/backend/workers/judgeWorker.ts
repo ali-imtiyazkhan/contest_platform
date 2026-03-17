@@ -132,7 +132,47 @@ new Worker(
         },
       });
 
-      // Emit real-time update
+      // Update team leaderboard if part of a team
+      if (submission.teamId) {
+        // Calculate team total score
+        const teamTotal = await client.contestSubmission.aggregate({
+          where: {
+            teamId: submission.teamId,
+            contestToChallengeMapping: {
+              contestId: submission.contestToChallengeMapping.contestId,
+            },
+          },
+          _sum: { points: true },
+        });
+
+        const teamScore = teamTotal._sum.points ?? 0;
+
+        await client.leaderboard.upsert({
+          where: {
+            contestId_teamId: {
+              contestId: submission.contestToChallengeMapping.contestId,
+              teamId: submission.teamId,
+            },
+          },
+          update: { score: teamScore },
+          create: {
+            contestId: submission.contestToChallengeMapping.contestId,
+            teamId: submission.teamId,
+            score: teamScore,
+          },
+        });
+
+        // Emit real-time update to the team
+        io.to(submission.teamId).emit("submission:teamUpdate", {
+          submissionId: submission.id,
+          status: finalStatus,
+          points: finalPoints,
+          teamId: submission.teamId,
+          userId: submission.userId,
+        });
+      }
+
+      // Emit real-time update to the user
       io.to(submission.userId).emit("submission:update", {
         submissionId: submission.id,
         status: finalStatus,

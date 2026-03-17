@@ -58,6 +58,7 @@ interface ContestForm {
     startTime: string;
     endTime: string;
     scheduled: boolean;
+    participationMode: "Solo" | "Team";
 }
 
 export default function AdminPage() {
@@ -82,6 +83,7 @@ export default function AdminPage() {
         startTime: "",
         endTime: "",
         scheduled: false,
+        participationMode: "Solo",
     });
 
     const [challenges, setChallenges] = useState<Challenge[]>([
@@ -213,6 +215,7 @@ export default function AdminPage() {
                     endTime: form.scheduled
                         ? new Date(form.endTime).toISOString()
                         : new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
+                    participationMode: form.participationMode,
                 }),
             });
 
@@ -287,6 +290,7 @@ export default function AdminPage() {
                 startTime: "",
                 endTime: "",
                 scheduled: false,
+                participationMode: "Solo",
             });
             setChallenges([
                 {
@@ -323,7 +327,7 @@ export default function AdminPage() {
     return (
         <div
             className="min-h-screen bg-[#0a0a0a] text-cream"
-            style={{ fontFamily: "'Syne', sans-serif" }}
+            style={{ fontFamily: "var(--font-syne)" }}
         >
             {/* Header */}
             <header className="sticky top-0 z-50 border-b border-white/[0.06] bg-black/80 backdrop-blur-sm">
@@ -335,7 +339,7 @@ export default function AdminPage() {
                         <div>
                             <h1
                                 className="text-2xl font-extrabold tracking-tight"
-                                style={{ fontFamily: "'Bebas Neue', cursive" }}
+                                style={{ fontFamily: "var(--font-bebas)" }}
                             >
                                 Admin Control Center
                             </h1>
@@ -414,7 +418,7 @@ export default function AdminPage() {
                                 <stat.icon className={`w-5 h-5 ${stat.color}`} />
                                 <span
                                     className={`font-extrabold text-2xl ${stat.color}`}
-                                    style={{ fontFamily: "'Bebas Neue', cursive" }}
+                                    style={{ fontFamily: "var(--font-bebas)" }}
                                 >
                                     {stat.value}
                                 </span>
@@ -436,7 +440,7 @@ export default function AdminPage() {
                         <Settings2 className="w-5 h-5 text-acid" />
                         <h2
                             className="text-xl font-extrabold"
-                            style={{ fontFamily: "'Bebas Neue', cursive" }}
+                            style={{ fontFamily: "var(--font-bebas)" }}
                         >
                             Contest Configuration
                         </h2>
@@ -524,8 +528,8 @@ export default function AdminPage() {
                             </div>
                         </div>
 
-                        {/* Row 2: Max Participants, Host */}
-                        <div className="grid grid-cols-2 gap-4">
+                        {/* Row 2: Max Participants, Host, Participation Mode */}
+                        <div className="grid grid-cols-3 gap-4">
                             <div className="space-y-2">
                                 <label className="block font-mono text-[0.7rem] text-muted tracking-[2px] uppercase">
                                     Max Participants
@@ -551,6 +555,22 @@ export default function AdminPage() {
                                     onChange={(e) => updateForm("host", e.target.value)}
                                     className="w-full bg-black/40 border border-white/[0.08] rounded-lg px-4 py-3 text-cream text-sm outline-none focus:border-acid/50 transition-all"
                                 />
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="block font-mono text-[0.7rem] text-muted tracking-[2px] uppercase">
+                                    Participation Mode
+                                </label>
+                                <select
+                                    value={form.participationMode}
+                                    onChange={(e) =>
+                                        updateForm("participationMode", e.target.value as "Solo" | "Team")
+                                    }
+                                    className="w-full bg-black/40 border border-white/[0.08] rounded-lg px-4 py-3 text-cream text-sm outline-none focus:border-acid/50 transition-all"
+                                >
+                                    <option value="Solo">Solo</option>
+                                    <option value="Team">Team</option>
+                                </select>
                             </div>
                         </div>
 
@@ -653,7 +673,7 @@ export default function AdminPage() {
                         <div className="flex items-center gap-3">
                             <h2
                                 className="text-2xl font-extrabold"
-                                style={{ fontFamily: "'Bebas Neue', cursive" }}
+                                style={{ fontFamily: "var(--font-bebas)" }}
                             >
                                 Challenges
                             </h2>
@@ -688,7 +708,7 @@ export default function AdminPage() {
                                             <div className="w-10 h-10 rounded-lg bg-acid/10 border border-acid/30 flex items-center justify-center">
                                                 <span
                                                     className="text-acid font-extrabold"
-                                                    style={{ fontFamily: "'Bebas Neue', cursive" }}
+                                                    style={{ fontFamily: "var(--font-bebas)" }}
                                                 >
                                                     {idx + 1}
                                                 </span>

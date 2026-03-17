@@ -21,6 +21,8 @@ interface Contest {
     id: string;
     title: string;
     challenges: Challenge[];
+    participationMode: "Solo" | "Team";
+    registeredTeamId?: string;
 }
 
 interface ScoreDimension {
@@ -81,7 +83,13 @@ async function fetchContestWithChallenges(contestId: string): Promise<Contest | 
                 type: m.challenge.type || "Unknown",
             }));
 
-        return { id: c.id, title: c.title, challenges };
+        return { 
+            id: c.id, 
+            title: c.title, 
+            challenges,
+            participationMode: c.participationMode || "Solo",
+            registeredTeamId: json.data.registeredTeamId
+        };
     } catch (e) {
         console.error("Error fetching contest:", e);
         return null;
@@ -91,7 +99,8 @@ async function fetchContestWithChallenges(contestId: string): Promise<Contest | 
 async function submitAnswer(
     contestId: string,
     challengeId: string,
-    submission: string
+    submission: string,
+    teamId?: string
 ): Promise<{ ok: boolean; message?: string }> {
     try {
         const aiApiKey = localStorage.getItem("aiApiKey") || "";
@@ -104,7 +113,7 @@ async function submitAnswer(
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
                 },
-                body: JSON.stringify({ submission, aiApiKey }),
+                body: JSON.stringify({ submission, aiApiKey, teamId }),
             }
         );
         return await res.json();
@@ -524,7 +533,7 @@ export default function ChallengePage() {
 
         setSubmission({ answer, scoring: "submitted", result: null, error: null });
 
-        const submitResult = await submitAnswer(contestId, challengeId, answer);
+        const submitResult = await submitAnswer(contestId, challengeId, answer, contest?.registeredTeamId);
 
         if (!submitResult.ok) {
             setSubmission({
@@ -689,9 +698,14 @@ export default function ChallengePage() {
                             <span className="font-mono text-[0.6rem] tracking-[2px] uppercase text-[var(--accent)] bg-[var(--accent-bg)] border border-[var(--accent-border)] px-2 py-0.5 rounded-sm">
                                 Challenge {challengeIndex + 1}
                             </span>
-                            <span className="font-mono text-[0.6rem] tracking-widest uppercase text-[var(--text-muted)] border border-[var(--border-secondary)] px-2 py-0.5 rounded-sm">
+                             <span className="font-mono text-[0.6rem] tracking-widest uppercase text-[var(--text-muted)] border border-[var(--border-secondary)] px-2 py-0.5 rounded-sm">
                                 {challenge.type}
                             </span>
+                            {contest.participationMode === "Team" && (
+                                <span className="font-mono text-[0.6rem] tracking-widest uppercase text-[var(--accent)] bg-[var(--accent-bg)] border border-[var(--accent-border)] px-2 py-0.5 rounded-sm">
+                                    SQUAD MODE
+                                </span>
+                            )}
                             <span className="font-mono text-[0.65rem] font-bold text-[var(--accent)] ml-auto">
                                 +{challenge.maxPoints} pts
                             </span>
