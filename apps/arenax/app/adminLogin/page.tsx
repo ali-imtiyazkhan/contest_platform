@@ -58,7 +58,7 @@ export default function SignInPage() {
 
             if (response?.data) {
                 const { accessToken, user } = response.data;
-                localStorage.setItem("accesstoken", accessToken);
+                localStorage.setItem("token", accessToken);
                 login(user, accessToken);
                 router.push("/admin");
             }

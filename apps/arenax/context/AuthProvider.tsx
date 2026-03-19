@@ -84,6 +84,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                         setAccessToken(data.accessToken);
                         setUser(data.user);
                         localStorage.setItem("token", data.accessToken);
+                        if (data.user) {
+                            localStorage.setItem("user", JSON.stringify(data.user));
+                        }
+                        // Reschedule with the new token
+                        scheduleTokenRefresh(data.accessToken);
                     } else {
                         clearAuth();
                     }

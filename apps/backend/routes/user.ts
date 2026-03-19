@@ -1,4 +1,5 @@
 import { client } from "db/client";
+import jwt from "jsonwebtoken";
 
 import { Router } from "express";
 import { userMiddleware } from "../middleware/user";
@@ -77,7 +78,7 @@ router.post("/signout", async (_req, res) => {
   res.clearCookie("refreshToken", {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
     path: "/",
   });
 
@@ -93,7 +94,31 @@ router.post("/refresh", async (req, res) => {
 
   try {
     const newAccessToken = refreshAccessToken(refreshToken);
-    res.status(200).json({ accessToken: newAccessToken });
+
+    // Decode the refresh token to get the userId and fetch user data
+    const decoded = jwt.verify(
+      refreshToken,
+      process.env.JWT_REFRESH_SECRET as string,
+    ) as { userId: string };
+
+    const user = await client.user.findUnique({
+      where: { id: decoded.userId },
+      select: {
+        id: true,
+        email: true,
+        displayName: true,
+        role: true,
+        avatarColor: true,
+        rating: true,
+        country: true,
+      },
+    });
+
+    if (!user) {
+      return res.status(403).json({ message: "User not found" });
+    }
+
+    res.status(200).json({ accessToken: newAccessToken, user });
   } catch {
     return res.status(403).json({ message: "Invalid refresh token" });
   }

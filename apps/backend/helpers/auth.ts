@@ -35,20 +35,24 @@ const generateRefreshToken = (user: any) => {
 
 // Refresh Access Token
 const refreshAccessToken = (refreshToken: string) => {
-  const decoded = jwt.verify(
-    refreshToken,
-    process.env.JWT_REFRESH_SECRET as string,
-  ) as {
-    userId: string;
-    email: string;
-    role: string;
-  };
+  try {
+    const decoded = jwt.verify(
+      refreshToken,
+      process.env.JWT_REFRESH_SECRET as string,
+    ) as {
+      userId: string;
+      email: string;
+      role: string;
+    };
 
-  return generateAccessToken({
-    id: decoded.userId,
-    email: decoded.email,
-    role: decoded.role,
-  });
+    return generateAccessToken({
+      id: decoded.userId,
+      email: decoded.email,
+      role: decoded.role,
+    });
+  } catch (error: any) {
+    throw new Error(`Invalid refresh token: ${error.message}`);
+  }
 };
 
 // Export All the feature 

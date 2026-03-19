@@ -13,7 +13,7 @@ export type SessionUser = {
   role?: "User" | "Admin";
   isAdmin: boolean;
 };
-export const SESSION_COOKIE = "accessToken";
+export const SESSION_COOKIE = "refreshToken";
 
 export async function destroySession() {
   const cookieStore = await cookies(); 
@@ -23,7 +23,7 @@ export async function destroySession() {
 export async function getSessionUser(): Promise<SessionUser | null> {
   try {
     const cookieStore = await cookies();
-    const token = cookieStore.get("accessToken")?.value;
+    const token = cookieStore.get("refreshToken")?.value;
     if (!token) return null;
 
     const decoded = jwtDecode<JwtPayload>(token);
