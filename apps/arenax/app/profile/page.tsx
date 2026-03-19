@@ -15,6 +15,7 @@ import {
     X,
     Check,
     Loader2,
+    LogOut,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthProvider";
 
@@ -46,7 +47,7 @@ const COUNTRY_NAMES: Record<string, string> = {
 
 export default function ProfilePage() {
     const router = useRouter();
-    const { accessToken, authReady } = useAuth();
+    const { accessToken, authReady, logout } = useAuth();
 
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const [loading, setLoading] = useState(true);
@@ -223,6 +224,16 @@ export default function ProfilePage() {
                                     className="w-full mt-8 bg-[var(--bg-secondary)] border border-[var(--border-secondary)] hover:border-[var(--accent-border)] hover:bg-[var(--accent-bg)] text-[var(--text-primary)] py-3 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 text-sm font-semibold"
                                 >
                                     <Edit3 size={15} /> Edit Profile
+                                </button>
+
+                                <button
+                                    onClick={async () => {
+                                        await logout();
+                                        router.push("/signin");
+                                    }}
+                                    className="w-full mt-3 bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 hover:border-red-500/40 text-red-400 py-3 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 text-sm font-semibold"
+                                >
+                                    <LogOut size={15} /> Logout
                                 </button>
                             </div>
                         </div>
