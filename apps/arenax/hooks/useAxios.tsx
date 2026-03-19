@@ -13,9 +13,18 @@ export default function useAxios() {
       setLoading(true);
       setError(null);
 
+      const token = localStorage.getItem("token");
+      const headers: Record<string, string> = {
+        ...(config.headers as Record<string, string>),
+      };
+      if (token && token !== "null" && token !== "undefined") {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+
       const response = await axios({
         withCredentials: true,
         ...config,
+        headers,
       });
 
       setData(response.data);

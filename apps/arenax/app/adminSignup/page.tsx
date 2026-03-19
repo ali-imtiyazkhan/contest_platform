@@ -53,7 +53,7 @@ export default function AdminSignUpPage() {
 
             if (response?.data?.success) {
                 const { accessToken, user } = response.data;
-                localStorage.setItem("accesstoken", accessToken);
+                localStorage.setItem("token", accessToken);
                 login(user, accessToken);
                 router.push("/admin");
             }

@@ -107,7 +107,7 @@ export default function DuelsPage() {
 
             const res = await axios.post(`${BACKEND_URL}/duel/invite`, {
                 player2Id: targetUserId,
-                challengeId: challenges[0].id // Picking the first one as default
+                challengeId: challenges[0].id
             }, {
                 headers: { 
                     ...(token && token !== "null" ? { Authorization: `Bearer ${token}` } : {})
