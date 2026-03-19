@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthProvider";
+import { useRouter } from "next/navigation";
 import { BACKEND_URL } from "@/config";
 import axios from "axios";
 import Link from "next/link";
@@ -14,27 +15,38 @@ import {
     ExternalLink,
     ChevronRight,
     Info,
-    Loader2
+    Loader2,
+    Check,
+    Crown,
 } from "lucide-react";
 
 interface TeamMember {
-    id: string;
-    displayName: string | null;
-    email: string;
-    avatarColor: string;
-    role: "OWNER" | "MEMBER";
+    user: {
+        id: string;
+        displayName: string | null;
+        email: string;
+        avatarColor: string;
+    };
 }
 
 interface Team {
     id: string;
     name: string;
     inviteCode: string;
-    memberCount: number;
-    members?: TeamMember[];
+    ownerId: string;
+    owner: {
+        id: string;
+        displayName: string | null;
+        email: string;
+        avatarColor: string;
+    };
+    members: TeamMember[];
+    _count: { members: number };
 }
 
 export default function TeamsPage() {
     const { user, authReady } = useAuth();
+    const router = useRouter();
     const [teams, setTeams] = useState<Team[]>([]);
     const [loading, setLoading] = useState(true);
     const [creating, setCreating] = useState(false);
@@ -43,56 +55,59 @@ export default function TeamsPage() {
     const [showJoinModal, setShowJoinModal] = useState(false);
     const [newTeamName, setNewTeamName] = useState("");
     const [inviteCode, setInviteCode] = useState("");
-    const [error, setError] = useState<string | null>(null);
+    const [createError, setCreateError] = useState<string | null>(null);
+    const [joinError, setJoinError] = useState<string | null>(null);
+    const [copiedCode, setCopiedCode] = useState<string | null>(null);
+
+    // Auth guard
+    useEffect(() => {
+        if (authReady && !user) {
+            router.push("/signin");
+        }
+    }, [authReady, user, router]);
+
+    const getToken = () => localStorage.getItem("token");
 
     const fetchTeams = async () => {
         try {
-
-            const token = localStorage.getItem("token");
+            const token = getToken();
             setLoading(true);
             const response = await axios.get(`${BACKEND_URL}/team/my`, {
                 headers: {
-                    Authorization: `Bearer ${token}`
+                    Authorization: `Bearer ${token}`,
                 },
-                withCredentials: true
+                withCredentials: true,
             });
             if (response.data.ok) {
-                const fetchedTeams = response.data.data.map((t: any) => ({
-                    id: t.id,
-                    name: t.name,
-                    inviteCode: t.inviteCode,
-                    memberCount: t._count?.members || 0
-                }));
-                setTeams(fetchedTeams);
+                setTeams(response.data.data);
             }
         } catch (err) {
             console.error("Failed to fetch teams:", err);
-            setError("Failed to load squads. Please try again.");
         } finally {
             setLoading(false);
         }
     };
 
     useEffect(() => {
-        if (authReady) {
+        if (authReady && user) {
             fetchTeams();
         }
-    }, [authReady]);
+    }, [authReady, user]);
 
     const handleCreateTeam = async () => {
         if (!newTeamName.trim()) return;
         try {
             setCreating(true);
-            setError(null);
-            const token = localStorage.getItem("token");
-            const response = await axios.post(`${BACKEND_URL}/team`, {
-                name: newTeamName
-            }, {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                },
-                withCredentials: true
-            });
+            setCreateError(null);
+            const token = getToken();
+            const response = await axios.post(
+                `${BACKEND_URL}/team`,
+                { name: newTeamName },
+                {
+                    headers: { Authorization: `Bearer ${token}` },
+                    withCredentials: true,
+                }
+            );
 
             if (response.data.ok) {
                 setNewTeamName("");
@@ -100,7 +115,7 @@ export default function TeamsPage() {
                 fetchTeams();
             }
         } catch (err: any) {
-            setError(err.response?.data?.message || "Failed to create squad");
+            setCreateError(err.response?.data?.message || "Failed to create squad");
         } finally {
             setCreating(false);
         }
@@ -110,16 +125,16 @@ export default function TeamsPage() {
         if (!inviteCode.trim()) return;
         try {
             setJoining(true);
-            setError(null);
-            const token = localStorage.getItem("token");
-            const response = await axios.post(`${BACKEND_URL}/team/join`, {
-                inviteCode
-            }, {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                },
-                withCredentials: true
-            });
+            setJoinError(null);
+            const token = getToken();
+            const response = await axios.post(
+                `${BACKEND_URL}/team/join`,
+                { inviteCode },
+                {
+                    headers: { Authorization: `Bearer ${token}` },
+                    withCredentials: true,
+                }
+            );
 
             if (response.data.ok) {
                 setInviteCode("");
@@ -127,7 +142,7 @@ export default function TeamsPage() {
                 fetchTeams();
             }
         } catch (err: any) {
-            setError(err.response?.data?.message || "Failed to join squad");
+            setJoinError(err.response?.data?.message || "Failed to join squad");
         } finally {
             setJoining(false);
         }
@@ -135,12 +150,23 @@ export default function TeamsPage() {
 
     const copyToClipboard = (code: string) => {
         navigator.clipboard.writeText(code);
-        // Add toast notification later
-        alert("Invite code copied to clipboard!");
+        setCopiedCode(code);
+        setTimeout(() => setCopiedCode(null), 2000);
     };
 
+    if (!authReady || (!user && authReady)) {
+        return (
+            <div className="min-h-screen bg-[var(--bg-primary)] flex items-center justify-center">
+                <Loader2 className="animate-spin text-[var(--accent)]" size={32} />
+            </div>
+        );
+    }
+
     return (
-        <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] selection:bg-[var(--accent)] selection:text-[var(--accent-text-on)]" style={{ fontFamily: "var(--font-syne)" }}>
+        <div
+            className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] selection:bg-[var(--accent)] selection:text-[var(--accent-text-on)]"
+            style={{ fontFamily: "var(--font-syne)" }}
+        >
             <div className="fixed inset-0 overflow-hidden pointer-events-none">
                 <div className="absolute top-[20%] right-[-5%] w-[30%] h-[30%] bg-[var(--accent)] opacity-5 rounded-full blur-[100px]" />
             </div>
@@ -159,13 +185,13 @@ export default function TeamsPage() {
                     </div>
                     <div className="flex gap-4">
                         <button
-                            onClick={() => setShowJoinModal(true)}
+                            onClick={() => { setJoinError(null); setShowJoinModal(true); }}
                             className="px-6 py-3 rounded-xl border border-[var(--border-secondary)] bg-[var(--bg-secondary)] hover:bg-[var(--bg-card)] transition-all flex items-center gap-2 text-sm font-bold"
                         >
                             <UserPlus size={18} className="text-[var(--text-muted)]" /> Join Squad
                         </button>
                         <button
-                            onClick={() => setShowCreateModal(true)}
+                            onClick={() => { setCreateError(null); setShowCreateModal(true); }}
                             className="px-6 py-3 rounded-xl bg-[var(--accent)] text-[var(--accent-text-on)] hover:opacity-90 transition-all flex items-center gap-2 text-sm font-bold shadow-[0_4px_20px_rgba(200,241,53,0.3)]"
                         >
                             <Plus size={18} /> Create New
@@ -181,41 +207,73 @@ export default function TeamsPage() {
                             <Users className="text-[var(--text-muted)]" size={32} />
                         </div>
                         <h3 className="text-xl font-bold mb-2">No squads found</h3>
-                        <p className="text-[var(--text-muted)] text-sm mb-8">You haven't joined or created any squads yet.</p>
+                        <p className="text-[var(--text-muted)] text-sm mb-8">You haven&apos;t joined or created any squads yet.</p>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {teams.map((team) => (
-                            <div key={team.id} className="bg-[var(--bg-card)] border border-[var(--border-primary)] rounded-2xl p-6 group hover:border-[var(--accent-border)] transition-all relative overflow-hidden">
-                                <div className="flex justify-between items-start mb-6">
-                                    <div className="w-12 h-12 rounded-xl bg-[var(--accent-bg)] border border-[var(--accent-border)] flex items-center justify-center text-[var(--accent)]">
-                                        <Users size={24} />
-                                    </div>
-                                    <div className="font-mono text-[0.6rem] bg-[var(--bg-secondary)] px-2 py-1 rounded text-[var(--text-muted)]">
-                                        {team.memberCount} MEMBERS
-                                    </div>
-                                </div>
-
-                                <h3 className="text-xl font-bold mb-2 group-hover:text-[var(--accent)] transition-colors">{team.name}</h3>
-                                <div className="flex items-center gap-2 mb-6 cursor-pointer group/code" onClick={() => copyToClipboard(team.inviteCode)}>
-                                    <span className="font-mono text-[0.7rem] text-[var(--text-muted)] tracking-widest uppercase">CODE: <span className="text-[var(--text-primary)]">{team.inviteCode}</span></span>
-                                    <Copy size={12} className="text-[var(--text-muted)] opacity-50 group-hover/code:text-[var(--accent)] transition-colors" />
-                                </div>
-
-                                <div className="flex items-center justify-between pt-6 border-t border-[var(--border-secondary)]">
-                                    <Link href={`/teams/${team.id}`} className="text-[0.7rem] font-bold uppercase tracking-widest flex items-center gap-2 text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors">
-                                        Dashboard <ExternalLink size={12} />
-                                    </Link>
-                                    <div className="flex -space-x-2">
-                                        {[1, 2, 3].map(i => (
-                                            <div key={i} className="w-6 h-6 rounded-full border border-[var(--bg-card)] bg-[var(--accent)] text-[0.5rem] flex items-center justify-center font-bold text-[var(--accent-text-on)] ring-1 ring-white/10">
-                                                {String.fromCharCode(64 + i)}
+                        {teams.map((team) => {
+                            const isOwner = team.ownerId === user?.id;
+                            return (
+                                <div key={team.id} className="bg-[var(--bg-card)] border border-[var(--border-primary)] rounded-2xl p-6 group hover:border-[var(--accent-border)] transition-all relative overflow-hidden">
+                                    <div className="flex justify-between items-start mb-6">
+                                        <div className="w-12 h-12 rounded-xl bg-[var(--accent-bg)] border border-[var(--accent-border)] flex items-center justify-center text-[var(--accent)]">
+                                            <Users size={24} />
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            {isOwner && (
+                                                <div className="font-mono text-[0.6rem] bg-[var(--accent-bg)] text-[var(--accent)] px-2 py-1 rounded border border-[var(--accent-border)] flex items-center gap-1">
+                                                    <Crown size={10} /> OWNER
+                                                </div>
+                                            )}
+                                            <div className="font-mono text-[0.6rem] bg-[var(--bg-secondary)] px-2 py-1 rounded text-[var(--text-muted)]">
+                                                {team._count.members} MEMBERS
                                             </div>
-                                        ))}
+                                        </div>
+                                    </div>
+
+                                    <h3 className="text-xl font-bold mb-2 group-hover:text-[var(--accent)] transition-colors">{team.name}</h3>
+                                    <div
+                                        className="flex items-center gap-2 mb-6 cursor-pointer group/code"
+                                        onClick={() => copyToClipboard(team.inviteCode)}
+                                    >
+                                        <span className="font-mono text-[0.7rem] text-[var(--text-muted)] tracking-widest uppercase">
+                                            CODE: <span className="text-[var(--text-primary)]">{team.inviteCode}</span>
+                                        </span>
+                                        {copiedCode === team.inviteCode ? (
+                                            <Check size={12} className="text-green-400" />
+                                        ) : (
+                                            <Copy size={12} className="text-[var(--text-muted)] opacity-50 group-hover/code:text-[var(--accent)] transition-colors" />
+                                        )}
+                                    </div>
+
+                                    <div className="flex items-center justify-between pt-6 border-t border-[var(--border-secondary)]">
+                                        <Link
+                                            href={`/teams/${team.id}`}
+                                            className="text-[0.7rem] font-bold uppercase tracking-widest flex items-center gap-2 text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
+                                        >
+                                            Dashboard <ExternalLink size={12} />
+                                        </Link>
+                                        <div className="flex -space-x-2">
+                                            {team.members.slice(0, 4).map((m, i) => (
+                                                <div
+                                                    key={m.user.id}
+                                                    className="w-7 h-7 rounded-full border-2 border-[var(--bg-card)] flex items-center justify-center text-[0.5rem] font-bold text-black ring-1 ring-white/10"
+                                                    style={{ backgroundColor: m.user.avatarColor, zIndex: 10 - i }}
+                                                    title={m.user.displayName || m.user.email}
+                                                >
+                                                    {(m.user.displayName || m.user.email).charAt(0).toUpperCase()}
+                                                </div>
+                                            ))}
+                                            {team._count.members > 4 && (
+                                                <div className="w-7 h-7 rounded-full border-2 border-[var(--bg-card)] bg-[var(--bg-secondary)] flex items-center justify-center text-[0.5rem] font-mono text-[var(--text-muted)]">
+                                                    +{team._count.members - 4}
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 )}
 
@@ -226,35 +284,38 @@ export default function TeamsPage() {
                     </div>
                     <div>
                         <h4 className="text-lg font-bold mb-1">Squad Tournaments coming soon</h4>
-                        <p className="text-[var(--text-muted)] text-sm italic">"Unity is strength. Teamwork makes the dream work."</p>
+                        <p className="text-[var(--text-muted)] text-sm italic">&quot;Unity is strength. Teamwork makes the dream work.&quot;</p>
                     </div>
                 </div>
             </div>
 
-            {/* Modal Placeholders (Functional logic would go here) */}
+            {/* Create Squad Modal */}
             {showCreateModal && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/60 backdrop-blur-md">
                     <div className="bg-[var(--bg-card)] border border-[var(--border-primary)] rounded-2xl p-8 max-w-md w-full shadow-[0_40px_100px_rgba(0,0,0,0.8)]">
-                        <h3 className="text-2xl font-bold mb-2">Force a new Squad</h3>
-                        <p className="text-[var(--text-muted)] text-sm mb-8">Define your team identity and prepare for battle.</p>
+                        <h3 className="text-2xl font-bold mb-2">Forge a new Squad</h3>
+                        <p className="text-[var(--text-muted)] text-sm mb-2">Define your team identity and prepare for battle.</p>
+                        <p className="text-[var(--text-muted)] text-[0.65rem] font-mono mb-6">2–30 characters</p>
                         <input
                             autoFocus
                             value={newTeamName}
                             onChange={(e) => setNewTeamName(e.target.value)}
+                            onKeyDown={(e) => e.key === "Enter" && handleCreateTeam()}
                             placeholder="e.g. Code Renegades"
+                            maxLength={30}
                             className="w-full bg-[var(--bg-secondary)] border border-[var(--border-secondary)] px-4 py-3 rounded-xl mb-6 outline-none focus:border-[var(--accent-border)] transition-colors"
                         />
-                        {error && (
+                        {createError && (
                             <div className="bg-red-500/10 border border-red-500/20 text-red-500 text-xs p-3 rounded-lg mb-4 flex items-center gap-2">
-                                <Info size={14} /> {error}
+                                <Info size={14} /> {createError}
                             </div>
                         )}
                         <div className="flex gap-4">
                             <button onClick={() => setShowCreateModal(false)} className="flex-1 py-3 rounded-xl border border-[var(--border-secondary)] text-[var(--text-muted)] font-bold">Cancel</button>
                             <button
                                 onClick={handleCreateTeam}
-                                disabled={creating}
-                                className="flex-1 py-3 rounded-xl bg-[var(--accent)] text-[var(--accent-text-on)] font-bold shadow-[0_4px_15px_rgba(200,241,53,0.3)] flex items-center justify-center gap-2"
+                                disabled={creating || newTeamName.trim().length < 2}
+                                className="flex-1 py-3 rounded-xl bg-[var(--accent)] text-[var(--accent-text-on)] font-bold shadow-[0_4px_15px_rgba(200,241,53,0.3)] flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
                             >
                                 {creating ? <Loader2 className="animate-spin" size={18} /> : "Deploy"}
                             </button>
@@ -263,6 +324,7 @@ export default function TeamsPage() {
                 </div>
             )}
 
+            {/* Join Squad Modal */}
             {showJoinModal && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/60 backdrop-blur-md">
                     <div className="bg-[var(--bg-card)] border border-[var(--border-primary)] rounded-2xl p-8 max-w-md w-full">
@@ -272,21 +334,22 @@ export default function TeamsPage() {
                             autoFocus
                             value={inviteCode}
                             onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
+                            onKeyDown={(e) => e.key === "Enter" && handleJoinTeam()}
                             placeholder="e.g. ALPH77"
                             className="w-full bg-[var(--bg-secondary)] border border-[var(--border-secondary)] px-4 py-3 rounded-xl mb-6 outline-none focus:border-[var(--accent-border)] transition-colors text-center font-mono tracking-widest text-lg"
                             maxLength={6}
                         />
-                        {error && (
+                        {joinError && (
                             <div className="bg-red-500/10 border border-red-500/20 text-red-500 text-xs p-3 rounded-lg mb-4 flex items-center gap-2 text-left">
-                                <Info size={14} /> {error}
+                                <Info size={14} /> {joinError}
                             </div>
                         )}
                         <div className="flex gap-4">
                             <button onClick={() => setShowJoinModal(false)} className="flex-1 py-3 rounded-xl border border-[var(--border-secondary)] text-[var(--text-muted)] font-bold">Abort</button>
                             <button
                                 onClick={handleJoinTeam}
-                                disabled={joining}
-                                className="flex-1 py-3 rounded-xl bg-[var(--accent)] text-[var(--accent-text-on)] font-bold flex items-center justify-center gap-2"
+                                disabled={joining || inviteCode.trim().length < 1}
+                                className="flex-1 py-3 rounded-xl bg-[var(--accent)] text-[var(--accent-text-on)] font-bold flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
                             >
                                 {joining ? <Loader2 className="animate-spin" size={18} /> : "Verify & Join"}
                             </button>
@@ -294,7 +357,6 @@ export default function TeamsPage() {
                     </div>
                 </div>
             )}
-
         </div>
     );
 }
